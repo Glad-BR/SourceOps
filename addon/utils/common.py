@@ -4,6 +4,7 @@ import unicodedata
 import platform
 import pathlib
 import traceback
+import os
 
 
 def get_version():
@@ -145,3 +146,10 @@ def resolve(path):
 
 def update_wine(self, context):
     self['wine'] = resolve(self.wine)
+
+wineargs = 'WINEDEBUG=-all'
+
+def winepath(path):
+    with os.popen(f'{wineargs} wine winepath -w "{os.path.normpath(os.path.abspath(path))}"') as pipe:
+        result = os.path.normpath(pipe.read().strip())
+        return result

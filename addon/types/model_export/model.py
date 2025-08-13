@@ -358,17 +358,35 @@ class Model:
             self.remove_models_old()
 
             # Use wine to run StudioMDL on Linux.
-            # Wine tends to complain about the paths we feed StudioMDL.
-            # So we use relatve paths working from the base directory of the game.
+            # Rework of wine, assuming the wine bin is in $PATH
+            # Should be the case most of the time if wine is properly installed 
+            # Use winepath -w to get proper NT path
+
             if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
-                cwd = self.game.parent
-                args = [str(self.wine), str(self.studiomdl.relative_to(cwd)), '-nop4', '-fullcollide',
-                        '-game', str(self.game.relative_to(cwd)), str(qc.relative_to(cwd))]
+                cwd = None
+                args = [
+                    'wine',
+                    common.winepath(self.studiomdl),
+                    '-nop4',
+                    '-fullcollide',
+                    f'-game {str(common.winepath(self.game))}',
+                    common.winepath(qc)
+                    ]
+                env = os.environ.copy()
+                env["WINEDEBUG"] = "-all"
+  
             else:
                 cwd = None
-                args = [str(self.studiomdl), '-nop4', '-fullcollide', '-game', str(self.game), str(qc)]
+                args = [
+                    str(self.studiomdl),
+                    '-nop4',
+                    '-fullcollide',
+                    '-game', str(self.game),
+                    str(qc)
+                    ]
+                env = env = os.environ.copy()
 
-            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
 
             while True:
                 code = pipe.returncode
@@ -398,15 +416,23 @@ class Model:
         dx90 = model.with_suffix('.dx90.vtx')
 
         # Use wine to run HLMV on Linux.
-        # Wine tends to complain about the paths we feed HLMV.
-        # So we use relatve paths working from the base directory of the game.
+        # same as studiomdl.exe
+
         if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
-            cwd = self.game.parent
-            args = [str(self.wine), str(self.hlmv.relative_to(cwd)), '-game',
-                    str(self.game.relative_to(cwd)), str(mdl.relative_to(cwd))]
+            cwd = None
+            args = [
+                'wine',
+                common.winepath(self.hlmv),
+                f'-game {common.winepath(self.game)}',
+                common.winepath(mdl)
+            ]
         else:
             cwd = None
-            args = [str(self.hlmv), '-game', str(self.game), str(mdl)]
+            args = [
+                str(self.hlmv),
+                f'-game {str(self.game)}',
+                str(mdl)
+            ]
 
         if dx90.is_file():
             print(f'Viewing: {mdl}')
