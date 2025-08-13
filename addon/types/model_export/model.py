@@ -18,6 +18,10 @@ class Model:
 
         self.game = Path(game.game)
         self.bin = Path(game.bin)
+
+        self.studiomdl = Path(game.studiomdl)
+        self.hlmv = Path(game.hlmv)
+
         if model.static and model.static_prop_combine:
             self.modelsrc = self.game.parent.parent.joinpath('content', self.game.name, 'models')
         else:
@@ -25,6 +29,7 @@ class Model:
         self.models = Path(game.models)
         self.mapsrc = Path(game.mapsrc)
         self.mesh_type = game.mesh_type
+
 
         self.name = Path(model.name).with_suffix('').as_posix()
         self.stem = common.clean_filename(Path(self.name).stem)
@@ -34,13 +39,6 @@ class Model:
             directory = self.modelsrc.joinpath(self.name)
         self.directory = common.verify_folder(directory)
 
-        studiomdl = self.bin.joinpath('studiomdl.exe')
-        quickmdl = self.bin.joinpath('quickmdl.exe')
-        self.studiomdl = quickmdl if quickmdl.is_file() else studiomdl
-
-        hlvm = self.bin.joinpath('hlmv.exe')
-        hlvmplusplus = self.bin.joinpath('hlmvplusplus.exe')
-        self.hlmv = hlvmplusplus if hlvmplusplus.is_file() else hlvm
 
         self.material_folder_items = model.material_folder_items
         self.skin_items = model.skin_items
@@ -369,9 +367,9 @@ class Model:
                     common.winepath(self.studiomdl),
                     '-nop4',
                     '-fullcollide',
-                    f'-game {str(common.winepath(self.game))}',
+                    '-game ', str(common.winepath(self.game)),
                     common.winepath(qc)
-                    ]
+                ]
                 env = os.environ.copy()
                 env["WINEDEBUG"] = "-all"
   
@@ -383,7 +381,7 @@ class Model:
                     '-fullcollide',
                     '-game', str(self.game),
                     str(qc)
-                    ]
+                ]
                 env = env = os.environ.copy()
 
             pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
@@ -423,20 +421,23 @@ class Model:
             args = [
                 'wine',
                 common.winepath(self.hlmv),
-                f'-game {common.winepath(self.game)}',
+                '-game ', common.winepath(self.game),
                 common.winepath(mdl)
             ]
+            env = os.environ.copy()
+            env["WINEDEBUG"] = "-all"
         else:
             cwd = None
             args = [
                 str(self.hlmv),
-                f'-game {str(self.game)}',
+                f'-game', str(self.game),
                 str(mdl)
             ]
+            env = os.environ.copy()
 
         if dx90.is_file():
             print(f'Viewing: {mdl}')
-            subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+            subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
         else:
             return self.report(f'Failed to view: {mdl}')
 

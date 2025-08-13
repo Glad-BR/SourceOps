@@ -46,13 +46,19 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'GAMES')
 
             if game:
-                col = common.split_column(box)
+                #col = common.split_column(box)
+                col = common.align_column(box) # add some more pizzazz
                 col.prop(game, 'name')
                 col.prop(game, 'game')
+                col.separator()
                 col.prop(game, 'bin')
+                col.prop(game, 'studiomdl')
+                col.prop(game, 'hlmv')
+                col.separator()
                 col.prop(game, 'modelsrc')
                 col.prop(game, 'models')
                 col.prop(game, 'mapsrc')
+                col.separator()
                 col.prop(game, 'mesh_type')
 
         elif sourceops and sourceops.panel == 'MODELS':
