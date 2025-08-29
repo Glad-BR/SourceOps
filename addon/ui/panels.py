@@ -96,6 +96,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.enabled = model.static
             row.prop(model, 'static_prop_combine')
             col.prop(model, 'joints')
+            col.prop(model, 'mass')
 
             box = layout.box()
             row = box.row()
