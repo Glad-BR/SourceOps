@@ -12,17 +12,17 @@ class SOURCEOPS_ParticleProps(bpy.types.PropertyGroup):
         name='Name',
         description='The name of a particle system. NOT the name of a .pcf file!',
         default='Particle',
-    )
+    ) #type:ignore
 
     attachment_type: bpy.props.EnumProperty(
         name='Attachment Type',
         description='The method of attaching the particle to the prop',
         items=SOURCEOPS_ParticleAttachProps,
         default='start_at_origin',
-    )
+    ) #type:ignore
 
     attachment_point: bpy.props.StringProperty(
         name='Attachment Point',
         description='The attachment point at which the particle system should spawn, if applicable',
         default='',
-    )
+    ) #type:ignore
