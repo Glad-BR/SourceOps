@@ -222,7 +222,7 @@ class Model:
             qc.write('\n')
 
         qc.write('\n')
-        qc.write(f'$scale {self.scale:.6f}')
+        qc.write(f'$scale {self.scale:.4f}')
         qc.write('\n')
 
         if self.reference:
