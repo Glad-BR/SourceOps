@@ -14,7 +14,6 @@ from . fbx import export_fbx
 class Model:
     def __init__(self, game, model):
         self.prefs = common.get_prefs(bpy.context)
-        self.wine = Path(self.prefs.wine)
 
         self.game = Path(game.game)
         self.bin = Path(game.bin)

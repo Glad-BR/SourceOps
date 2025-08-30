@@ -149,10 +149,6 @@ def resolve(path):
         return ''
 
 
-def update_wine(self, context):
-    self['wine'] = resolve(self.wine)
-
-
 def winepath(path):
     wineargs = 'WINEDEBUG=-all'
 
