@@ -12,10 +12,10 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         description='Path to your wine installation',
         subtype='FILE_PATH',
         update=utils.common.update_wine,
-    )
+    ) #type:ignore
 
-    game_items: bpy.props.CollectionProperty(type=SOURCEOPS_GameProps)
-    game_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
+    game_items: bpy.props.CollectionProperty(type=SOURCEOPS_GameProps) #type:ignore
+    game_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename') #type:ignore
 
     def draw(self, context):
         layout = self.layout

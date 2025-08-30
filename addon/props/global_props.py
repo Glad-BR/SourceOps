@@ -4,23 +4,23 @@ from . map_props import SOURCEOPS_MapProps
 
 
 class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
-    model_items: bpy.props.CollectionProperty(type=SOURCEOPS_ModelProps)
-    model_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
+    model_items: bpy.props.CollectionProperty(type=SOURCEOPS_ModelProps) #type:ignore
+    model_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename') #type:ignore
 
-    map_items: bpy.props.CollectionProperty(type=SOURCEOPS_MapProps)
-    map_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
+    map_items: bpy.props.CollectionProperty(type=SOURCEOPS_MapProps) #type:ignore
+    map_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename') #type:ignore
 
     simulation_input: bpy.props.PointerProperty(
         name='Simulation Input',
         description='The collection containing your rigid body objects',
         type=bpy.types.Collection,
-    )
+    ) #type:ignore
 
     simulation_output: bpy.props.PointerProperty(
         name='Simulation Output',
         description='The collection your rigged objects will go',
         type=bpy.types.Collection,
-    )
+    ) #type:ignore
 
     panel: bpy.props.EnumProperty(
         name='Panel',
@@ -38,4 +38,4 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
             ('SIMULATION', 'Simulation', 'Display the simulation panel', 'PHYSICS', 10),
             ('MISC', 'Misc', 'Display the misc panel', 'MONKEY', 11),
         ],
-    )
+    ) #type:ignore

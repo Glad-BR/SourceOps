@@ -92,6 +92,11 @@ def split_column(layout):
     col.use_property_decorate = False
     return col
 
+def align_column(layout):
+    col = layout.column(align=True)
+    col.use_property_split = True
+    col.use_property_decorate = False
+    return col
 
 filename_chars_valid = '-_.() %s%s' % (string.ascii_letters, string.digits)
 filename_chars_replace = ' '
@@ -147,9 +152,10 @@ def resolve(path):
 def update_wine(self, context):
     self['wine'] = resolve(self.wine)
 
-wineargs = 'WINEDEBUG=-all'
 
 def winepath(path):
+    wineargs = 'WINEDEBUG=-all'
+
     with os.popen(f'{wineargs} wine winepath -w "{os.path.normpath(os.path.abspath(path))}"') as pipe:
         result = os.path.normpath(pipe.read().strip())
         return result
