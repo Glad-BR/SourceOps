@@ -120,6 +120,13 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     ) #type:ignore
 
+    mass: bpy.props.IntProperty(
+        name='Model Mass',
+        description='$mass of the model, use 0 for $automass',
+        default=0,
+        min=0
+    )
+
     prepend_armature: bpy.props.BoolProperty(
         name='Prepend Armature',
         description='Prepend the name of the armature to every bone name in your SMD files. Necessary for multi-armature models',

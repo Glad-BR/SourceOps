@@ -57,6 +57,7 @@ class Model:
         self.static = model.static
         self.static_prop_combine = model.static_prop_combine
         self.joints = model.joints
+        self.mass = model.mass
 
         self.prepend_armature = model.prepend_armature
         self.ignore_transforms = model.ignore_transforms
