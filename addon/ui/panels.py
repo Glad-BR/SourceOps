@@ -17,6 +17,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         game = common.get_game(prefs)
         sourceops = common.get_globals(context)
         model = common.get_model(sourceops)
+        lod = common.get_lod(model)
+        lod_replace_model = common.get_lod_replace_model(lod)
         material_folder = common.get_material_folder(model)
         skin = common.get_skin(model)
         sequence = common.get_sequence(model)
@@ -80,6 +82,36 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(model, 'collision')
                 col.prop(model, 'bodygroups')
                 col.prop(model, 'stacking')
+
+        elif model and sourceops.panel == 'MODEL_LODS':
+            box = layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Model LODs')
+            row.label(text=f'{model.name}')
+
+            col = common.split_column(box)
+
+            box = layout.box()
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_LodsList', '', model, 'model_lods_items', model, 'model_lods_index', rows=5)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'MODEL_LODS')
+
+            item = model.model_lods_items[model.model_lods_index] if model.model_lods_items else None
+            if item:
+                col = common.split_column(box)
+                col.prop(item, 'distance', text='Distance')
+
+
+            if lod:
+                #layout.label(text=f'LOD {model.model_lods_index} - Distance {lod.distance}')
+                box = layout.box()
+                row = box.row()
+                row.template_list('SOURCEOPS_UL_LodsReplaceModelList', '', lod, 'replace_model_items', lod, 'replace_model_index', rows=5)
+                col = row.column(align=True)
+                self.draw_list_buttons(col, 'MODEL_LODS_REPLACE')
+
 
         elif model and sourceops.panel == 'MODEL_OPTIONS':
             box = layout.box()
@@ -244,7 +276,21 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(attachment, 'absolute')
                 col.prop(attachment, 'rigid')
 
-        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS', 'ATTACHMENTS', 'PARTICLES'}:
+
+
+        if sourceops.panel in {
+                'GAMES',
+                'MODELS',
+                'MODEL_LODS',
+                'MODEL_OPTIONS',
+                'TEXTURES',
+                'SEQUENCES',
+                'EVENTS',
+                'ATTACHMENTS',
+                'PARTICLES'
+            }:
+
+
             box = layout.box()
             row = box.row()
             row.scale_x = row.scale_y = 1.5

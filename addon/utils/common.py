@@ -46,6 +46,18 @@ def get_material_folder(model):
         return None
 
 
+def get_lod(model):
+    try:
+        return model.model_lods_items[model.model_lods_index]
+    except:
+        return None
+
+def get_lod_replace_model(lod):
+    try:
+        return lod.replace_model_items[lod.replace_model_index]
+    except:
+        return None
+
 def get_skin(model):
     try:
         return model.skin_items[model.skin_index]

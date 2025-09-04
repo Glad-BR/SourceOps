@@ -1,5 +1,6 @@
 from pathlib import Path
 from ..utils.common import resolve
+from ..utils import common
 
 
 def update_game(self, context):
@@ -67,7 +68,17 @@ def update_studiomdl(self, context):
 def update_hlmv(self, context):
     self['hlmv'] = resolve(self.hlmv)
 
+
 def verify(game):
     gameinfo = Path(game.game).joinpath('gameinfo.txt')
     studiomdl = Path(game.bin).joinpath('studiomdl.exe')
     return gameinfo.is_file() and studiomdl.is_file()
+
+
+def update_loddefault(self, context):
+
+    sourceops = common.get_globals(context)
+    model = common.get_model(sourceops)
+
+    self['source'] = model.reference if model.reference else None
+

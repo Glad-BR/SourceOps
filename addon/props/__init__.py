@@ -6,11 +6,12 @@ from . event_props import SOURCEOPS_EventProps
 from . sequence_props import SOURCEOPS_SequenceProps
 from . skin_props import SOURCEOPS_SkinProps
 from . material_folder_props import SOURCEOPS_MaterialFolderProps
+from . model_lods import SOURCEOPS_LodsReplaceModel
+from . model_lods import SOURCEOPS_ModelLods
 from . model_props import SOURCEOPS_ModelProps
 from . game_props import SOURCEOPS_GameProps
 from . global_props import SOURCEOPS_GlobalProps
 from . addon_prefs import SOURCEOPS_AddonPrefs
-
 
 classes = [
     SOURCEOPS_MapProps,
@@ -20,6 +21,8 @@ classes = [
     SOURCEOPS_SequenceProps,
     SOURCEOPS_SkinProps,
     SOURCEOPS_MaterialFolderProps,
+    SOURCEOPS_LodsReplaceModel,
+    SOURCEOPS_ModelLods,
     SOURCEOPS_ModelProps,
     SOURCEOPS_GameProps,
     SOURCEOPS_GlobalProps,

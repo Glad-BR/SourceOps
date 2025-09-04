@@ -8,6 +8,8 @@ from . lists import SOURCEOPS_UL_EventList
 from . lists import SOURCEOPS_UL_AttachmentList
 from . lists import SOURCEOPS_UL_ParticleList
 from . lists import SOURCEOPS_UL_MapList
+from . lists import SOURCEOPS_UL_LodsList
+from . lists import SOURCEOPS_UL_LodsReplaceModelList
 from . panels import SOURCEOPS_PT_MainPanel
 
 classes = [
@@ -20,7 +22,9 @@ classes = [
     SOURCEOPS_UL_AttachmentList,
     SOURCEOPS_UL_ParticleList,
     SOURCEOPS_UL_MapList,
-    SOURCEOPS_PT_MainPanel
+    SOURCEOPS_PT_MainPanel,
+    SOURCEOPS_UL_LodsList,
+    SOURCEOPS_UL_LodsReplaceModelList
 ]
 
 class_register, class_unregister = bpy.utils.register_classes_factory(classes)

@@ -28,23 +28,25 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
             ('MOVE_UP', 'Move Up', 'Move an item up'),
             ('MOVE_DOWN', 'Move Down', 'Move an item down'),
         ],
-    )
+    ) #type:ignore
 
     item: bpy.props.EnumProperty(
         name='Type',
         description='Which list to deal with',
         items=[
-            ('GAMES', 'Games', 'Operate on games'),
-            ('MODELS', 'Models', 'Operate on models'),
-            ('MATERIAL_FOLDERS', 'Material Folders', 'Operate on material folders'),
-            ('SKINS', 'Skins', 'Operate on skins'),
-            ('SEQUENCES', 'Sequences', 'Operate on sequences'),
-            ('EVENTS', 'Events', 'Operate on events'),
-            ('ATTACHMENTS', 'Attachments', 'Operate on attachments'),
-            ('PARTICLES', 'Particles', 'Operate on particles'),
-            ('MAPS', 'Maps', 'Operate on maps'),
+            ('GAMES',              'Games',                   'Operate on games'),
+            ('MODELS',             'Models',                  'Operate on models'),
+            ('MODEL_LODS',         'Model LODs',              'Operate on model LODs'),
+            ('MODEL_LODS_REPLACE', 'Model LOD Replace Model', 'Operate on model LOD replace models'),
+            ('MATERIAL_FOLDERS',   'Material Folders',        'Operate on material folders'),
+            ('SKINS',              'Skins',                   'Operate on skins'),
+            ('SEQUENCES',          'Sequences',               'Operate on sequences'),
+            ('EVENTS',             'Events',                  'Operate on events'),
+            ('ATTACHMENTS',        'Attachments',             'Operate on attachments'),
+            ('PARTICLES',          'Particles',               'Operate on particles'),
+            ('MAPS',               'Maps',                    'Operate on maps'),
         ],
-    )
+    ) #type:ignore
 
     def add(self, parent, items, index):
         items.add()
@@ -87,6 +89,9 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
         model = common.get_model(sourceops)
         sequence = common.get_sequence(model)
 
+        lod = common.get_lod(model)
+        #lod_replace_model = common.get_lod_replace_model(lod)
+
         mode_dict = {
             'ADD': self.add,
             'REMOVE': self.remove,
@@ -96,15 +101,17 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
         }
 
         item_dict = {
-            'GAMES': (prefs, 'game_items', 'game_index'),
-            'MODELS': (sourceops, 'model_items', 'model_index'),
-            'MATERIAL_FOLDERS': (model, 'material_folder_items', 'material_folder_index'),
-            'SKINS': (model, 'skin_items', 'skin_index'),
-            'SEQUENCES': (model, 'sequence_items', 'sequence_index'),
-            'EVENTS': (sequence, 'event_items', 'event_index'),
-            'ATTACHMENTS': (model, 'attachment_items', 'attachment_index'),
-            'PARTICLES': (model, 'particle_items', 'particle_index'),
-            'MAPS': (sourceops, 'map_items', 'map_index'),
+            'GAMES'              : (prefs,     'game_items',            'game_index'),
+            'MODELS'             : (sourceops, 'model_items',           'model_index'),
+            'MODEL_LODS'         : (model,     'model_lods_items',      'model_lods_index'),
+            'MODEL_LODS_REPLACE' : (lod,       'replace_model_items',   'replace_model_index'),
+            'MATERIAL_FOLDERS'   : (model,     'material_folder_items', 'material_folder_index'),
+            'SKINS'              : (model,     'skin_items',            'skin_index'),
+            'SEQUENCES'          : (model,     'sequence_items',        'sequence_index'),
+            'EVENTS'             : (sequence,  'event_items',           'event_index'),
+            'ATTACHMENTS'        : (model,     'attachment_items',      'attachment_index'),
+            'PARTICLES'          : (model,     'particle_items',        'particle_index'),
+            'MAPS'               : (sourceops, 'map_items',             'map_index'),
         }
 
         function = mode_dict[self.mode]
