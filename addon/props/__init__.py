@@ -13,7 +13,7 @@ from . game_props import SOURCEOPS_GameProps
 from . global_props import SOURCEOPS_GlobalProps
 from . addon_prefs import SOURCEOPS_AddonPrefs
 
-classes = [
+classes = (
     SOURCEOPS_MapProps,
     SOURCEOPS_AttachmentProps,
     SOURCEOPS_ParticleProps,
@@ -27,7 +27,7 @@ classes = [
     SOURCEOPS_GameProps,
     SOURCEOPS_GlobalProps,
     SOURCEOPS_AddonPrefs
-]
+)
 
 class_register, class_unregister = bpy.utils.register_classes_factory(classes)
 

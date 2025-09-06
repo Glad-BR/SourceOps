@@ -12,7 +12,7 @@ from . lists import SOURCEOPS_UL_LodsList
 from . lists import SOURCEOPS_UL_LodsReplaceModelList
 from . panels import SOURCEOPS_PT_MainPanel
 
-classes = [
+classes = (
     SOURCEOPS_UL_GameList,
     SOURCEOPS_UL_ModelList,
     SOURCEOPS_UL_MaterialFolderList,
@@ -25,7 +25,7 @@ classes = [
     SOURCEOPS_PT_MainPanel,
     SOURCEOPS_UL_LodsList,
     SOURCEOPS_UL_LodsReplaceModelList
-]
+)
 
 class_register, class_unregister = bpy.utils.register_classes_factory(classes)
 

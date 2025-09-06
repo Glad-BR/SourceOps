@@ -14,6 +14,8 @@ from . fbx import export_fbx
 class Model:
     def __init__(self, game, model):
         self.prefs = common.get_prefs(bpy.context)
+        self.wine = Path(common.get_wine(self.prefs))
+        print(f'Using wine: {self.wine}')
 
         self.game = Path(game.game)
         self.bin = Path(game.bin)
@@ -359,23 +361,15 @@ class Model:
             self.remove_models_old()
 
             # Use wine to run StudioMDL on Linux.
-            # Rework of wine, assuming the wine bin is in $PATH
-            # Should be the case most of the time if wine is properly installed 
-            # Use winepath -w to get proper NT path
+            # Wine tends to complain about the paths we feed StudioMDL.
+            # So we use relatve paths working from the base directory of the game.
 
+            env = os.environ.copy()
             if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
-                cwd = None
-                args = [
-                    'wine',
-                    common.winepath(self.studiomdl),
-                    '-nop4',
-                    '-fullcollide',
-                    '-game ', str(common.winepath(self.game)),
-                    common.winepath(qc)
-                ]
-                env = os.environ.copy()
-                env["WINEDEBUG"] = "-all"
-  
+                cwd = self.game.parent
+                args = [str(self.wine), str(self.studiomdl.relative_to(cwd)), '-nop4', '-fullcollide',
+                        '-game', str(self.game.relative_to(cwd)), str(qc.relative_to(cwd))]
+                env['WINEDEBUG'] = '-all'
             else:
                 cwd = None
                 args = [
@@ -417,18 +411,16 @@ class Model:
         dx90 = model.with_suffix('.dx90.vtx')
 
         # Use wine to run HLMV on Linux.
-        # same as studiomdl.exe
+        # Wine tends to complain about the paths we feed HLMV.
+        # So we use relatve paths working from the base directory of the game.
+
+        env = os.environ.copy()
 
         if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
-            cwd = None
-            args = [
-                'wine',
-                common.winepath(self.hlmv),
-                '-game ', common.winepath(self.game),
-                common.winepath(mdl)
-            ]
-            env = os.environ.copy()
-            env["WINEDEBUG"] = "-all"
+            cwd = self.game.parent
+            args = [str(self.wine), str(self.hlmv.relative_to(cwd)), '-game',
+                    str(self.game.relative_to(cwd)), str(mdl.relative_to(cwd))]
+            env['WINEDEBUG'] = '-all'
         else:
             cwd = None
             args = [

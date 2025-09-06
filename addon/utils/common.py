@@ -5,7 +5,7 @@ import platform
 import pathlib
 import traceback
 import os
-
+import shutil 
 
 def get_version():
     from ... import bl_info
@@ -161,9 +161,19 @@ def resolve(path):
         return ''
 
 
-def winepath(path):
-    wineargs = 'WINEDEBUG=-all'
+def update_wine(self, context):
+    self['wine'] = resolve(self.wine)
 
-    with os.popen(f'{wineargs} wine winepath -w "{os.path.normpath(os.path.abspath(path))}"') as pipe:
-        result = os.path.normpath(pipe.read().strip())
-        return result
+
+def get_wine(self):
+    wine = pathlib.Path(self.wine)
+    which_path = shutil.which('wine')
+    which = pathlib.Path(which_path) if which_path is not None else None
+
+    if wine.is_file():
+        return wine
+    elif which is not None and which.is_file():
+        return which
+    else:
+        raise Exception('Wine executable not found. make sure Wine is installed and accessible by Blender')
+    
