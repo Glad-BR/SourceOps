@@ -52,11 +52,10 @@ class Model:
         self.armature = model.armature
         self.reference = model.reference
         self.collision = model.collision
-        self.bodygroups = model.bodygroups
         self.stacking = model.stacking
 
+        self.bodygroups = model.bodygroups_items
         self.lods_items = model.lods_items
-        
 
         self.rename_material = model.rename_material
         self.surface = model.surface
@@ -99,14 +98,17 @@ class Model:
             path = self.get_body_path(self.collision)
             self.export_mesh(self.armature, objects, path)
 
-        if self.bodygroups:
-            for bodygroup in self.bodygroups.children:
-                for collection in bodygroup.children:
-                    objects = self.get_all_objects(collection)
-                    path = self.get_body_path(collection)
-                    self.export_mesh(self.armature, objects, path)
         
-        if self.lods_items:
+        if self.bodygroups:
+            for bodygroup in self.bodygroups:
+                if bodygroup.sublist_items:
+                    for sublist in bodygroup.sublist_items:
+                        if sublist.reference:
+                            objects = self.get_all_objects(sublist.reference)
+                            path = self.get_body_path(sublist.reference)
+                            self.export_mesh(self.armature, objects, path)
+
+        if self.lods_items: # Checks if we need to export a blank
             for lod in self.lods_items:
                 if lod.replacemodel_items:
                     for replace in lod.replacemodel_items:
@@ -254,6 +256,21 @@ class Model:
             qc.write(f'$body "{name}" "{name}.{self.mesh_type}"')
             qc.write('\n')
 
+        if self.bodygroups:
+            for bodygroup in self.bodygroups:
+                if bodygroup.sublist_items:
+
+                    qc.write('\n')
+                    bodygroup_name = common.clean_filename(bodygroup.name)
+                    qc.write(f'$bodygroup "{bodygroup_name}"' + ' {\n')
+                    for sublist in bodygroup.sublist_items:
+                        if sublist.reference:
+                            name = common.clean_filename(sublist.reference.name)
+                            qc.write(f'    studio "{name}.{self.mesh_type}"\n')
+                        else:
+                            qc.write(f'    blank\n')
+                    qc.write('}')
+                    qc.write('\n')
 
         if self.lods_items:
             for lod in self.lods_items:
@@ -295,16 +312,6 @@ class Model:
             qc.write('}')
             qc.write('\n')
 
-        if self.bodygroups:
-            for bodygroup in self.bodygroups.children:
-                qc.write('\n')
-                bodygroup_name = common.clean_filename(bodygroup.name)
-                qc.write(f'$bodygroup "{bodygroup_name}"' + ' {\n')
-                for collection in bodygroup.children:
-                    name = common.clean_filename(collection.name)
-                    qc.write(f'    studio "{name}.{self.mesh_type}"\n')
-                qc.write('}')
-                qc.write('\n')
 
         if self.stacking:
             for collection in self.stacking.children:

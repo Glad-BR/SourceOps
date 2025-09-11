@@ -54,7 +54,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     )
 
     def poll_reference(self, object):
-        return object not in (self.collision, self.bodygroups, self.stacking)
+        return object not in (self.collision, self.stacking)
 
     reference: bpy.props.PointerProperty(
         name='Reference',
@@ -64,7 +64,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     )
 
     def poll_collision(self, object):
-        return object not in (self.reference, self.bodygroups, self.stacking)
+        return object not in (self.reference, self.stacking)
 
     collision: bpy.props.PointerProperty(
         name='Collision',
@@ -84,7 +84,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     #)
 
     def poll_stacking(self, object):
-        return object not in (self.reference, self.collision, self.bodygroups)
+        return object not in (self.reference, self.collision)
 
     stacking: bpy.props.PointerProperty(
         name='Stacking',

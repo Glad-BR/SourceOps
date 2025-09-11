@@ -17,6 +17,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         game = common.get_game(prefs)
         sourceops = common.get_globals(context)
         model = common.get_model(sourceops)
+        bodygroups = common.get_bodygroups(model)
         lods = common.get_lods(model)
         material_folder = common.get_material_folder(model)
         skin = common.get_skin(model)
@@ -76,6 +77,37 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(model, 'collision')
                 #col.prop(model, 'bodygroups')
                 col.prop(model, 'stacking')
+
+        elif model and sourceops.panel == 'MODEL_BODYGROUPS':
+
+            box = layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Bodygroups')
+
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_ModelBodygroupsList', '', model, 'bodygroups_items', model, 'bodygroups_index', rows=5)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'MODEL_BODYGROUPS')
+            
+            if bodygroups:
+                col = common.split_column(box)
+                col.prop(bodygroups, 'name')
+
+                box = layout.box()
+                row = box.row()
+                row.alignment = 'CENTER'
+                row.label(text='studio')
+
+                row = box.row()
+                row.template_list('SOURCEOPS_UL_BodygroupsSublist', '', bodygroups, 'sublist_items', bodygroups, 'sublist_index', rows=5)
+                col = row.column(align=True)
+                self.draw_list_buttons(col, 'BODYGROUPS_SUBLIST')
+
+                sublist = bodygroups.sublist_items[bodygroups.sublist_index] if bodygroups.sublist_items else None
+                if sublist:
+                    col = common.split_column(box)
+                    col.prop(sublist, 'reference')
 
 
         elif model and sourceops.panel == 'MODEL_LODS':
@@ -279,7 +311,18 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(attachment, 'absolute')
                 col.prop(attachment, 'rigid')
 
-        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_LODS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS', 'ATTACHMENTS', 'PARTICLES'}:
+        if sourceops.panel in {
+                'GAMES',
+                'MODELS',
+                'MODEL_BODYGROUPS',
+                'MODEL_LODS',
+                'MODEL_OPTIONS',
+                'TEXTURES',
+                'SEQUENCES',
+                'EVENTS',
+                'ATTACHMENTS',
+                'PARTICLES'}:
+
             box = layout.box()
             row = box.row()
             row.scale_x = row.scale_y = 1.5

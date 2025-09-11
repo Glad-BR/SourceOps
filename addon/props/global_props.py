@@ -28,6 +28,7 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
         items=[
             ('GAMES', 'Games', 'Display the games panel', 'PREFERENCES', 1),
             ('MODELS', 'Models', 'Display the models panel', 'MESH_CUBE', 2),
+            ('MODEL_BODYGROUPS', 'Model Bodygroups', 'Display the model bodygroups panel', 'GROUP', 13),
             ('MODEL_LODS', 'Model LODs', 'Display the model LODs panel', 'MOD_DECIM', 3),
             ('MODEL_OPTIONS', 'Model Options', 'Display the model options panel', 'MODIFIER', 4),
             ('TEXTURES', 'Textures', 'Display the textures panel', 'TEXTURE', 5),

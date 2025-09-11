@@ -10,7 +10,10 @@ from . lists import SOURCEOPS_UL_ParticleList
 from . lists import SOURCEOPS_UL_MapList
 from . lists import SOURCEOPS_UL_ModelLodsList
 from . lists import SOURCEOPS_UL_LodsReplaceList
+from . lists import SOURCEOPS_UL_ModelBodygroupsList
+from . lists import SOURCEOPS_UL_BodygroupsSublist
 from . panels import SOURCEOPS_PT_MainPanel
+
 
 classes = (
     SOURCEOPS_UL_GameList,
@@ -25,6 +28,9 @@ classes = (
     SOURCEOPS_PT_MainPanel,
     SOURCEOPS_UL_ModelLodsList,
     SOURCEOPS_UL_LodsReplaceList,
+    SOURCEOPS_UL_ModelBodygroupsList,
+    SOURCEOPS_UL_BodygroupsSublist
+
 )
 
 class_register, class_unregister = bpy.utils.register_classes_factory(classes)

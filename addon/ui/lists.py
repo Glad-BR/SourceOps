@@ -63,6 +63,21 @@ class SOURCEOPS_UL_MapList(bpy.types.UIList):
         layout.prop(item, 'name', text='', emboss=False, translate=False)
 
 
+
+class SOURCEOPS_UL_ModelBodygroupsList(bpy.types.UIList):
+    bl_idname = 'SOURCEOPS_UL_ModelBodygroupsList'
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        layout.prop(item, 'name', text='', emboss=False, translate=False)
+
+class SOURCEOPS_UL_BodygroupsSublist(bpy.types.UIList):
+    bl_idname = 'SOURCEOPS_UL_BodygroupsSublist'
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        layout.prop(item, 'reference', text='', emboss=False, translate=False)
+
+
+
 class SOURCEOPS_UL_ModelLodsList(bpy.types.UIList):
     bl_idname = 'SOURCEOPS_UL_ModelLodsList'
 
@@ -71,7 +86,6 @@ class SOURCEOPS_UL_ModelLodsList(bpy.types.UIList):
         row.alignment = 'CENTER'
         row.label(text=f'Distance')
         row.prop(item, 'distance', text='', emboss=False, translate=False)
-
 
 class SOURCEOPS_UL_LodsReplaceList(bpy.types.UIList):
     bl_idname = 'SOURCEOPS_UL_LodsReplaceList'

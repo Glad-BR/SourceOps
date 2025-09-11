@@ -38,6 +38,12 @@ def get_model(sourceops):
         return None
 
 
+def get_bodygroups(model):
+    try:
+        return model.bodygroups_items[model.bodygroups_index]
+    except:
+        return None
+
 def get_lods(model):
     try:
         return model.lods_items[model.lods_index]
