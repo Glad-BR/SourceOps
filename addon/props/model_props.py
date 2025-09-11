@@ -5,12 +5,16 @@ from . sequence_props import SOURCEOPS_SequenceProps
 from . attachment_props import SOURCEOPS_AttachmentProps
 from . particle_props import SOURCEOPS_ParticleProps
 from . lods_props import SOURCEOPS_ModelLodProps
+from . bodygroups_props import SOURCEOPS_ModelBodygroupsProps
 from . surface_props import SOURCEOPS_SurfaceProps
 
 
 class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     lods_items : bpy.props.CollectionProperty(type=SOURCEOPS_ModelLodProps)
     lods_index : bpy.props.IntProperty(default=0, name='Ctrl click to rename')
+
+    bodygroups_items: bpy.props.CollectionProperty(type=SOURCEOPS_ModelBodygroupsProps)
+    bodygroups_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
     material_folder_items: bpy.props.CollectionProperty(type=SOURCEOPS_MaterialFolderProps)
     material_folder_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
@@ -69,15 +73,15 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         poll=poll_collision,
     )
 
-    def poll_bodygroups(self, object):
-        return object not in (self.reference, self.collision, self.stacking)
+    #def poll_bodygroups(self, object):
+    #    return object not in (self.reference, self.collision, self.stacking)
 
-    bodygroups: bpy.props.PointerProperty(
-        name='Bodygroups',
-        description='Groups of visible meshes, the game can choose one body per group',
-        type=bpy.types.Collection,
-        poll=poll_bodygroups,
-    )
+    #bodygroups: bpy.props.PointerProperty(
+    #    name='Bodygroups',
+    #    description='Groups of visible meshes, the game can choose one body per group',
+    #    type=bpy.types.Collection,
+    #    poll=poll_bodygroups,
+    #)
 
     def poll_stacking(self, object):
         return object not in (self.reference, self.collision, self.bodygroups)

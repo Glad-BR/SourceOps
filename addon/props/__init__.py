@@ -6,11 +6,14 @@ from . event_props import SOURCEOPS_EventProps
 from . sequence_props import SOURCEOPS_SequenceProps
 from . skin_props import SOURCEOPS_SkinProps
 from . material_folder_props import SOURCEOPS_MaterialFolderProps
-from . lods_props import SOURCEOPS_LodItemProps, SOURCEOPS_ModelLodProps 
+from . lods_props import SOURCEOPS_LodItemProps, SOURCEOPS_ModelLodProps
+from . bodygroups_props import SOURCEOPS_SublistBodygroupProps, SOURCEOPS_ModelBodygroupsProps
 from . model_props import SOURCEOPS_ModelProps
 from . game_props import SOURCEOPS_GameProps
 from . global_props import SOURCEOPS_GlobalProps
 from . addon_prefs import SOURCEOPS_AddonPrefs
+
+
 
 classes = (
     SOURCEOPS_MapProps,
@@ -21,6 +24,8 @@ classes = (
     SOURCEOPS_SkinProps,
     SOURCEOPS_MaterialFolderProps,
     SOURCEOPS_LodItemProps,
+    SOURCEOPS_SublistBodygroupProps,
+    SOURCEOPS_ModelBodygroupsProps,
     SOURCEOPS_ModelLodProps,
     SOURCEOPS_ModelProps,
     SOURCEOPS_GameProps,

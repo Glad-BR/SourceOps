@@ -74,7 +74,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(model, 'armature')
                 col.prop(model, 'reference')
                 col.prop(model, 'collision')
-                col.prop(model, 'bodygroups')
+                #col.prop(model, 'bodygroups')
                 col.prop(model, 'stacking')
 
 
