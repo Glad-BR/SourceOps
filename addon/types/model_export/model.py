@@ -19,6 +19,8 @@ class Model:
 
         self.game = Path(game.game)
         self.bin = Path(game.bin)
+        self.studiomdl = Path(game.studiomdl)
+        self.hlmv = Path(game.hlmv)
         if model.static and model.static_prop_combine:
             self.modelsrc = self.game.parent.parent.joinpath('content', self.game.name, 'models')
         else:
@@ -35,13 +37,6 @@ class Model:
             directory = self.modelsrc.joinpath(self.name)
         self.directory = common.verify_folder(directory)
 
-        studiomdl = self.bin.joinpath('studiomdl.exe')
-        quickmdl = self.bin.joinpath('quickmdl.exe')
-        self.studiomdl = quickmdl if quickmdl.is_file() else studiomdl
-
-        hlvm = self.bin.joinpath('hlmv.exe')
-        hlvmplusplus = self.bin.joinpath('hlmvplusplus.exe')
-        self.hlmv = hlvmplusplus if hlvmplusplus.is_file() else hlvm
 
         self.material_folder_items = model.material_folder_items
         self.skin_items = model.skin_items
@@ -63,6 +58,7 @@ class Model:
         self.static = model.static
         self.static_prop_combine = model.static_prop_combine
         self.joints = model.joints
+        self.illumposition = common.get_illumposition(model)
         self.mass = model.mass
 
         self.prepend_armature = model.prepend_armature
@@ -247,7 +243,7 @@ class Model:
             qc.write('\n')
 
         qc.write('\n')
-        qc.write(f'$scale {self.scale:.6f}')
+        qc.write(f'$scale {self.scale:.4f}')
         qc.write('\n')
 
         if self.reference:
@@ -297,6 +293,12 @@ class Model:
         if not self.rename_material == '':
             qc.write('\n')
             qc.write(f'$renamematerial {self.rename_material}')
+            qc.write('\n')
+
+        if self.illumposition:
+            print("Illumposition: ", self.illumposition)
+            qc.write('\n')
+            qc.write(f'$illumposition {self.illumposition[0]:.6f} {self.illumposition.y:.6f} {self.illumposition.z:.6f}')
             qc.write('\n')
 
         if self.collision:

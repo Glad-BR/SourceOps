@@ -48,13 +48,18 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'GAMES')
 
             if game:
-                col = common.split_column(box)
+                col = common.align_column(box)
                 col.prop(game, 'name')
                 col.prop(game, 'game')
+                col = common.align_column(box)
                 col.prop(game, 'bin')
+                col.prop(game, 'studiomdl')
+                col.prop(game, 'hlmv')
+                col = common.align_column(box)
                 col.prop(game, 'modelsrc')
                 col.prop(game, 'models')
                 col.prop(game, 'mapsrc')
+                col = common.split_column(box)
                 col.prop(game, 'mesh_type')
 
 
@@ -158,6 +163,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.enabled = model.static
             row.prop(model, 'static_prop_combine')
             col.prop(model, 'joints')
+            col.prop(model, 'illumposition_source')
+            col.prop(model, 'illumposition_vector') if model.illumposition_source == 'MANUAL' else None
             col.prop(model, 'mass')
 
             box = layout.box()
