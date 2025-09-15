@@ -152,7 +152,7 @@ def resolve(path):
         return ''
 
 
-def get_illumposition(model):
+def get_illumposition(model) -> Vector:
 
     def illumpos_from_obj(obj):
         if obj.type != 'MESH':
@@ -200,7 +200,7 @@ def get_illumposition(model):
     elif model.illumposition_source == '3DCURSOR':
         return Vector(bpy.context.scene.cursor.location)
     else:
-        return None
+        return Vector((0,0,0))
 
 
 def get_origin(model) -> Vector:
@@ -216,7 +216,7 @@ def get_origin(model) -> Vector:
         vec = Vector(obj.location)
     
     else:
-        vec = Vector((0, 0, 0))
+        vec = Vector((0,0,0))
 
     return vec
     
