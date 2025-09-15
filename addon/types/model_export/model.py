@@ -107,7 +107,7 @@ class Model:
                 self.export_mesh(self.armature, objects, path)
 
     def export_anim(self, armature, action, path):
-        self.export_smd(armature, [], action, pathro)
+        self.export_smd(armature, [], action, path)
 
     def export_mesh(self, armature, objects, path):
         if self.mesh_type == 'SMD':
