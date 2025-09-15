@@ -2,8 +2,6 @@ import bpy
 import time
 import subprocess
 import os
-import math
-from mathutils import Vector, Matrix
 
 from shutil import move
 from pathlib import Path
@@ -74,59 +72,56 @@ class Model:
         self.rotation = model.rotation
         self.scale = model.scale
 
+
     def export_meshes(self):
         self.ensure_modelsrc_folder()
         # self.remove_modelsrc_old()  # Commented out because it might be annoying.
 
+
+        def export_objects(ref):
+            if ref:
+                objects = self.get_all_objects(ref)
+                path = self.get_body_path(ref)
+                self.export_mesh(self.armature, objects, path)
+    
+
         if not self.sequence_items:
-            self.export_anim(self.armature, None, self.directory.joinpath('anims', 'idle.SMD'))
+            idle_path = self.directory.joinpath('anims', 'idle.SMD')
+            self.export_anim(self.armature, None, idle_path)
+        else:
+            for sequence in self.sequence_items:
+                path = self.directory.joinpath('anims', f'{common.clean_filename(sequence.name)}.SMD')
+                self.export_anim(self.armature, sequence.action, path)
+    
 
-        for sequence in self.sequence_items:
-            path = self.directory.joinpath('anims', f'{common.clean_filename(sequence.name)}.SMD')
-            self.export_anim(self.armature, sequence.action, path)
-
-        if self.reference:
-            objects = self.get_all_objects(self.reference)
-            path = self.get_body_path(self.reference)
-            self.export_mesh(self.armature, objects, path)
-
-        if self.collision:
-            objects = self.get_all_objects(self.collision)
-            path = self.get_body_path(self.collision)
-            self.export_mesh(self.armature, objects, path)
-
-        
+        export_objects(self.reference)
+        export_objects(self.collision)
+    
         if self.bodygroups:
             for bodygroup in self.bodygroups:
-                if bodygroup.sublist_items:
-                    for sublist in bodygroup.sublist_items:
-                        if sublist.reference:
-                            objects = self.get_all_objects(sublist.reference)
-                            path = self.get_body_path(sublist.reference)
-                            self.export_mesh(self.armature, objects, path)
-
-        if self.lods_items: # Checks if we need to export a blank
+                for sublist in getattr(bodygroup, 'sublist_items', []):
+                    export_objects(getattr(sublist, 'reference', None))
+    
+        if self.lods_items:
+            # Export blank if needed
+            if any(
+                replace.target is None
+                for lod in self.lods_items
+                for replace in getattr(lod, 'replacemodel_items', [])
+            ):
+                blank_path = self.directory.joinpath('blank.SMD')
+                self.export_anim(self.armature, None, blank_path)
+    
             for lod in self.lods_items:
-                if lod.replacemodel_items:
-                    for replace in lod.replacemodel_items:
-                        if replace.target is None:
-                            # We need a blank
-                            self.export_anim(self.armature, None, self.directory.joinpath('blank.SMD'))
-                            break
-
-            for lod in self.lods_items:
-                if lod.replacemodel_items:
-                    for replace in lod.replacemodel_items:
-                        if replace.source and replace.target:
-                            objects = self.get_all_objects(replace.target)
-                            path = self.get_body_path(replace.target)
-                            self.export_mesh(self.armature, objects, path)
-
+                for replace in getattr(lod, 'replacemodel_items', []):
+                    if replace.source and replace.target:
+                        export_objects(replace.target)
+    
         if self.stacking:
-            for collection in self.stacking.children:
-                objects = self.get_all_objects(collection)
-                path = self.get_body_path(collection)
-                self.export_mesh(self.armature, objects, path)
+            for collection in getattr(self.stacking, 'children', []):
+                export_objects(collection)
+
+
 
     def export_anim(self, armature, action, path):
         self.export_smd(armature, [], action, path)
