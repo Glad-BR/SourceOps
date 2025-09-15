@@ -214,12 +214,12 @@ class Model:
         rotation = -90
 
         origin = common.rotate_vec_z(origin, rotation)
-        origin = origin * self.scale
+        scaled = origin * self.scale
 
         # The origin command does not work with static prop combine.
         if not (self.static and self.static_prop_combine):
             qc.write('\n')
-            qc.write(f'$origin {origin.x} {origin.y} {-origin.z} {rotation}')
+            qc.write(f'$origin {scaled.x:.6f} {scaled.y:.6f} {-scaled.z:.6f} {rotation:.6f}')
             qc.write('\n')
 
         qc.write('\n')
@@ -276,10 +276,12 @@ class Model:
             qc.write('\n')
 
         if self.illumposition:
-            illumposition = common.blender_to_source_coords(self.illumposition)
+
+            illumposition = -common.blender_to_source_coords((common.get_origin(self) - self.illumposition))
+
             #illumposition = common.rotate_vec_z(illumposition, rotation)
             qc.write('\n')
-            qc.write(f'$illumposition {illumposition.x} {illumposition.y} {illumposition.z}')
+            qc.write(f'$illumposition {illumposition.x:.6f} {illumposition.y:.6f} {illumposition.z:.6f}')
             qc.write('\n')
 
         if self.collision:
