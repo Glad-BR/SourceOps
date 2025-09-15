@@ -2,8 +2,9 @@ import bpy
 import time
 import subprocess
 import os
-from mathutils import Vector
-from math import degrees
+import math
+from mathutils import Vector, Matrix
+
 from shutil import move
 from pathlib import Path
 from traceback import print_exc
@@ -194,28 +195,16 @@ class Model:
         # The origin command does not work with static prop combine.
         if not (self.static and self.static_prop_combine):
 
-            if self.origin_source == 'MANUAL':
-                origin = Vector(self.origin)
-                rotation = -self.rotation
-            elif self.origin_source == 'OBJECT' and self.origin_object:
-                loc, rot, _ = self.origin_object.matrix_world.decompose()
-                origin = Vector(-loc)
-                rotation = -degrees(rot.to_euler().z)
-            else:
-                origin = Vector((0,0,0))
-                rotation = 0
+            origin = common.blender_to_source_coords( common.get_origin(self) )
 
-            if self.static and self.mesh_type == 'FBX':
-                #origin_x, origin_y = -origin_y, origin_x
-                origin = Vector((-origin.y, origin.x, origin.z))
-                rotation -= 180
-            else:
-                rotation -= 90
+            rotation = -90
 
-            origin = Vector(origin) * self.scale
+            origin.rotate(Matrix.Rotation(math.radians(rotation), 4, 'Z'))
+
+            origin = origin * self.scale
 
             qc.write('\n')
-            qc.write(f'$origin {origin.x} {origin.y} {origin.z} {rotation}')
+            qc.write(f'$origin {origin.x} {origin.y} {-origin.z} {rotation}')
             qc.write('\n')
 
         qc.write('\n')

@@ -7,7 +7,8 @@ import traceback
 import shutil
 import bmesh
 
-from mathutils import Vector
+from mathutils import Vector, Euler
+import math
 
 def get_version():
     from ... import bl_info
@@ -196,8 +197,33 @@ def get_illumposition(model):
         return Vector(get_collection_illumpos(model.reference)) if model.reference else None
     elif model.illumposition_source == 'COLLISION':
         return Vector(get_collection_illumpos(model.collision)) if model.collision else None
+    elif model.illumposition_source == '3DCURSOR':
+        return Vector(bpy.context.scene.cursor.location)
     else:
         return None
+
+
+def get_origin(model) -> Vector:
+
+    if model.origin_source == 'MANUAL':
+        vec = Vector(model.origin)
+
+    elif model.origin_source == '3DCURSOR':
+        vec = Vector(bpy.context.scene.cursor.location)
+
+    elif model.origin_source == 'OBJECT' and model.origin_object:
+        obj = model.origin_object
+        vec = Vector(obj.location)
+    
+    else:
+        vec = Vector((0, 0, 0))
+
+    return vec
+    
+
+def blender_to_source_coords(coords: Vector) -> Vector:
+    return Vector((coords.y, -coords.x, coords.z))
+
 
 
 def update_wine(self, context):
