@@ -107,7 +107,7 @@ class Model:
                 self.export_mesh(self.armature, objects, path)
 
     def export_anim(self, armature, action, path):
-        self.export_smd(armature, [], action, path)
+        self.export_smd(armature, [], action, pathro)
 
     def export_mesh(self, armature, objects, path):
         if self.mesh_type == 'SMD':
@@ -192,17 +192,15 @@ class Model:
             qc.write('$staticprop')
             qc.write('\n')
 
+
+        origin = common.blender_to_source_coords( common.get_origin(self) )
+        rotation = -90
+
+        origin = common.rotate_vec_z(origin, rotation)
+        origin = origin * self.scale
+
         # The origin command does not work with static prop combine.
         if not (self.static and self.static_prop_combine):
-
-            origin = common.blender_to_source_coords( common.get_origin(self) )
-
-            rotation = -90
-
-            origin.rotate(Matrix.Rotation(math.radians(rotation), 4, 'Z'))
-
-            origin = origin * self.scale
-
             qc.write('\n')
             qc.write(f'$origin {origin.x} {origin.y} {-origin.z} {rotation}')
             qc.write('\n')
@@ -223,7 +221,8 @@ class Model:
             qc.write('\n')
 
         if self.illumposition:
-            print("Illumposition: ", self.illumposition)
+            illumposition = common.blender_to_source_coords(self.illumposition)
+            illumposition = common.rotate_vec_z(illumposition, rotation)
             qc.write('\n')
             qc.write(f'$illumposition {self.illumposition[0]:.6f} {self.illumposition.y:.6f} {self.illumposition.z:.6f}')
             qc.write('\n')

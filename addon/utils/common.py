@@ -7,7 +7,7 @@ import traceback
 import shutil
 import bmesh
 
-from mathutils import Vector, Euler
+from mathutils import Vector, Euler, Matrix
 import math
 
 def get_version():
@@ -58,7 +58,7 @@ def get_skin(model):
 
 def get_sequence(model):
     try:
-        return model.sequence_items[model.sequence_index]
+        return model.sequence_items[model.seqvectoruence_index]
     except:
         return None
 
@@ -224,6 +224,9 @@ def get_origin(model) -> Vector:
 def blender_to_source_coords(coords: Vector) -> Vector:
     return Vector((coords.y, -coords.x, coords.z))
 
+def rotate_vec_z(vector:Vector, rotation) -> Vector:
+    vector.rotate(Matrix.Rotation(math.radians(rotation), 4, 'Z'))
+    return vector
 
 
 def update_wine(self, context):
