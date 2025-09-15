@@ -277,9 +277,9 @@ class Model:
 
         if self.illumposition:
             illumposition = common.blender_to_source_coords(self.illumposition)
-            illumposition = common.rotate_vec_z(illumposition, rotation)
+            #illumposition = common.rotate_vec_z(illumposition, rotation)
             qc.write('\n')
-            qc.write(f'$illumposition {self.illumposition[0]:.6f} {self.illumposition.y:.6f} {self.illumposition.z:.6f}')
+            qc.write(f'$illumposition {illumposition.x} {illumposition.y} {illumposition.z}')
             qc.write('\n')
 
         if self.collision:
