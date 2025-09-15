@@ -129,10 +129,11 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         name='IllumPosition Source',
         description='Method of specifying $illumposition.\nEither manually specified in this panel, or via an object',
         items=[
-            ('MANUAL', 'Manual Input', 'Specify the position manually in this panel'),
-            ('REFERENCE', 'Reference Object', 'Use the reference object\'s location'),
-            ('COLLISION', 'Collision Object', 'Use the collision object\'s location'),
-            ('NONE', 'None', 'Do not use $illumposition'),
+            ('MANUAL', 'Manual Input', 'Specify the transforms manually in this panel'),
+            ('REFERENCE', 'Reference Object', 'Use the reference object'),
+            ('COLLISION', 'Collision Object', 'Use the collision object'),
+            ('3DCURSOR', '3D Cursor', 'Use the 3D cursor\'s location and rotation'),
+            ('NONE', 'None', 'Do not use $origin'),
         ],
         default='REFERENCE',
     )
@@ -170,6 +171,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         items=[
             ('MANUAL', 'Manual Input', 'Specify the transforms manually in this panel'),
             ('OBJECT', 'Object', 'Use an object\'s transforms\nIf it isn\'t set, then no transforms are used'),
+            ('3DCURSOR', '3D Cursor', 'Use the 3D cursor\'s location and rotation'), 
         ],
     )
 
