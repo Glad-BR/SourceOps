@@ -224,8 +224,8 @@ def get_origin(model) -> Vector:
 def blender_to_source_coords(coords: Vector) -> Vector:
     return Vector((coords.y, -coords.x, coords.z))
 
-def rotate_vec_z(vector:Vector, rotation) -> Vector:
-    vector.rotate(Matrix.Rotation(math.radians(rotation), 4, 'Z'))
+def rotate_vec_z(vector:Vector, rotation, axis) -> Vector:
+    vector.rotate(Matrix.Rotation(math.radians(rotation), 4, axis))
     return vector
 
 

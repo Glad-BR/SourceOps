@@ -192,11 +192,13 @@ class Model:
             qc.write('$staticprop')
             qc.write('\n')
 
+        if self.origin_source == 'MANUAL':
+            rotation = self.rotation
+        else:
+            rotation = -90 
 
         origin = common.blender_to_source_coords( common.get_origin(self) )
-        rotation = -90
-
-        origin = common.rotate_vec_z(origin, rotation)
+        origin = common.rotate_vec_z(origin, rotation, 'Z')
         scaled = origin * self.scale
 
         # The origin command does not work with static prop combine.
