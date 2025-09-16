@@ -221,10 +221,7 @@ class Model:
             qc.write('\n')
 
         if self.illumposition:
-
             illumposition = -common.blender_to_source_coords((common.get_origin(self) - self.illumposition))
-
-            #illumposition = common.rotate_vec_z(illumposition, rotation)
             qc.write('\n')
             qc.write(f'$illumposition {illumposition.x:.6f} {illumposition.y:.6f} {illumposition.z:.6f}')
             qc.write('\n')
