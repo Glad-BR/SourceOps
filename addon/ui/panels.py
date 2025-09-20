@@ -112,16 +112,14 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             sub.enabled = not (model.static and model.static_prop_combine)
             sub.prop(model, 'origin_source')
 
-            if model.origin_source == 'OBJECT':
+            if model.origin_source == 'MANUAL':
+                align = sub.column(align=True)
+                align.prop(model, 'origin', text='Origin')
+                sub.prop(model, 'rotation')
+            elif model.origin_source == 'OBJECT':
                 sub.prop(model, 'origin_object')
 
-            else:
-                align = sub.column(align=True)
-                align.prop(model, 'origin_x', text='Origin X')
-                align.prop(model, 'origin_y', text='Y')
-                align.prop(model, 'origin_z', text='Z')
 
-                sub.prop(model, 'rotation')
 
             col.prop(model, 'scale')
 

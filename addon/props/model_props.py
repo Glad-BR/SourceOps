@@ -121,10 +121,11 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         name='IllumPosition Source',
         description='Method of specifying $illumposition.\nEither manually specified in this panel, or via an object',
         items=[
-            ('MANUAL', 'Manual Input', 'Specify the position manually in this panel'),
-            ('REFERENCE', 'Reference Object', 'Use the reference object\'s location'),
-            ('COLLISION', 'Collision Object', 'Use the collision object\'s location'),
-            ('NONE', 'None', 'Do not use $illumposition'),
+            ('MANUAL', 'Manual Input', 'Specify the transforms manually in this panel'),
+            ('REFERENCE', 'Reference Object', 'Use the reference object'),
+            ('COLLISION', 'Collision Object', 'Use the collision object'),
+            ('3DCURSOR', '3D Cursor', 'Use the 3D cursor\'s location and rotation'),
+            ('NONE', 'None', 'Do not use $origin'),
         ],
         default='REFERENCE',
     )
@@ -162,6 +163,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         items=[
             ('MANUAL', 'Manual Input', 'Specify the transforms manually in this panel'),
             ('OBJECT', 'Object', 'Use an object\'s transforms\nIf it isn\'t set, then no transforms are used'),
+            ('3DCURSOR', '3D Cursor', 'Use the 3D cursor\'s location and rotation'), 
         ],
     )
 
@@ -171,22 +173,11 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         type=bpy.types.Object,
     )
 
-    origin_x: bpy.props.FloatProperty(
-        name='Origin +X',
-        description='Translation on the X axis for $origin in the QC file',
-        default=0.0,
-    )
-
-    origin_y: bpy.props.FloatProperty(
-        name='Origin +Y',
-        description='Translation on the Y axis for $origin in the QC file',
-        default=0.0,
-    )
-
-    origin_z: bpy.props.FloatProperty(
-        name='Origin Z',
-        description='Translation on the Z axis for $origin in the QC file',
-        default=0.0,
+    origin: bpy.props.FloatVectorProperty(
+        name='Origin',
+        description='The location of the $origin in the QC file, this is applied before rotation',
+        default=(0.0, 0.0, 0.0),
+        size=3,
     )
 
     rotation: bpy.props.FloatProperty(
