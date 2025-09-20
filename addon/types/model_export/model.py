@@ -2,16 +2,13 @@ import bpy
 import time
 import subprocess
 import os
-import math
-from mathutils import Vector, Matrix
-
+from math import degrees
 from shutil import move
 from pathlib import Path
 from traceback import print_exc
 from ... utils import common
 from . smd import SMD
 from . fbx import export_fbx
-
 
 
 class Model:
@@ -68,7 +65,9 @@ class Model:
         self.origin_source = model.origin_source
         self.origin_object = model.origin_object
 
-        self.origin = model.origin
+        self.origin_x = model.origin_x
+        self.origin_y = model.origin_y
+        self.origin_z = model.origin_z
         self.rotation = model.rotation
         self.scale = model.scale
 
@@ -193,18 +192,32 @@ class Model:
             qc.write('\n')
 
         if self.origin_source == 'MANUAL':
-            rotation = self.rotation
+            origin_x = self.origin_x
+            origin_y = self.origin_y
+            origin_z = self.origin_z
+            rotation = -self.rotation
+        elif self.origin_source == 'OBJECT' and self.origin_object:
+            loc, rot, _ = self.origin_object.matrix_world.decompose()
+            origin_x = loc.x
+            origin_y = loc.y
+            origin_z = loc.z
+            rotation = -degrees(rot.to_euler().z)
         else:
-            rotation = -90 
+            origin_x = 0
+            origin_y = 0
+            origin_z = 0
+            rotation = 0
 
-        origin = common.blender_to_source_coords( common.get_origin(self) )
-        origin = common.rotate_vec_z(origin, rotation, 'Z')
-        scaled = origin * self.scale
+        if self.static and self.mesh_type == 'FBX':
+            origin_x, origin_y = -origin_y, origin_x
+            rotation -= 180
+        else:
+            rotation -= 90
 
         # The origin command does not work with static prop combine.
         if not (self.static and self.static_prop_combine):
             qc.write('\n')
-            qc.write(f'$origin {scaled.x:.6f} {scaled.y:.6f} {-scaled.z:.6f} {rotation:.6f}')
+            qc.write(f'$origin {origin_x:.6f} {origin_y:.6f} {origin_z:.6f} {rotation:.6f}')
             qc.write('\n')
 
         qc.write('\n')
@@ -223,9 +236,9 @@ class Model:
             qc.write('\n')
 
         if self.illumposition:
-            illumposition = -common.blender_to_source_coords((common.get_origin(self) - self.illumposition))
+            print("Illumposition: ", self.illumposition)
             qc.write('\n')
-            qc.write(f'$illumposition {illumposition.x:.6f} {illumposition.y:.6f} {illumposition.z:.6f}')
+            qc.write(f'$illumposition {self.illumposition[0]:.6f} {self.illumposition.y:.6f} {self.illumposition.z:.6f}')
             qc.write('\n')
 
         if self.collision:
