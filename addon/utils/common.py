@@ -154,41 +154,36 @@ def resolve(path):
 
 def get_illumposition(model) -> Vector:
 
-    def illumpos_from_obj(obj):
-        if obj.type != 'MESH':
-            return None
-    
+    def get_collection_illumpos(collection):
         scene = bpy.context.scene
         depsgraph = bpy.context.evaluated_depsgraph_get()
+
         current_frame = scene.frame_current
         scene.frame_set(0)
-        eval_obj = obj.evaluated_get(depsgraph)
-        mesh = eval_obj.to_mesh()
-        bm = bmesh.new()
-        bm.from_mesh(mesh)
-    
-        illum_center = None
-        if bm.verts:
-            local_center = sum((v.co for v in bm.verts), Vector()) / len(bm.verts)
-            illum_center = eval_obj.matrix_world @ local_center
-    
-        bm.free()
-        eval_obj.to_mesh_clear()
-        scene.frame_set(current_frame)
-    
-        return illum_center
-    
-    def get_collection_illumpos(collection):
-        centers = []
-    
+
+        verts_world = []
+
         for obj in collection.all_objects:
-            illum = illumpos_from_obj(obj)
-            if illum is not None:
-                centers.append(illum)
-    
-        if centers:
-            return sum(centers, Vector()) / len(centers)
-        return None
+            if obj.type != 'MESH':
+                continue
+
+            eval_obj = obj.evaluated_get(depsgraph)
+            mesh = eval_obj.to_mesh()
+            bm = bmesh.new()
+            bm.from_mesh(mesh)
+
+            for v in bm.verts:
+                verts_world.append(eval_obj.matrix_world @ v.co)
+
+            bm.free()
+            eval_obj.to_mesh_clear()
+
+        scene.frame_set(current_frame)
+
+        if verts_world:
+            return sum(verts_world, Vector()) / len(verts_world)
+        else:
+            return None
 
 
     if model.illumposition_source == 'MANUAL':
@@ -212,22 +207,25 @@ def get_origin(model) -> Vector:
         vec = Vector(bpy.context.scene.cursor.location)
 
     elif model.origin_source == 'OBJECT' and model.origin_object:
-        obj = model.origin_object
-        vec = Vector(obj.location)
+        vec = Vector(model.origin_object.location)
     
     else:
         vec = Vector((0,0,0))
 
     return vec
     
+# Coordinates in Source are (X,Y,Z), where X is forward/East, Y is left/North, and Z is up.
+# Blender uses a right-angled “Cartesian” coordinate system with the Z axis pointing upwards.
+def blender_to_source(vec: Vector) -> Vector:
+    return Vector((vec.y, -vec.x, vec.z))
 
-def blender_to_source_coords(coords: Vector) -> Vector:
-    return Vector((coords.y, -coords.x, coords.z))
-
-def rotate_vec_z(vector:Vector, rotation, axis) -> Vector:
-    vector.rotate(Matrix.Rotation(math.radians(rotation), 4, axis))
-    return vector
-
+def rotate_z(vec: Vector, angle_degrees: float) -> Vector:
+    """Rotate a vector around the Z axis by angle in degrees."""
+    theta = math.radians(angle_degrees)
+    x, y, z = vec
+    x_new = x * math.cos(theta) - y * math.sin(theta)
+    y_new = x * math.sin(theta) + y * math.cos(theta)
+    return Vector((x_new, y_new, z))
 
 def update_wine(self, context):
     self['wine'] = resolve(self.wine)
