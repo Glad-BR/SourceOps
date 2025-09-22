@@ -2,7 +2,9 @@ import bpy
 import time
 import subprocess
 import os
-
+import math
+from mathutils import Vector, Matrix
+from math import degrees
 from shutil import move
 from pathlib import Path
 from traceback import print_exc
@@ -209,19 +211,24 @@ class Model:
             qc.write('$staticprop')
             qc.write('\n')
 
-        if self.origin_source == 'MANUAL':
-            rotation = self.rotation
-        else:
-            rotation = -90 
 
-        origin = common.blender_to_source_coords( common.get_origin(self) )
-        origin = common.rotate_vec_z(origin, rotation, 'Z')
-        scaled = origin * self.scale
+        if self.origin_source == 'MANUAL':
+            rotation = self.rotation-180
+        else:
+            rotation = -180
+
+        #Coordinates in Source are (X,Y,Z), where X is forward/East, Y is left/North, and Z is up.
+
+
+        origin = common.blender_to_source( common.rotate_z(common.get_origin(self), rotation) * self.scale )
+
+
+        #origin = common.rotate_vec_z(origin, rotation, 'Z')
 
         # The origin command does not work with static prop combine.
         if not (self.static and self.static_prop_combine):
             qc.write('\n')
-            qc.write(f'$origin {scaled.x:.6f} {scaled.y:.6f} {-scaled.z:.6f} {rotation:.6f}')
+            qc.write(f'$origin {origin.x:.6f} {origin.y:.6f} {-origin.z:.6f} {rotation:.6f}')
             qc.write('\n')
 
         qc.write('\n')
@@ -278,9 +285,9 @@ class Model:
             qc.write('\n')
 
         if self.illumposition:
-            illumposition = -common.blender_to_source_coords((common.get_origin(self) - self.illumposition))
+            illumposition = (common.get_origin(self) - self.illumposition)
             qc.write('\n')
-            qc.write(f'$illumposition {illumposition.x:.6f} {illumposition.y:.6f} {illumposition.z:.6f}')
+            qc.write(f'$illumposition {illumposition.x} {illumposition.y} {-illumposition.z}')
             qc.write('\n')
 
         if self.collision:
