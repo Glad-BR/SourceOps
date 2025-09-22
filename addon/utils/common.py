@@ -213,14 +213,12 @@ def get_origin(model) -> Vector:
         vec = Vector((0,0,0))
 
     return vec
-    
-# Coordinates in Source are (X,Y,Z), where X is forward/East, Y is left/North, and Z is up.
-# Blender uses a right-angled “Cartesian” coordinate system with the Z axis pointing upwards.
+
+
 def blender_to_source(vec: Vector) -> Vector:
     return Vector((vec.y, -vec.x, vec.z))
 
 def rotate_z(vec: Vector, angle_degrees: float) -> Vector:
-    """Rotate a vector around the Z axis by angle in degrees."""
     theta = math.radians(angle_degrees)
     x, y, z = vec
     x_new = x * math.cos(theta) - y * math.sin(theta)
