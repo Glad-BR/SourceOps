@@ -211,24 +211,23 @@ class Model:
             qc.write('$staticprop')
             qc.write('\n')
 
-
         if self.origin_source == 'MANUAL':
             rotation = self.rotation-180
         else:
             rotation = -180
 
-        #Coordinates in Source are (X,Y,Z), where X is forward/East, Y is left/North, and Z is up.
-
-
         origin = common.blender_to_source( common.rotate_z(common.get_origin(self), rotation) * self.scale )
-
-
-        #origin = common.rotate_vec_z(origin, rotation, 'Z')
+        illumposition = (common.get_origin(self) - self.illumposition)
 
         # The origin command does not work with static prop combine.
         if not (self.static and self.static_prop_combine):
             qc.write('\n')
             qc.write(f'$origin {origin.x:.6f} {origin.y:.6f} {-origin.z:.6f} {rotation:.6f}')
+            qc.write('\n')
+
+        if self.illumposition:
+            qc.write('\n')
+            qc.write(f'$illumposition {illumposition.x} {illumposition.y} {-illumposition.z}')
             qc.write('\n')
 
         qc.write('\n')
@@ -260,34 +259,22 @@ class Model:
         if self.lods_items:
             for lod in self.lods_items:
                 if lod.replacemodel_items:
-
                     qc.write('\n')
                     qc.write(f'$lod {lod.distance}\n')
                     qc.write('{\n')
-
                     for replace in lod.replacemodel_items:
                         if replace.source:
-
                             source_name = common.clean_filename(replace.source.name)
-
                             if replace.target:
                                 target_name = common.clean_filename(replace.target.name)
                                 qc.write(f'    replacemodel "{source_name}.{self.mesh_type}" "{target_name}.{self.mesh_type}"\n')
                             else:
                                 qc.write(f'    replacemodel "{source_name}.{self.mesh_type}" "blank.SMD"\n')
-
                     qc.write('}\n')
-
 
         if not self.rename_material == '':
             qc.write('\n')
             qc.write(f'$renamematerial {self.rename_material}')
-            qc.write('\n')
-
-        if self.illumposition:
-            illumposition = (common.get_origin(self) - self.illumposition)
-            qc.write('\n')
-            qc.write(f'$illumposition {illumposition.x} {illumposition.y} {-illumposition.z}')
             qc.write('\n')
 
         if self.collision:
@@ -302,7 +289,6 @@ class Model:
             qc.write('    $maxconvexpieces 10000\n')
             qc.write('}')
             qc.write('\n')
-
 
         if self.stacking:
             for collection in self.stacking.children:
