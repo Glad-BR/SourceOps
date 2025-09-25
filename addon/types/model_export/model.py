@@ -192,6 +192,9 @@ class Model:
             qc.write('$staticprop')
             qc.write('\n')
 
+        qc.write('\n')
+        qc.write(f'$scale {self.scale:.4f}')
+        qc.write('\n')
 
         if self.origin_source == 'MANUAL':
             rotation = self.rotation-180
@@ -199,12 +202,8 @@ class Model:
             rotation = -180
 
         #Coordinates in Source are (X,Y,Z), where X is forward/East, Y is left/North, and Z is up.
-
-
         origin = common.blender_to_source( common.rotate_z(common.get_origin(self), rotation) * self.scale )
-
-
-        #origin = common.rotate_vec_z(origin, rotation, 'Z')
+        illumposition = (common.get_origin(self) - self.illumposition)
 
         # The origin command does not work with static prop combine.
         if not (self.static and self.static_prop_combine):
@@ -212,10 +211,11 @@ class Model:
             qc.write(f'$origin {origin.x:.6f} {origin.y:.6f} {-origin.z:.6f} {rotation:.6f}')
             qc.write('\n')
 
-        qc.write('\n')
-        qc.write(f'$scale {self.scale:.4f}')
-        qc.write('\n')
-
+        if self.illumposition:
+            qc.write('\n')
+            qc.write(f'$illumposition {illumposition.x} {illumposition.y} {-illumposition.z}')
+            qc.write('\n')
+            
         if self.reference:
             qc.write('\n')
             name = common.clean_filename(self.reference.name)
@@ -225,12 +225,6 @@ class Model:
         if not self.rename_material == '':
             qc.write('\n')
             qc.write(f'$renamematerial {self.rename_material}')
-            qc.write('\n')
-
-        if self.illumposition:
-            illumposition = (common.get_origin(self) - self.illumposition)
-            qc.write('\n')
-            qc.write(f'$illumposition {illumposition.x} {illumposition.y} {-illumposition.z}')
             qc.write('\n')
 
         if self.collision:
