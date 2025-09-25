@@ -2,13 +2,16 @@ import bpy
 import time
 import subprocess
 import os
-
+import math
+from mathutils import Vector, Matrix
+from math import degrees
 from shutil import move
 from pathlib import Path
 from traceback import print_exc
 from ... utils import common
 from . smd import SMD
 from . fbx import export_fbx
+
 
 
 class Model:
