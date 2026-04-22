@@ -228,8 +228,11 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         'corners': [None for i in range(8)],
         'normals': [[None for x in range(width + 1)] for y in range(width + 1)],
         'lengths': [[None for x in range(width + 1)] for y in range(width + 1)],
+        'alphas': [[None for x in range(width + 1)] for y in range(width + 1)],
         'material': 'dev/dev_blendmeasure'.upper(),
     } for polygon in obj_subd.data.polygons]
+
+    blends_mres = bm_mres.loops.layers.color.get('Multiblend', None) or bm_mres.loops.layers.color.get('Color', None)
 
     # Populate displacements with data from subd and mres faces
     for face_subd, face_mres in zip(bm_subd.faces, bm_mres.faces):
@@ -253,6 +256,10 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
             vector = vert_mres.co - vert_subd.co
             data = displacements[z]['normals'][y][x] = vector.normalized()
             data = displacements[z]['lengths'][y][x] = vector.length
+            if blends_mres != None:
+                data = displacements[z]['alphas'][y][x] = loop_mres[blends_mres]
+            else:
+                data = displacements[z]['alphas'][y][x] = mathutils.Vector([0,0,0,0])
 
             # If this is a corner, store its position
             if x == 0 and y == 0:
@@ -309,7 +316,9 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         # Prepare dispinfo children
         normals = pyvmf.Child('normals', {})
         distances = pyvmf.Child('distances', {})
-        children = [normals, distances]
+        alphas = pyvmf.Child('alphas', {})
+        multiblend = pyvmf.Child('multiblend', {})
+        children = [normals, distances, alphas, multiblend]
 
         # Populate dispinfo normals
         for index, row in enumerate(displacement['normals']):
@@ -318,6 +327,14 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         # Populate dispinfo distances
         for index, row in enumerate(displacement['lengths']):
             distances.dic[f'row{index}'] = ' '.join(f'{length}' for length in row)
+
+        # Populate dispinfo alphas
+        for index, row in enumerate(displacement['alphas']):
+            alphas.dic[f'row{index}'] = ' '.join(f'{int(color[0] * 255)}' for color in row)
+
+        # Populate dispinfo multiblend, writing alpha as basis
+        for index, row in enumerate(displacement['alphas']):
+            multiblend.dic[f'row{index}'] = ' '.join(f'{w} {x} {y} {z}' for x, y, z, w in row)
 
         # Create dispinfo for top face
         f1.dispinfo = pyvmf.DispInfo(dic=dic, children=children)
