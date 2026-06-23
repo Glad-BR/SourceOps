@@ -2,7 +2,8 @@ from pathlib import Path
 from ..utils.common import resolve
 
 
-def update_game(self, context):
+from ..props.game_props import SOURCEOPS_GameProps as game
+def update_game(self:game, context):
     self['game'] = resolve(self.game)
     game = Path(self.game)
 
@@ -30,31 +31,37 @@ def update_game(self, context):
         self['studiomdl'] = str(quickmdl if quickmdl.is_file() else studiomdl)
         self['hlmv']      = str(hlmvplusplus if hlmvplusplus.is_file() else hlmv)
 
-        self['modelsrc'] = str(game.joinpath('modelsrc'))
-        self['models']   = str(game.joinpath('models'))
-        self['mapsrc']   = str(game.joinpath('mapsrc'))
+
+        custom = self.customname if self.usecustom else ''
+        self['modelsrc'] = str(game / custom / 'modelsrc')
+        self['models']   = str(game / custom / 'models')
+        self['mapsrc']   = str(game / custom / 'mapsrc')
+
+        #self['modelsrc'] = str(game.joinpath('modelsrc'))
+        #self['models']   = str(game.joinpath('models'))
+        #self['mapsrc']   = str(game.joinpath('mapsrc'))
 
 
-def update_bin(self, context):
+def update_bin(self:game, context):
     self['bin'] = resolve(self.bin)
 
-def update_studiomdl(self, context):
+def update_studiomdl(self:game, context):
     self['studiomdl'] = resolve(self.studiomdl)
 
-def update_hlmv(self, context):
+def update_hlmv(self:game, context):
     self['hlmv'] = resolve(self.hlmv)
 
-def update_modelsrc(self, context):
+def update_modelsrc(self:game, context):
     self['modelsrc'] = resolve(self.modelsrc)
 
-def update_models(self, context):
+def update_models(self:game, context):
     self['models'] = resolve(self.models)
 
-def update_mapsrc(self, context):
+def update_mapsrc(self:game, context):
     self['mapsrc'] = resolve(self.mapsrc)
 
 
-def verify(game):
+def verify(game:game):
     gameinfo = Path(game.game).joinpath('gameinfo.txt')
     studiomdl = Path(game.bin).joinpath('studiomdl.exe')
     return gameinfo.is_file() and studiomdl.is_file()

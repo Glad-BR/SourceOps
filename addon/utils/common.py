@@ -2,10 +2,12 @@ import bpy
 import string
 import unicodedata
 import platform
-import pathlib
 import traceback
 import shutil
 import bmesh
+
+import pathlib
+from pathlib import Path
 
 from mathutils import Vector, Euler, Matrix
 import math
@@ -126,8 +128,7 @@ def clean_filename(filename, whitelist=filename_chars_valid, replace=filename_ch
     cleaned_filename = ''.join(c for c in cleaned_filename if c in whitelist)
     return cleaned_filename[:char_limit]   
 
-
-def verify_folder(path):
+def verify_folder(path:Path) -> Path:
     if not path.is_dir():
         try:
             path.mkdir(parents=True, exist_ok=True)
@@ -147,20 +148,20 @@ def documents():
         buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
 
         ctypes.windll.shell32.SHGetFolderPathW(None, 5, None, 1, buf)
-        return pathlib.Path(buf.value)
+        return Path(buf.value)
 
     else:
-        return pathlib.Path.home()
+        return Path.home()
 
 
 def appdata():
     user = bpy.utils.resource_path('USER')
-    return pathlib.Path(user).resolve()
+    return Path(user).resolve()
 
 
-def resolve(path):
+def resolve(path) -> Path:
     if path:
-        return str(pathlib.Path(bpy.path.abspath(path)).resolve())
+        return str(Path(bpy.path.abspath(path)).resolve())
     else:
         return ''
 
@@ -175,7 +176,7 @@ def get_illumposition(model) -> Vector:
         scene.frame_set(0)
 
         verts_world = []
-
+ 
         for obj in collection.all_objects:
             if obj.type != 'MESH':
                 continue
@@ -241,15 +242,15 @@ def rotate_z(vec: Vector, angle_degrees: float) -> Vector:
 def update_wine(self, context):
     self['wine'] = resolve(self.wine)
 
-def get_wine(self):
-    wine = pathlib.Path(self.wine)
+def get_wine(self) -> Path:
+    wine = Path(self.wine)
     which_path = shutil.which('wine')
-    which = pathlib.Path(which_path) if which_path is not None else None
+    which = Path(which_path) if which_path is not None else None
 
     if wine.is_file():
-        return wine
+        return Path(wine)
     elif which is not None and which.is_file():
-        return which
+        return Path(which)
     else:
         raise Exception('Wine executable not found. Make sure Wine is installed and accessible by Blender')
     

@@ -56,6 +56,11 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(game, 'studiomdl')
                 col.prop(game, 'hlmv')
                 col = common.align_column(box)
+                col.prop(game, 'usecustom')
+                if game.usecustom:
+                    col.prop(game, 'cnameuseprop', text='Use prop name')
+                    col.prop(game, 'customname')
+                #col = common.align_column(box)
                 col.prop(game, 'modelsrc')
                 col.prop(game, 'models')
                 col.prop(game, 'mapsrc')
