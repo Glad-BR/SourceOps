@@ -5,6 +5,7 @@ import platform
 import traceback
 import shutil
 import bmesh
+import subprocess
 
 import pathlib
 from pathlib import Path
@@ -253,4 +254,17 @@ def get_wine(self) -> Path:
         return Path(which)
     else:
         raise Exception('Wine executable not found. Make sure Wine is installed and accessible by Blender')
-    
+
+def winepath(path: Path | str) -> str:
+    cmd = f'winepath -w "{str(path)}"'
+    try:
+        result = subprocess.run(
+            cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"Error running winepath: {e.stderr}")
+        return None

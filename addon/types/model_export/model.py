@@ -386,19 +386,16 @@ class Model:
             self.remove_models_old()
 
             # Use wine to run StudioMDL on Linux.
-            # Wine tends to complain about the paths we feed StudioMDL.
-            # So we use relatve paths working from the base directory of the game.
+            # Run winepath to get a sure path
 
             env = os.environ.copy()
             if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
                 cwd = self.game.parent
-                args = [str(self.wine), str(self.studiomdl.relative_to(cwd)), '-nop4', '-fullcollide',
-                        '-game', str(self.game.relative_to(cwd)), str(qc.relative_to(cwd))]
+                args = [str(self.wine), common.winepath(self.studiomdl), '-nop4', '-fullcollide', '-game', common.winepath(self.game), common.winepath(qc)]
                 env['WINEDEBUG'] = '-all'
             else:
                 cwd = None
                 args = [str(self.studiomdl), '-nop4', '-fullcollide', '-game', str(self.game), str(qc)]
-
             pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
 
             while True:
@@ -429,8 +426,7 @@ class Model:
         dx90 = model.with_suffix('.dx90.vtx')
 
         # Use wine to run HLMV on Linux.
-        # Wine tends to complain about the paths we feed HLMV.
-        # So we use relatve paths working from the base directory of the game.
+        # Run winepath to get a sure path
 
         env = os.environ.copy()
 
