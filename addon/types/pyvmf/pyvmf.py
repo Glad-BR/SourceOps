@@ -190,6 +190,53 @@ class ColorLight(Color):
     def export(self) -> Tuple[int, int, int, int]:
         return self.r, self.g, self.b, self.brightness
 
+class MultiBlendAlphas:
+    """
+    List of four floats used to represent 4way displacement blends
+
+    :param a0: Value for first alpha blend (0-1)
+    :type a0: :obj:`float`
+    :param a1: Value for second alpha blend (0-1)
+    :type a1: :obj:`float`
+    :param a2: Value for third alpha blend (0-1)
+    :type a2: :obj:`float`
+    :param a3: Value for fourth alpha blend (0-1)
+    :type a3: :obj:`float`
+    """
+    def __init__(self, a0: float = 0, a1: float = 0, a2: float = 0, a3: float = 0):
+        self.a0 = a0
+        self.a1 = a1
+        self.a2 = a2
+        self.a3 = a3
+        self.set(a0,a1,a2,a3)
+
+    def __str__(self):
+        return f"{self.a0} {self.a1} {self.a2} {self.a3}"
+
+    def set(self, a0: float = -1, a1: float = -1, a2: float = -1, a3: float = -1):
+        """
+        Sets blend alphas
+
+        :param a0: Value for first alpha blend (0-1), if equals to -1 keeps previous value
+        :type a0: :obj:`float`
+        :param a1: Value for second alpha blend (0-1), if equals to -1 keeps previous value
+        :type a1: :obj:`float`
+        :param a2: Value for third alpha blend (0-1), if equals to -1 keeps previous value
+        :type a2: :obj:`float`
+        :param a3: Value for fourth alpha blend (0-1), if equals to -1 keeps previous value
+        :type a3: :obj:`float`
+        """
+        if a0 != -1 and 0 <= a0 <= 1:
+            self.a0 = a0
+        if a1 != -1 and 0 <= a1 <= 1:
+            self.a1 = a1
+        if a2 != -1 and 0 <= a2 <= 1:
+            self.a2 = a2
+        if a3 != -1 and 0 <= a3 <= 1:
+            self.a3 = a3
+
+    def export(self) -> Tuple[float,float,float,float]:
+        return self.a0, self.a1, self.a2, self.a3
 
 class VersionInfo(Common):
     NAME = "versioninfo"
@@ -1258,6 +1305,7 @@ class DispInfo(Common):
         self._offsets = None
         self._offset_normals = None
         self._alphas = None
+        self._multiblend = None
         self._triangle_tags = None
         self._allowed_verts = None
 
@@ -1272,6 +1320,8 @@ class DispInfo(Common):
                 self._offset_normals = OffsetNormals(self.matrix, child.dic)
             if str(child) == Alphas.NAME:
                 self._alphas = Alphas(self.matrix, child.dic)
+            if str(child) == Multiblend.NAME:
+                self._multiblend = Multiblend(self.matrix, child.dic)
             if str(child) == TriangleTags.NAME:
                 self._triangle_tags = TriangleTags(self.matrix, child.dic)
             if str(child) == AllowedVerts.NAME:
@@ -1279,7 +1329,7 @@ class DispInfo(Common):
 
     def export_children(self):
         return self._normals, self._distances, self._offsets, self._offset_normals, self._alphas, \
-               self._triangle_tags, self._allowed_verts
+               self._multiblend, self._triangle_tags, self._allowed_verts
 
 
 class DispVert(Common):
@@ -1293,6 +1343,7 @@ class DispVert(Common):
         self.offset = Vertex(0, 0, 0)
         self.offset_normal = Vertex(0, 0, 1)
         self.alpha = 0
+        self.multiblend = MultiBlendAlphas(0, 0, 0, 0)
         self.triangle_tag = None
 
     def __str__(self):
@@ -1549,6 +1600,31 @@ class Alphas(Common):
     def export(self):
         return self.matrix.export_attr("alpha"), self.other
 
+class Multiblend(Common):
+    NAME = "multiblend"
+
+    def __init__(self, matrix, dic: dict = None):
+        dic = self._dic(dic)
+
+        self.matrix = matrix
+        a_var = 4
+        i = 0
+        for x, y, t in self.matrix.extract_dic(dic, a_var):
+            if i == 0:
+                self.matrix.get(x // a_var, y).multiblend.a0 = num(t[x])
+            elif i == 1:
+                self.matrix.get(x // a_var, y).multiblend.a1 = num(t[x])
+            elif i == 2:
+                self.matrix.get(x // a_var, y).multiblend.a2 = num(t[x])
+            else:
+                self.matrix.get(x // a_var, y).multiblend.a3 = num(t[x])
+                i = -1
+            i += 1
+        self.other = dic
+        self.export_list = []
+
+    def export(self):
+        return self.matrix.export_attr("multiblend"), self.other
 
 class TriangleTags(Common):
     NAME = "triangle_tags"
