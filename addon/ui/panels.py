@@ -58,7 +58,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col = common.align_column(box)
                 col.prop(game, 'usecustom')
                 if game.usecustom:
-                    col.prop(game, 'cnameuseprop', text='Use prop name')
                     col.prop(game, 'customname')
                 #col = common.align_column(box)
                 col.prop(game, 'modelsrc')
@@ -193,8 +192,11 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 sub.prop(model, 'origin_object')
 
 
-
             col.prop(model, 'scale')
+
+            col = box.column(align=True)
+            col.label(text='Tip: Use scale 39.37 to get a 1:1 export')
+            col.label(text='Source runs on imperial, a 16" cube will equal 16 hammer units (more or less)')
 
 
         elif model and sourceops.panel == 'TEXTURES':

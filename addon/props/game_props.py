@@ -44,13 +44,6 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
         update=utils.game.update_game,
     )
 
-    cnameuseprop: bpy.props.BoolProperty(
-        name='CustomNameUsePropName',
-        description='Add the Prop name to the custom path output',
-        default=False,
-        update=utils.game.update_game,
-    )
-
     customname: bpy.props.StringProperty(
         name='CustomName',
         description='Name of the custom folder, ie custom/addons',
