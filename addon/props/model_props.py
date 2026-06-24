@@ -1,6 +1,5 @@
 import bpy
-from . material_folder_props import SOURCEOPS_MaterialFolderProps
-from . skin_props import SOURCEOPS_SkinProps
+from . material_props import SOURCEOPS_MaterialFolderProps, SOURCEOPS_SkinProps
 from . sequence_props import SOURCEOPS_SequenceProps
 from . attachment_props import SOURCEOPS_AttachmentProps
 from . particle_props import SOURCEOPS_ParticleProps
