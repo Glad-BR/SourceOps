@@ -1,7 +1,7 @@
 import bpy
 from .. import utils
-from .. types . model_export . model import Model
-
+from ..types.model_export.model import Model
+from ..types.model_export import qc
 
 class SOURCEOPS_OT_GenerateQC(bpy.types.Operator):
     bl_idname = 'sourceops.generate_qc'
@@ -28,7 +28,7 @@ class SOURCEOPS_OT_GenerateQC(bpy.types.Operator):
             return {'CANCELLED'}
 
         source_model = Model(game, model)
-        error = source_model.generate_qc()
+        error = qc.generate_qc(source_model)
 
         if error:
             self.report({'ERROR'}, error)

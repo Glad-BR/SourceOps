@@ -2,8 +2,8 @@ import bpy
 import time
 from threading import Lock, Thread
 from .. import utils
-from .. types . model_export . model import Model
-
+from ..types.model_export.model import Model
+from ..types.model_export import qc
 
 class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
     bl_idname = 'sourceops.export_auto'
@@ -120,7 +120,7 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
                 return error
 
         if not self.ctrl or self.generate_qc:
-            error = source_model.generate_qc()
+            error = qc.generate_qc(source_model)
             if error:
                 return error
 
