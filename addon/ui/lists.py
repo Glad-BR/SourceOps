@@ -94,3 +94,12 @@ class SOURCEOPS_UL_LodsReplaceList(bpy.types.UIList):
         row = layout.row()
         row.prop(item, 'source', text='Replace', emboss=False, translate=False)
         row.prop(item, 'target', text='------>', emboss=False, translate=False)
+
+
+
+class SOURCEOPS_UL_AllMaterialsList(bpy.types.UIList):
+    bl_idname = 'SOURCEOPS_UL_AllMaterialsList'
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        row = layout.row()
+        row.prop(item, 'name', text='', emboss=False, translate=False)

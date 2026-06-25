@@ -1,13 +1,13 @@
 import bpy
 from .. import utils
 from ..types.model_export.model import Model
+from ..types.model_export import qc
 
-
-class SOURCEOPS_OT_ExportMeshes(bpy.types.Operator):
-    bl_idname = 'sourceops.export_meshes'
+class SOURCEOPS_OT_ExportMaterials(bpy.types.Operator):
+    bl_idname = 'sourceops.export_materials'
     bl_options = {'REGISTER'}
-    bl_label = 'Export Meshes'
-    bl_description = 'Export this model\'s meshes'
+    bl_label = 'Export Materials'
+    bl_description = 'Export this model\'s materials'
 
     @classmethod
     def poll(cls, context):
@@ -28,11 +28,14 @@ class SOURCEOPS_OT_ExportMeshes(bpy.types.Operator):
             return {'CANCELLED'}
 
         source_model = Model(game, model)
-        error = source_model.export_meshes()
+        error = qc.generate_qc(source_model)
 
         if error:
             self.report({'ERROR'}, error)
             return {'CANCELLED'}
 
-        self.report({'INFO'}, 'Exported meshes')
+        forced_static = not model.armature and not model.static
+        static_message = ' (forced static due to lack of armature)' if forced_static else ''
+
+        self.report({'INFO'}, f'Generated QC for {model.name}{static_message}')
         return {'FINISHED'}

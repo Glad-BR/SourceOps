@@ -65,6 +65,13 @@ def get_material_folder(model):
         return None
 
 
+def get_material(model):
+    try: 
+        return model.materials_items[model.materials_index]
+    except:
+        return None
+
+
 def get_skin(model):
     try:
         return model.skin_items[model.skin_index]

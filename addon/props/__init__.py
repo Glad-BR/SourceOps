@@ -4,8 +4,9 @@ from . attachment_props import SOURCEOPS_AttachmentProps
 from . particle_props import SOURCEOPS_ParticleProps
 from . event_props import SOURCEOPS_EventProps
 from . sequence_props import SOURCEOPS_SequenceProps
-from . skin_props import SOURCEOPS_SkinProps
-from . material_folder_props import SOURCEOPS_MaterialFolderProps
+#from . skin_props import SOURCEOPS_SkinProps
+#from . material_folder_props import SOURCEOPS_MaterialFolderProps
+from . material_props import SOURCEOPS_MaterialFolderProps, SOURCEOPS_SkinProps, SOURCEOPS_AllMaterialsProps
 from . lods_props import SOURCEOPS_LodItemProps, SOURCEOPS_ModelLodProps
 from . bodygroups_props import SOURCEOPS_SublistBodygroupProps, SOURCEOPS_ModelBodygroupsProps
 from . model_props import SOURCEOPS_ModelProps
@@ -23,6 +24,7 @@ classes = (
     SOURCEOPS_SequenceProps,
     SOURCEOPS_SkinProps,
     SOURCEOPS_MaterialFolderProps,
+    SOURCEOPS_AllMaterialsProps,
     SOURCEOPS_LodItemProps,
     SOURCEOPS_SublistBodygroupProps,
     SOURCEOPS_ModelBodygroupsProps,

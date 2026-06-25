@@ -39,6 +39,9 @@ class Model:
 
         self.material_folder_items = model.material_folder_items
         self.skin_items = model.skin_items
+        self.materials_items = model.materials_items
+        self.materials_index = model.materials_index
+
         self.sequence_items = model.sequence_items
         self.attachment_items = model.attachment_items
         self.particle_items = model.particle_items
@@ -217,8 +220,8 @@ class Model:
 
         if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
             cwd = self.game.parent
-            args = [str(self.wine), str(self.hlmv.relative_to(cwd)), '-game',
-                    str(self.game.relative_to(cwd)), str(mdl.relative_to(cwd))]
+            args = [str(self.wine), common.winepath(self.hlmv), '-game',
+                    common.winepath(self.game), common.winepath(mdl)]
             env['WINEDEBUG'] = '-all'
         else:
             cwd = None

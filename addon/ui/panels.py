@@ -20,6 +20,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         bodygroups = common.get_bodygroups(model)
         lods = common.get_lods(model)
         material_folder = common.get_material_folder(model)
+        material = common.get_material(model)
         skin = common.get_skin(model)
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
@@ -200,7 +201,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
 
         elif model and sourceops.panel == 'TEXTURES':
-            box = layout.box()
+            row1 = layout.row()
+            box = row1.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Material Folders')
@@ -214,7 +216,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col = common.split_column(box)
                 col.prop(material_folder, 'name')
 
-            box = layout.box()
+            box = row1.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Skins')
@@ -227,6 +229,46 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if skin:
                 col = common.split_column(box)
                 col.prop(skin, 'name')
+
+
+
+            #
+            box = layout.box()
+
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Materials')
+
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_AllMaterialsList', '', model, 'materials_items', model, 'materials_index', rows=5)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'MATERIALS')
+
+
+
+
+            box = layout.box()
+            box.operator('sourceops.autofill_materials', text='Auto Detect')
+
+
+            if material:
+                col = common.align_column(box)
+                col.prop(material, 'diffuse')
+                col.prop(material, 'ao')
+                col.prop(material, 'roughness')
+                col.prop(material, 'metallic')
+                col.separator()
+                col.prop(material, 'normal')
+                col.prop(material, 'normaltype')
+                col.separator()
+                col.prop(material, 'emissive')
+                col.prop(material, 'emissivetype')
+
+
+
+
+
+
 
 
         elif model and sourceops.panel == 'SEQUENCES':

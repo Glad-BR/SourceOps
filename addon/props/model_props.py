@@ -1,5 +1,9 @@
 import bpy
-from . material_props import SOURCEOPS_MaterialFolderProps, SOURCEOPS_SkinProps
+from . material_props import (
+    SOURCEOPS_MaterialFolderProps,
+    SOURCEOPS_SkinProps,
+    SOURCEOPS_AllMaterialsProps
+)
 from . sequence_props import SOURCEOPS_SequenceProps
 from . attachment_props import SOURCEOPS_AttachmentProps
 from . particle_props import SOURCEOPS_ParticleProps
@@ -18,6 +22,9 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     material_folder_items: bpy.props.CollectionProperty(type=SOURCEOPS_MaterialFolderProps)
     material_folder_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
+    materials_items: bpy.props.CollectionProperty(type=SOURCEOPS_AllMaterialsProps)
+    materials_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
+
     skin_items: bpy.props.CollectionProperty(type=SOURCEOPS_SkinProps)
     skin_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
@@ -29,6 +36,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
 
     particle_items: bpy.props.CollectionProperty(type=SOURCEOPS_ParticleProps)
     particle_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
+
 
     name: bpy.props.StringProperty(
         name='Name',

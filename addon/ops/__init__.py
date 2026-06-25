@@ -1,19 +1,23 @@
 import bpy
-from . import open_folder
-from . import export_meshes
-from . import generate_qc
-from . import compile_qc
-from . import view_model
-from . import export_auto
-from . import list_operator
-from . import export_vmf
-from . import rig_simulation
-from . import pose_bone_transforms
-from . import weighted_normal
-from . import triangulate
-from . import backup
+from . import (
+    autofill_materials,
+    open_folder,
+    export_meshes,
+    generate_qc,
+    compile_qc,
+    view_model,
+    export_auto,
+    list_operator,
+    export_vmf,
+    rig_simulation,
+    pose_bone_transforms,
+    weighted_normal,
+    triangulate,
+    backup,
+)
 
 classes = (
+    autofill_materials.SOURCEOPS_OT_AutofillMaterials,
     open_folder.SOURCEOPS_OT_OpenFolder,
     export_meshes.SOURCEOPS_OT_ExportMeshes,
     generate_qc.SOURCEOPS_OT_GenerateQC,
