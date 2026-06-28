@@ -32,7 +32,7 @@ class SOURCEOPS_OT_AutofillMaterials(bpy.types.Operator):
         for mat in model.materials_items:
             if mat: names.add(mat.name)
 
-        all_mats = utils.mats.get_mats_from_model(model)
+        all_mats = utils.mats.mats_from_model(model)
         for mat in all_mats:
             if mat.name not in names:
                 add_report += 1
@@ -42,11 +42,11 @@ class SOURCEOPS_OT_AutofillMaterials(bpy.types.Operator):
                 exs += 1
                 item = model.materials_items[ model.materials_items.find(mat.name) ]
 
-            item.diffuse   = utils.mats.probe_bsdf(mat, Node.BaseColor)
-            item.roughness = utils.mats.probe_bsdf(mat, Node.Roughness)
-            item.metallic  = utils.mats.probe_bsdf(mat, Node.Metallic)
-            item.normal    = utils.mats.probe_bsdf(mat, Node.Normal)
-            item.emissive  = utils.mats.probe_bsdf(mat, Node.Emissive)
+            item.tex_diffuse   = utils.mats.probe_bsdf(mat, Node.BaseColor)
+            item.tex_roughness = utils.mats.probe_bsdf(mat, Node.Roughness)
+            item.tex_metallic  = utils.mats.probe_bsdf(mat, Node.Metallic)
+            item.tex_normal    = utils.mats.probe_bsdf(mat, Node.Normal)
+            item.tex_emissive  = utils.mats.probe_bsdf(mat, Node.Emissive)
 
                 
 

@@ -14,6 +14,7 @@ from . import (
     weighted_normal,
     triangulate,
     backup,
+    export_materials,
 )
 
 classes = (
@@ -32,6 +33,7 @@ classes = (
     triangulate.SOURCEOPS_OT_triangulate,
     backup.SOURCEOPS_OT_BackupPreferences,
     backup.SOURCEOPS_OT_RestorePreferences,
+    export_materials.SOURCEOPS_OT_ExportMaterials,
 )
 
 class_register, class_unregister = bpy.utils.register_classes_factory(classes)

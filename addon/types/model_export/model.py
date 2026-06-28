@@ -6,9 +6,15 @@ import os
 from shutil import move
 from pathlib import Path
 from traceback import print_exc
-from ... utils import common
+from ... utils import common, mats
 from . smd import SMD
 from . fbx import export_fbx
+
+from concurrent.futures import ThreadPoolExecutor
+import subprocess
+
+
+from ... import props
 
 
 class Model:
@@ -24,6 +30,7 @@ class Model:
             self.modelsrc = self.game.parent.parent.joinpath('content', self.game.name, 'models')
         else:
             self.modelsrc = Path(game.modelsrc)
+        self.materials = Path(game.materials)
         self.models = Path(game.models)
         self.mapsrc = Path(game.mapsrc)
         self.mesh_type = game.mesh_type
@@ -39,8 +46,15 @@ class Model:
 
         self.material_folder_items = model.material_folder_items
         self.skin_items = model.skin_items
+
         self.materials_items = model.materials_items
         self.materials_index = model.materials_index
+
+
+
+        self.vtf_version = game.vtf_version #
+
+
 
         self.sequence_items = model.sequence_items
         self.attachment_items = model.attachment_items
@@ -200,6 +214,16 @@ class Model:
                 return self.report(f'Failed to compile: {qc}')
         else:
             return self.report(f'Unable to find: {qc}')
+
+
+    def export_materials(self):
+        from . import material
+        return material.export_materials(self)
+
+
+
+
+
 
     def open_folder(self):
         try:

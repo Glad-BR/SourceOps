@@ -1,6 +1,7 @@
 import bpy
 from .. import utils
 
+from .material_props import SOURCEOPS_VTFVersion
 
 class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(
@@ -51,6 +52,13 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
         update=utils.game.update_game,
     )
 
+    materials: bpy.props.StringProperty(
+        name='Materials',
+        description='Path to your materials folder, exported VTF/VMT files go here',
+        subtype='DIR_PATH',
+        update=utils.game.update_materials,
+    )
+
     modelsrc: bpy.props.StringProperty(
         name='ModelSrc',
         description='Path to your modelsrc folder, exported QC/SMD/FBX files go here',
@@ -80,4 +88,11 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
             ('FBX', 'FBX', 'Export meshes as FBX (only on CS:GO branch)'),
         ],
         default='SMD',
+    )
+
+    vtf_version: bpy.props.EnumProperty(
+        name='VTF Version',
+        description='VTF version for exporting',
+        items=SOURCEOPS_VTFVersion,
+        default='2'
     )

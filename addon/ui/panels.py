@@ -61,11 +61,13 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 if game.usecustom:
                     col.prop(game, 'customname')
                 #col = common.align_column(box)
-                col.prop(game, 'modelsrc')
+                col.prop(game, 'materials')
                 col.prop(game, 'models')
+                col.prop(game, 'modelsrc')
                 col.prop(game, 'mapsrc')
                 col = common.split_column(box)
                 col.prop(game, 'mesh_type')
+                col.prop(game, 'vtf_version')
 
 
         elif sourceops and sourceops.panel == 'MODELS':
@@ -245,28 +247,103 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'MATERIALS')
 
 
-
-
-            box = layout.box()
             box.operator('sourceops.autofill_materials', text='Auto Detect')
 
 
+            #box = layout.box()
+
+
+
+
+            row = layout.row(align=True).split(factor=0.5, align=True)
+
+
+            
             if material:
-                col = common.align_column(box)
-                col.prop(material, 'diffuse')
-                col.prop(material, 'ao')
-                col.prop(material, 'roughness')
-                col.prop(material, 'metallic')
+                #col = common.align_column(box)
+                box = row.box()
+
+                r = box.row()
+                r.alignment = 'CENTER'
+                r.label(text='Textures')
+
+                col = box.column(align=True)
+                col.prop(material, 'tex_diffuse')
+                col.prop(material, 'tex_ao')
+                col.prop(material, 'tex_roughness')
+                col.prop(material, 'tex_metallic')
                 col.separator()
-                col.prop(material, 'normal')
+                col.separator()
+                col.prop(material, 'tex_normal')
                 col.prop(material, 'normaltype')
                 col.separator()
-                col.prop(material, 'emissive')
+                col.separator()
+                col.prop(material, 'tex_emissive')
                 col.prop(material, 'emissivetype')
+                col.separator()
+
+
+            #if material:
+                c = row.column(align=True)
+                box = c.box()
+                
+
+                r = box.row()
+                r.alignment = 'CENTER'
+                r.label(text='VTF Format')
+
+                col = box.column(align=True)
+                col.prop(material, 'basetexture_format')
+                col.prop(material, 'emissive_format')
+                col.prop(material, 'normal_format')
+                col.prop(material, 'phong_format')
+
+
+                box = c.box()
+
+                r = box.row()
+                r.alignment = 'CENTER'
+                r.label(text='Export Settings')
+
+                col = box.column(align=True)
+                col.prop(material, 'type')
+                col.prop(material, 'convert_method')
+                col.prop(game, 'vtf_version')
+
+
+
+                
+                col.separator()
+                col.operator('sourceops.export_materials', text='Export Materials')
+                col.separator()
 
 
 
 
+
+
+
+
+
+            #def draw_mat_prop_thingy(col, name):
+            #    row = col.row(align=True)
+            #    split = row.split(factor=0.9, align=True)
+            #    split.prop(material, name)
+            #    right = split.row(align=True)
+            #    right.prop(material, f'{name}_format')
+
+                #draw_mat_prop_thingy(col, 'diffuse')
+                #draw_mat_prop_thingy(col, 'ao')
+                #draw_mat_prop_thingy(col, 'roughness')
+                #draw_mat_prop_thingy(col, 'metallic')
+                #col.separator()
+                #draw_mat_prop_thingy(col, 'normal')
+                #split = col.split(factor=0.89, align=True)
+                #split.prop(material, 'normaltype')
+                #col.separator()
+                #draw_mat_prop_thingy(col, 'emissive')
+                #split = col.split(factor=0.89, align=True)
+                #split.prop(material, 'emissivetype')
 
 
 

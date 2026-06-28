@@ -33,9 +33,10 @@ def update_game(self:game, context):
 
 
         custom = self.customname if self.usecustom else ''
-        self['modelsrc'] = str(game / custom / 'modelsrc')
-        self['models']   = str(game / custom / 'models')
-        self['mapsrc']   = str(game / custom / 'mapsrc')
+        self['materials'] = str(game / custom / 'materials')
+        self['modelsrc']  = str(game / custom / 'modelsrc')
+        self['models']    = str(game / custom / 'models')
+        self['mapsrc']    = str(game / custom / 'mapsrc')
 
         #self['modelsrc'] = str(game.joinpath('modelsrc'))
         #self['models']   = str(game.joinpath('models'))
@@ -50,6 +51,9 @@ def update_studiomdl(self:game, context):
 
 def update_hlmv(self:game, context):
     self['hlmv'] = resolve(self.hlmv)
+
+def update_materials(self:game, context):
+    self['materials'] = resolve(self.materials)
 
 def update_modelsrc(self:game, context):
     self['modelsrc'] = resolve(self.modelsrc)

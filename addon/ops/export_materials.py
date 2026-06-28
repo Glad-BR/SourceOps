@@ -1,7 +1,8 @@
 import bpy
 from .. import utils
 from ..types.model_export.model import Model
-from ..types.model_export import qc
+
+from ..types.model_export import material
 
 class SOURCEOPS_OT_ExportMaterials(bpy.types.Operator):
     bl_idname = 'sourceops.export_materials'
@@ -28,14 +29,11 @@ class SOURCEOPS_OT_ExportMaterials(bpy.types.Operator):
             return {'CANCELLED'}
 
         source_model = Model(game, model)
-        error = qc.generate_qc(source_model)
+        error = Model.export_materials(source_model)
 
         if error:
             self.report({'ERROR'}, error)
             return {'CANCELLED'}
 
-        forced_static = not model.armature and not model.static
-        static_message = ' (forced static due to lack of armature)' if forced_static else ''
-
-        self.report({'INFO'}, f'Generated QC for {model.name}{static_message}')
+        self.report({'INFO'}, f'Test')
         return {'FINISHED'}
