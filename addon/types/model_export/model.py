@@ -7,12 +7,13 @@ from shutil import move
 from pathlib import Path
 from traceback import print_exc
 from ... utils import common
+from ... import props
 from . smd import SMD
 from . fbx import export_fbx
 
 
 class Model:
-    def __init__(self, game, model):
+    def __init__(self, game:props.SOURCEOPS_GameProps, model:props.SOURCEOPS_ModelProps):
         self.prefs = common.get_prefs(bpy.context)
         self.wine = Path(common.get_wine(self.prefs))
 
