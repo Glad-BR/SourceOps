@@ -1,29 +1,18 @@
 import bpy
-
-from ...utils import common, mats
-
+import time
+import zlib
+import hashlib
 
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-
-import time
-import zlib
-
-
+from ...utils import common, mats
+from PIL import Image, ImageChops
 from sourcepp import vtfpp
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
-
-from PIL import Image, ImageChops
-
 from .model import Model
-
-import hashlib
-
-
-
 from ...props.material_props import SOURCEOPS_AllMaterialsProps
 
 
