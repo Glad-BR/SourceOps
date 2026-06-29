@@ -113,7 +113,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col = row.column(align=True)
                 self.draw_list_buttons(col, 'BODYGROUPS_SUBLIST')
 
-                sublist = bodygroups.sublist_items[bodygroups.sublist_index] if bodygroups.sublist_items else None
+                sublist = common.get_sub_bodygroups(bodygroups)
                 if sublist:
                     col = common.split_column(box)
                     col.prop(sublist, 'reference')
@@ -144,7 +144,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col = row.column(align=True)
                 self.draw_list_buttons(col, 'LODS_REPLACE')
 
-                replacemodel = lods.replacemodel_items[lods.replacemodel_index] if lods.replacemodel_items else None
+                replacemodel = common.get_sub_lods(lods)
 
                 if replacemodel:
                     col = common.split_column(box)

@@ -50,10 +50,21 @@ def get_bodygroups(model):
         return model.bodygroups_items[model.bodygroups_index]
     except:
         return None
+def get_sub_bodygroups(bodygroups):
+    try:
+        return bodygroups.sublist_items[bodygroups.sublist_index]
+    except:
+        return None
+
 
 def get_lods(model):
     try:
         return model.lods_items[model.lods_index]
+    except:
+        return None
+def get_sub_lods(lods):
+    try:
+        return lods.replacemodel_items[lods.replacemodel_index]
     except:
         return None
 
