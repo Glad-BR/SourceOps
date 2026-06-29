@@ -61,13 +61,17 @@ def multiply(image1:Image.Image, image2:Image.Image) -> Image.Image:
 
 from sourcepp import vtfpp
 def create_vtf(image:Image.Image, output_path:str|Path, options:vtfpp.VTF.CreationOptions = None, flags:list(vtfpp.VTF.Flags) = None):
-    output_path = Path(output_path).resolve()
-    output_path.parent.mkdir(exist_ok=True, parents=True)
+
+    if not image: return None
+    if not output_path: return None
 
     if not options:
         options = vtfpp.VTF.CreationOptions()
         options.output_format = vtfpp.ImageFormat.DXT5
         options.version = 2
+
+    output_path = Path(output_path).resolve()
+    output_path.parent.mkdir(exist_ok=True, parents=True)
 
     # Just to make sure
     options.compute_mips = True
