@@ -232,9 +232,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col = common.split_column(box)
                 col.prop(skin, 'name')
 
-
-
-            #
             box = layout.box()
 
             row = box.row()
@@ -246,21 +243,14 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col = row.column(align=True)
             self.draw_list_buttons(col, 'MATERIALS')
 
-
-            box.operator('sourceops.autofill_materials', text='Auto Detect')
-
-
-            #box = layout.box()
-
-
-
+            col = common.split_column(box)
+            if material:
+                col.prop(material, 'surfaceprop')
+            col.operator('sourceops.autofill_materials', text='Auto Detect')
 
             row = layout.row(align=True).split(factor=0.5, align=True)
 
-
-            
             if material:
-                #col = common.align_column(box)
                 box = row.box()
 
                 r = box.row()
@@ -283,11 +273,9 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.separator()
 
 
-            #if material:
                 c = row.column(align=True)
                 box = c.box()
                 
-
                 r = box.row()
                 r.alignment = 'CENTER'
                 r.label(text='VTF Format')
@@ -310,42 +298,9 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(material, 'convert_method')
                 col.prop(game, 'vtf_version')
 
-
-
-                
                 col.separator()
                 col.operator('sourceops.export_materials', text='Export Materials')
                 col.separator()
-
-
-
-
-
-
-
-
-
-            #def draw_mat_prop_thingy(col, name):
-            #    row = col.row(align=True)
-            #    split = row.split(factor=0.9, align=True)
-            #    split.prop(material, name)
-            #    right = split.row(align=True)
-            #    right.prop(material, f'{name}_format')
-
-                #draw_mat_prop_thingy(col, 'diffuse')
-                #draw_mat_prop_thingy(col, 'ao')
-                #draw_mat_prop_thingy(col, 'roughness')
-                #draw_mat_prop_thingy(col, 'metallic')
-                #col.separator()
-                #draw_mat_prop_thingy(col, 'normal')
-                #split = col.split(factor=0.89, align=True)
-                #split.prop(material, 'normaltype')
-                #col.separator()
-                #draw_mat_prop_thingy(col, 'emissive')
-                #split = col.split(factor=0.89, align=True)
-                #split.prop(material, 'emissivetype')
-
-
 
 
         elif model and sourceops.panel == 'SEQUENCES':

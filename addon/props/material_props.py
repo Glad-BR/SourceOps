@@ -2,6 +2,7 @@ import bpy
 
 #from .. import PyVTFlib as VTF
 from .vtf_props import SOURCEOPS_VTF_FORMAT
+from . surface_props import SOURCEOPS_SurfaceProps
 
 from sourcepp import vtfpp
 
@@ -34,8 +35,9 @@ SOURCEOPS_NormalMaptypes = ([
     ('DIRECTX', 'DirectX', '')
 ])
 SOURCEOPS_Emissivetypes = ([
-    ('COLOR', 'Color', ''),
-    ('MASK', 'Mask', '')
+    ('COLOR_DETAIL', 'Color | $detail method', ''),
+    ('COLOR_BLEND', 'Color | $emissiveBlend method', ''),
+    ('MASK', 'Mask | $selfillum ', '')
 ])
 SOURCEOPS_VMTtypes = ([
     ('VertexLitGeneric', 'VertexLitGeneric', '')
@@ -64,7 +66,12 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         items=SOURCEOPS_MatsConverMethod,
         default='simple',
     )
-
+    surfaceprop: bpy.props.EnumProperty(
+        name='Surface Property',
+        description='$surfaceprop, this affects decals and how it sounds in game',
+        items=SOURCEOPS_SurfaceProps,
+        default='default',
+    )
 
     tex_diffuse: bpy.props.PointerProperty(
         name='Base Color',
@@ -102,7 +109,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         name='Type',
         description='What type of emissive texture it is, self colored or a mask of the base color',
         items=SOURCEOPS_Emissivetypes,
-        default='COLOR',
+        default='COLOR_DETAIL',
     )
 
     

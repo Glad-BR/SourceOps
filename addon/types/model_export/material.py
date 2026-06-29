@@ -58,13 +58,14 @@ class ExportTexture:
 
 @dataclass
 class ExportMaterial:
-    source: object
+    source: SOURCEOPS_AllMaterialsProps
     basetexture: ExportTexture = None
     normal: ExportTexture = None
     emissive: ExportTexture = None
     phong: ExportTexture = None
 
-def _hashimg(image):
+
+def _hashimg(image:Image.Image):
     if image:
         return hashlib.sha1(image.tobytes()).hexdigest()
     else:
@@ -72,6 +73,7 @@ def _hashimg(image):
 
 
 def export_materials(self:Model):
+    start = time.perf_counter()
 
     t = bpy.context.preferences.filepaths.temporary_directory
     tmp = Path(t if t else bpy.app.tempdir)
@@ -130,7 +132,6 @@ def export_materials(self:Model):
             flags,
             invert_green,
         )
-
         tex = textures.get(key)
 
         if tex is None:
@@ -150,17 +151,18 @@ def export_materials(self:Model):
         return tex
 
 
+    def _exporter(mat:SOURCEOPS_AllMaterialsProps):
+        if mat.convert_method == 'simple':
+            return ExporterBasic(model=self, pil_images=pil_images)
+        else:
+            return ExporterBasic(model=self, pil_images=pil_images)
 
 
-    exporter = ExporterBasic(model=self, pil_images=pil_images)
-
-    # Thingy
-    for index, mat in enumerate(self.materials_items):
-        mat:SOURCEOPS_AllMaterialsProps # Me like type
+    def convert_textures(mat:SOURCEOPS_AllMaterialsProps):
         if not mat.tex_diffuse: return "!!!!!! Base Color Not Found"
         
         flags = tuple()
-
+        exporter = _exporter(mat)
         export = ExportMaterial(source=mat)
 
         export.basetexture = register_texture(
@@ -169,21 +171,18 @@ def export_materials(self:Model):
             format=ImageFormat[mat.basetexture_format],
             flags=flags,
         )
-
         export.normal = register_texture(
             image=exporter.normal(mat),
             image_name='normal',
             format=ImageFormat[mat.normal_format],
             flags=flags,
         )
-
         export.emissive = register_texture(
             image=exporter.emissive(mat),
             image_name='emissive',
             format=ImageFormat[mat.emissive_format],
             flags=flags,
         )
-
         export.phong = register_texture(
             image=exporter.phong(mat),
             image_name='phong',
@@ -192,13 +191,6 @@ def export_materials(self:Model):
         )
 
         materials.append(export)
-
-
-
-
-    # Assign filenames
-    for tex in textures.values():
-        tex.output_path = tex_folder / f"{bpy.path.clean_name(tex.image_name)}_{tex.image_hash[:8]}.vtf"
 
 
     # Export textures
@@ -218,7 +210,15 @@ def export_materials(self:Model):
         )
 
 
-    start = time.perf_counter()
+
+    with ThreadPoolExecutor() as executor:
+        list(executor.map(convert_textures, self.materials_items))
+
+
+    # Assign filenames
+    for tex in textures.values():
+        tex.output_path = tex_folder / f"{bpy.path.clean_name(tex.image_name)}_{tex.image_hash[:8]}.vtf"
+    
 
     with ThreadPoolExecutor() as executor:
         list(executor.map(export_texture, textures.values()))
@@ -243,23 +243,39 @@ def export_materials(self:Model):
             vmt.write("{\n")
 
             rel = mat.basetexture.output_path.relative_to(self.materials).with_suffix("").as_posix()
-
             vmt.write(f'\t$basetexture "{rel}"\n')
 
             if mat.normal:
                 rel = mat.normal.output_path.relative_to(self.materials).with_suffix("").as_posix()
-                vmt.write(f'\t$bumpmap "{rel}"\n')
+
+                if (blender_mat.emissivetype == 'COLOR_DETAIL') and (mat.emissive) and (not mat.phong):
+                    vmt.write(f'\t$normal "{rel}"\n') # Detail only works with $normal but it breaks phong for some reason
+                else:
+                    vmt.write(f'\t$bumpmap "{rel}"\n')
+
+            if blender_mat.surfaceprop:
+                vmt.write('\n')
+                vmt.write(f'\t$surfaceprop "{str(blender_mat.surfaceprop)}"\n')
 
             if mat.emissive:
                 rel = mat.emissive.output_path.relative_to(self.materials).with_suffix("").as_posix()
                 vmt.write('\n')
-                vmt.write(f'\t$emissiveBlendEnabled 1\n')
-                vmt.write(f'\t$emissiveBlendStrength 1\n')
-                vmt.write(f'\t$emissiveBlendBaseTexture "{rel}"\n')
-                vmt.write(f'\t$emissiveBlendTexture "vgui/white"\n')
-                vmt.write(f'\t$emissiveBlendFlowTexture "vgui/white"\n')
-                vmt.write(f'\t$emissiveBlendTint "[ 1 1 1 ]"\n')
-                vmt.write(f'\t$emissiveBlendScrollVector "[ 0 0 ]"\n')
+
+                if blender_mat.emissivetype == 'COLOR_DETAIL' and not mat.phong:
+                    vmt.write(f'\t$detail {rel}\n')
+                    vmt.write(f'\t$detailscale 1\n')
+                    vmt.write(f'\t$detailblendmode 5\n')
+                elif blender_mat.emissivetype == 'MASK':
+                    vmt.write(f'\t$selfillum 1\n')
+                    vmt.write(f'\t$selfillummask {rel}\n')
+                else: #Fallback to emissiveBlend
+                    vmt.write(f'\t$emissiveBlendEnabled 1\n')
+                    vmt.write(f'\t$emissiveBlendStrength 1\n')
+                    vmt.write(f'\t$emissiveBlendBaseTexture "{rel}"\n')
+                    vmt.write(f'\t$emissiveBlendTexture "vgui/white"\n')
+                    vmt.write(f'\t$emissiveBlendFlowTexture "vgui/white"\n')
+                    vmt.write(f'\t$emissiveBlendTint "[ 1 1 1 ]"\n')
+                    vmt.write(f'\t$emissiveBlendScrollVector "[ 0 0 ]"\n')
 
             vmt.write("}")
 
