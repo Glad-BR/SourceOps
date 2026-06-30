@@ -193,6 +193,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
 
             col.prop(model, 'scale')
+            col.prop(model, 'unitscale_fix')
 
             col = box.column(align=True)
             col.label(text='Tip: Use scale 39.37 to get a 1:1 export')
