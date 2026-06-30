@@ -86,7 +86,11 @@ class Model:
 
         self.origin = model.origin
         self.rotation = model.rotation
-        self.scale = model.scale
+
+        if model.unitscale_fix:
+            self.scale = (model.scale * bpy.context.scene.unit_settings.scale_length)
+        else:
+            self.scale = model.scale
 
 
     def export_meshes(self):

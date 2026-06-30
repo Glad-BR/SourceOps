@@ -206,3 +206,9 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         description='$scale to put at the top of your QC files, this does not affect $origin or attachments',
         default=1.0,
     )
+
+    unitscale_fix: bpy.props.BoolProperty(
+        name='Compensate Blender Unit Scale',
+        description='Takes into account current scene Unit Scale when compiling',
+        default=True,
+    )

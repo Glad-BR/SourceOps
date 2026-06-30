@@ -63,7 +63,7 @@ def generate_qc(self:Model):
 
     if self.illumposition:
         qc.write('\n')
-        qc.write(f'$illumposition {illumposition.x} {illumposition.y} {-illumposition.z}')
+        qc.write(f'$illumposition {illumposition.x:.6f} {illumposition.y:.6f} {-illumposition.z:.6f}')
         qc.write('\n')
 
     qc.write('\n')
