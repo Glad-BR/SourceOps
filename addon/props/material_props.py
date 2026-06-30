@@ -1,6 +1,5 @@
 import bpy
 
-#from .. import PyVTFlib as VTF
 from .vtf_props import SOURCEOPS_VTF_FORMAT
 from . surface_props import SOURCEOPS_SurfaceProps
 
@@ -46,6 +45,12 @@ SOURCEOPS_MatsConverMethod = ([
     ('simple', 'Simple', ''),
     ('fakepbr1', 'FakePBR', '')
 ])
+
+
+vtf_format_description='VTF export format. Commonly Used Values are\n' \
+'DXT1 (also known as BC1). Use for typical textures with NO alpha channel. \n' \
+'DXT5 (also known as BC3). Use for typical textures with alpha channel.\n' \
+'BGRA8888 Use for textures with an alpha channel and very fine gradients (i.e. normal maps or light halos). It can also be used to produce Very High quality textures. '
 
 
 class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
@@ -112,32 +117,28 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         default='COLOR_DETAIL',
     )
 
-    
 
     basetexture_format: bpy.props.EnumProperty(
         name='Basetexture',
-        description='test',
+        description=vtf_format_description,
         items=SOURCEOPS_VTF_FORMAT,
         default=vtfpp.ImageFormat.DXT5.name,
     )
     emissive_format: bpy.props.EnumProperty(
         name='Emissive',
-        description='test',
+        description=vtf_format_description,
         items=SOURCEOPS_VTF_FORMAT,
         default=vtfpp.ImageFormat.DXT5.name,
     )
     normal_format: bpy.props.EnumProperty(
         name='Bumbmap',
-        description='test',
+        description=vtf_format_description,
         items=SOURCEOPS_VTF_FORMAT,
         default=vtfpp.ImageFormat.BGRA8888.name,
     )
     phong_format: bpy.props.EnumProperty(
         name='Phong',
-        description='test',
+        description=vtf_format_description,
         items=SOURCEOPS_VTF_FORMAT,
         default=vtfpp.ImageFormat.BGRA8888.name,
     )
-
-
-
