@@ -14,10 +14,6 @@ from . fbx import export_fbx
 from concurrent.futures import ThreadPoolExecutor
 import subprocess
 
-
-from ... import props
-
-
 class Model:
     def __init__(self, game:props.SOURCEOPS_GameProps, model:props.SOURCEOPS_ModelProps):
         self.prefs = common.get_prefs(bpy.context)
@@ -222,12 +218,8 @@ class Model:
 
 
     def export_materials(self):
-        from . import material
+        from .material_export import material
         return material.export_materials(self)
-
-
-
-
 
 
     def open_folder(self):

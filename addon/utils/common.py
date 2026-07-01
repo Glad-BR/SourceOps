@@ -1,3 +1,5 @@
+import time
+
 import bpy
 import string
 import unicodedata
@@ -6,12 +8,14 @@ import traceback
 import shutil
 import bmesh
 import subprocess
+import os
 
-import pathlib
 from pathlib import Path
 
-from mathutils import Vector, Euler, Matrix
+from mathutils import Vector
 import math
+
+from ..props import SOURCEOPS_AllMaterialsProps
 
 def get_version():
     from ... import bl_info
@@ -76,7 +80,7 @@ def get_material_folder(model):
         return None
 
 
-def get_material(model):
+def get_material(model) -> SOURCEOPS_AllMaterialsProps:
     try: 
         return model.materials_items[model.materials_index]
     except:
@@ -178,6 +182,12 @@ def appdata():
     return Path(user).resolve()
 
 
+def temp() -> Path:
+    t = bpy.context.preferences.filepaths.temporary_directory
+    tmp = Path(t if t else bpy.app.tempdir)
+    return tmp.resolve()
+
+
 def resolve(path) -> Path:
     if path:
         return str(Path(bpy.path.abspath(path)).resolve())
@@ -274,15 +284,27 @@ def get_wine(self) -> Path:
         raise Exception('Wine executable not found. Make sure Wine is installed and accessible by Blender')
 
 def winepath(path: Path | str) -> str:
-    cmd = f'winepath -w "{str(path)}"'
+    #cmd = f'winepath -w "{str(path)}"'
+    start_t = time.perf_counter()
+
+    cmd = ['winepath', '-w', str(path)]
+
     try:
-        result = subprocess.run(
-            cmd,
-            shell=True,
-            capture_output=True,
-            text=True,
+        process = subprocess.Popen(
+            cmd, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.DEVNULL, 
+            text=True
         )
-        return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        print(f"Error running winepath: {e.stderr}")
-        return None
+        windows_path = process.stdout.readline().strip()
+        print(windows_path)
+
+        # Clean up the background process gently
+        process.terminate()
+
+        print(f"winepath took {time.perf_counter() - start_t:.4f} seconds {windows_path}")
+
+        return windows_path
+    except Exception as e:
+        print(f"Error running winepath: {e}")
+        return str(path)

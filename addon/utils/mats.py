@@ -5,9 +5,8 @@ import time
 from pathlib import Path
 from enum import Enum
 
-
 from PIL import Image, ImageChops
-from array import array
+import numpy as np
 
 class BlenderInputNodes(Enum):
     BaseColor = 'Base Color'
@@ -31,32 +30,28 @@ def save_blender_img(image, save_path:str|Path, name_override:str=None) -> Path:
         return None
 
 
-import numpy as np
-def blender_to_byte(bpy_img) -> bytes:
+def blender_to_numpy(bpy_img) -> np.ndarray:
+    '''Converts a Blender image to a numpy array with shape (height, width, channels) as a float32 array with values in the range [0, 1].'''
     width = bpy_img.size[0]
     height = bpy_img.size[1]
     channels = 4
     
     float_pixels = np.empty(width * height * channels, dtype=np.float32)
     bpy_img.pixels.foreach_get(float_pixels)
+
+    float_pixels = float_pixels.reshape((height, width, channels))
+    flipped = float_pixels[::-1, :, :]
+    return flipped
     
-    byte_pixels = (np.clip(float_pixels * 255, 0, 255).astype(np.uint8))
-    
-    byte_pixels = byte_pixels.reshape((height, width, channels))
-    flipped = byte_pixels[::-1, :, :]
-    
+def blender_to_byte(bpy_img) -> bytes:
+    '''Converts a Blender image to a byte array with shape (height, width, channels) as a uint8 array with values in the range [0, 255].'''
+    flipped = (np.clip(blender_to_numpy(bpy_img) * 255, 0, 255).astype(np.uint8))
     return flipped.tobytes()
 
 
 def blender_to_pil(bpy_img) -> Image.Image:
+    '''Converts a Blender image to a PIL Image object.'''
     return Image.frombytes("RGBA", (bpy_img.size[0], bpy_img.size[1]), blender_to_byte(bpy_img))
-
-
-def multiply(image1:Image.Image, image2:Image.Image) -> Image.Image:
-    if image1.size != image2.size: image2 = image2.resize(image1.size)
-    if image1.mode != image2.mode: image2 = image2.convert(image1.mode)
-    return ImageChops.multiply(image1, image2)
-
 
 
 from sourcepp import vtfpp
@@ -79,7 +74,7 @@ def create_vtf(image:Image.Image, output_path:str|Path, options:vtfpp.VTF.Creati
     options.compute_reflectivity = True
 
     vtf = vtfpp.VTF.create(
-        image_data=image.convert("RGBA").tobytes(), # Convert to RGBA just in case
+        image_data=image.tobytes(), # Convert to RGBA just in case
         format=vtfpp.ImageFormat.RGBA8888,
         width=image.width,
         height=image.height,
@@ -93,7 +88,7 @@ def create_vtf(image:Image.Image, output_path:str|Path, options:vtfpp.VTF.Creati
     err = vtf.bake_to_file(vtf_path=output_path)
 
     if output_path.exists():
-        print(f'VTF Created {str(output_path)}')
+        print(f'VTF Created {str(output_path)} {err}')
         return output_path
     else:
         print(err)

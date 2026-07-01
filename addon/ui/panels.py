@@ -258,20 +258,20 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 r.alignment = 'CENTER'
                 r.label(text='Textures')
 
-                col = box.column(align=True)
-                col.prop(material, 'tex_diffuse')
-                col.prop(material, 'tex_ao')
-                col.prop(material, 'tex_roughness')
-                col.prop(material, 'tex_metallic')
-                col.separator()
-                col.separator()
-                col.prop(material, 'tex_normal')
-                col.prop(material, 'normaltype')
-                col.separator()
-                col.separator()
-                col.prop(material, 'tex_emissive')
-                col.prop(material, 'emissivetype')
-                col.separator()
+                col1 = box.column(align=True)
+                col1.prop(material, 'tex_diffuse')
+                col1.prop(material, 'tex_ao')
+                col1.prop(material, 'tex_roughness')
+                col1.prop(material, 'tex_metallic')
+                col1.separator()
+                col1.separator()
+                col1.prop(material, 'tex_normal')
+                col1.prop(material, 'normaltype')
+                col1.separator()
+                col1.separator()
+                col1.prop(material, 'tex_emissive')
+                col1.prop(material, 'emissivetype')
+                col1.separator()
 
 
                 c = row.column(align=True)
@@ -281,11 +281,11 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 r.alignment = 'CENTER'
                 r.label(text='VTF Format')
 
-                col = box.column(align=True)
-                col.prop(material, 'basetexture_format')
-                col.prop(material, 'emissive_format')
-                col.prop(material, 'normal_format')
-                col.prop(material, 'phong_format')
+                col2 = box.column(align=True)
+                col2.prop(material, 'basetexture_format')
+                col2.prop(material, 'emissive_format')
+                col2.prop(material, 'normal_format')
+                col2.prop(material, 'phong_format')
 
 
                 box = c.box()
@@ -294,14 +294,37 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 r.alignment = 'CENTER'
                 r.label(text='Export Settings')
 
-                col = box.column(align=True)
-                col.prop(material, 'type')
-                col.prop(material, 'convert_method')
-                col.prop(game, 'vtf_version')
+                col3 = box.column(align=True)
+                col3.prop(material, 'type')
+                col3.prop(material, 'convert_method')
+                col3.prop(game, 'vtf_version')
 
-                col.separator()
-                col.operator('sourceops.export_materials', text='Export Materials')
-                col.separator()
+                
+
+
+                warns = 0
+
+                if not material.tex_diffuse:
+                    col3.alert = True
+                    col3.label(text=f'Base Color is required for Export', icon='ERROR')
+                    warns += 1
+
+
+                if material.convert_method != 'simple':
+                    if not material.tex_normal:
+                        col3.alert = True 
+                        col3.label(text=f'Normalmap is required for FakePBR Export', icon='ERROR')
+                        warns += 1
+                    if not material.tex_roughness:
+                        col3.alert = True 
+                        col3.label(text=f'Roughness is required for FakePBR Export', icon='ERROR')
+                        warns += 1
+
+                col2.separator(factor=2)
+
+
+                col3.operator('sourceops.export_materials', text='Export Materials')
+
 
 
         elif model and sourceops.panel == 'SEQUENCES':

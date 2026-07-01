@@ -34,8 +34,7 @@ SOURCEOPS_NormalMaptypes = ([
     ('DIRECTX', 'DirectX', '')
 ])
 SOURCEOPS_Emissivetypes = ([
-    ('COLOR_DETAIL', 'Color | $detail method', ''),
-    ('COLOR_BLEND', 'Color | $emissiveBlend method', ''),
+    ('COLOR', 'Color | $detail method', ''),
     ('MASK', 'Mask | $selfillum ', '')
 ])
 SOURCEOPS_VMTtypes = ([
@@ -43,7 +42,7 @@ SOURCEOPS_VMTtypes = ([
 ])
 SOURCEOPS_MatsConverMethod = ([
     ('simple', 'Simple', ''),
-    ('fakepbr1', 'FakePBR', '')
+    ('fakepbr1', 'PBR2Source', '')
 ])
 
 
@@ -114,7 +113,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         name='Type',
         description='What type of emissive texture it is, self colored or a mask of the base color',
         items=SOURCEOPS_Emissivetypes,
-        default='COLOR_DETAIL',
+        default='COLOR',
     )
 
 
@@ -128,7 +127,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         name='Emissive',
         description=vtf_format_description,
         items=SOURCEOPS_VTF_FORMAT,
-        default=vtfpp.ImageFormat.DXT5.name,
+        default=vtfpp.ImageFormat.DXT1.name,
     )
     normal_format: bpy.props.EnumProperty(
         name='Bumbmap',
@@ -140,5 +139,5 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         name='Phong',
         description=vtf_format_description,
         items=SOURCEOPS_VTF_FORMAT,
-        default=vtfpp.ImageFormat.BGRA8888.name,
+        default=vtfpp.ImageFormat.I8.name,
     )
