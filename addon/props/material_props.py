@@ -38,7 +38,8 @@ SOURCEOPS_Emissivetypes = ([
     ('MASK', 'Mask | $selfillum ', '')
 ])
 SOURCEOPS_VMTtypes = ([
-    ('VertexLitGeneric', 'VertexLitGeneric', '')
+    ('VertexLitGeneric', 'VertexLitGeneric', ''),
+    ('UnlitGeneric', 'UnlitGeneric', ''),
 ])
 SOURCEOPS_MatsConverMethod = ([
     ('simple', 'Simple', ''),
@@ -135,9 +136,16 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         items=SOURCEOPS_VTF_FORMAT,
         default=vtfpp.ImageFormat.BGRA8888.name,
     )
-    phong_format: bpy.props.EnumProperty(
-        name='Phong',
-        description=vtf_format_description,
-        items=SOURCEOPS_VTF_FORMAT,
-        default=vtfpp.ImageFormat.I8.name,
+    #phong_format: bpy.props.EnumProperty(
+    #    name='Phong',
+    #    description=vtf_format_description,
+    #    items=SOURCEOPS_VTF_FORMAT,
+    #    default=vtfpp.ImageFormat.I8.name,
+    #)
+
+    fakepbr1_max_exponent: bpy.props.IntProperty(
+        name='Max Exponent',
+        description='Max Exponent',
+        default=32,
+        min=0,
     )

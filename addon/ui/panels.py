@@ -285,7 +285,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col2.prop(material, 'basetexture_format')
                 col2.prop(material, 'emissive_format')
                 col2.prop(material, 'normal_format')
-                col2.prop(material, 'phong_format')
+                #col2.prop(material, 'phong_format')
 
 
                 box = c.box()
@@ -298,6 +298,10 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col3.prop(material, 'type')
                 col3.prop(material, 'convert_method')
                 col3.prop(game, 'vtf_version')
+
+                if material.convert_method == 'fakepbr1':
+                    c = common.split_column(col3)
+                    c.prop(material, 'fakepbr1_max_exponent')
 
                 
 

@@ -56,6 +56,9 @@ class ExporterBasic:
     def phong(self) -> Image.Image:
         return None
     
+    def envmapmask(self) -> Image.Image:
+        return None
+
     def vmt(self, export_mat:ExportMaterial, outpath:Path):
             blender_mat = export_mat.source
 
@@ -113,17 +116,18 @@ class Pbr2Source:
 
         flat_normal_color = (128, 128, 255)
 
-        self.diffuse   = self._img(self.mat.tex_diffuse).convert('RGB')
+        self.diffuse   = self._img(self.mat.tex_diffuse).convert('RGBA')
         self.roughness = self._img(self.mat.tex_roughness).convert('L')
         self.ao        = self._img(self.mat.tex_ao).convert('L') if self.mat.tex_ao else None
         self.bumbpmap  = self._img(self.mat.tex_normal).convert('RGB').resize(self.roughness.size)
         self.metallic  = self._img(self.mat.tex_metallic).convert('L').resize(self.roughness.size) \
             if self.mat.tex_metallic else Image.new(mode='L', size=self.roughness.size) #Resize Metallic just to be sure
 
-        r, g, b = self.diffuse.split()
+        r, g, b, a = self.diffuse.split()
         self.np_diffuse_r = np.array(r , dtype=np.float32) / 255.0
         self.np_diffuse_g = np.array(g , dtype=np.float32) / 255.0
         self.np_diffuse_b = np.array(b , dtype=np.float32) / 255.0
+        self.np_diffuse_a = np.array(a , dtype=np.float32) / 255.0
 
         r, g, b = self.bumbpmap.split()
         self.np_bumbpmap_x = np.array(r , dtype=np.float32) / 255.0
@@ -134,15 +138,15 @@ class Pbr2Source:
         self.np_metallic  = np.array(self.metallic  , dtype=np.float32) / 255.0
         self.np_ao        = np.array(self.ao        , dtype=np.float32) / 255.0 if self.mat.tex_ao else None
 
-        self.MAX_EXPONENT = 32
+        self.MAX_EXPONENT = self.mat.fakepbr1_max_exponent
 
 
     def _img(self, name) -> Image.Image:
         return self.images[name]
 
-    def _envmapmask(self): #Alpha channels embedded in $basetexture work in reverse. Transparent areas are reflective, opaque areas are matte
+    def _envmapmask(self):
         roughness_exp = 5
-        return 1 - ((self.np_metallic * 0.75) + 0.25) * ((1-self.np_roughness) ** roughness_exp)
+        return ((self.np_metallic * 0.75) + 0.25) * ((1-self.np_roughness) ** roughness_exp)
 
     def _phongmask(self):
         return ((1-self.np_roughness) ** 3) * 1.1
@@ -160,7 +164,7 @@ class Pbr2Source:
         r = self.np_diffuse_r * self.np_ao if self.mat.tex_ao else self.np_diffuse_r
         g = self.np_diffuse_g * self.np_ao if self.mat.tex_ao else self.np_diffuse_g
         b = self.np_diffuse_b * self.np_ao if self.mat.tex_ao else self.np_diffuse_b
-        a = self._envmapmask()
+        a = self.np_diffuse_a
 
         rgb_array = np.dstack( (r, g, b, a) )
         return self._arr_to_img(rgb_array)
@@ -188,6 +192,11 @@ class Pbr2Source:
 
         rgb_array = np.dstack( (r, g, b, a) )
         return self._arr_to_img(rgb_array)
+    
+    def envmapmask(self) -> Image.Image:
+        l = self._envmapmask()
+        rgb_array = np.dstack( (l, l, l, np.ones_like(l)) )
+        return self._arr_to_img(rgb_array)
 
 
     def vmt(self, export_mat:ExportMaterial, outpath:Path):
@@ -209,13 +218,15 @@ class Pbr2Source:
                     vmt.write('\n')
                     vmt.write(f'\t$surfaceprop\t"{str(blender_mat.surfaceprop)}"\n')
 
+                rel = export_mat.envmapmask.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
                 vmt.write('\n')
-                vmt.write('\t$envmap                "env_cubemap"\n')
-                vmt.write('\t$envmaptint            "[0.1 0.1 0.1]"\n')
-                vmt.write('\t$envmapcontrast        "1.0"\n')
-                vmt.write('\t$basealphaenvmapmask   "1"\n')
-                vmt.write('\t$envmapfresnel         "1"\n')
-                vmt.write('\t$envmaplightscale      "1.0"\n')
+                vmt.write(f'\t$envmap                "env_cubemap"\n')
+                vmt.write(f'\t$envmapmask            "{rel}"\n')
+                vmt.write(f'\t$envmaptint            "[0.1 0.1 0.1]"\n')
+                vmt.write(f'\t$envmapcontrast        "1.0"\n')
+                #vmt.write(f'\t$basealphaenvmapmask   "1"\n')
+                vmt.write(f'\t$envmapfresnel         "1"\n')
+                vmt.write(f'\t$envmaplightscale      "1.0"\n')
 
                 rel = export_mat.phong.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
                 vmt.write('\n')

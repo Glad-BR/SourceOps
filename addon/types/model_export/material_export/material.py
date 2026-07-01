@@ -57,12 +57,12 @@ def export_materials(self:Model):
         'tex_roughness',
         'tex_metallic',
         'tex_normal',
-        'tex_emissive'
+        'tex_emissive',
     )
 
     for mat in self.materials_items:
         mat:SOURCEOPS_AllMaterialsProps
-        
+
         for name in tex_search_list:
             image = mat[name]
 
@@ -139,7 +139,13 @@ def export_materials(self:Model):
         export.phong = register_texture(
             image=exporter.phong(),
             image_name='phong',
-            format=ImageFormat[mat.phong_format],
+            format=ImageFormat.I8,
+            flags=flags,
+        )
+        export.envmapmask = register_texture(
+            image=exporter.envmapmask(),
+            image_name='envmapmask',
+            format=ImageFormat.I8,
             flags=flags,
         )
 

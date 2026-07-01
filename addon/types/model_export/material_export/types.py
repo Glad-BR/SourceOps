@@ -33,3 +33,4 @@ class ExportMaterial:
     normal: ExportTexture = None
     emissive: ExportTexture = None
     phong: ExportTexture = None
+    envmapmask: ExportTexture = None
