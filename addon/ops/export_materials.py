@@ -35,5 +35,5 @@ class SOURCEOPS_OT_ExportMaterials(bpy.types.Operator):
             self.report({'ERROR'}, error)
             return {'CANCELLED'}
 
-        self.report({'INFO'}, f'Test')
+        self.report({'INFO'}, f'Materials exported successfully')
         return {'FINISHED'}
