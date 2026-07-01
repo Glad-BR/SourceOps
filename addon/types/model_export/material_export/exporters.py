@@ -26,8 +26,6 @@ def _norm_img(source:Image.Image, target:Image.Image) -> Image.Image:
 def _multiply(image1:Image.Image, image2:Image.Image) -> Image.Image:
     return ImageChops.multiply(_norm_img(image1, image2), image2)
 
-AAAA = Path('/home/glad/Desktop/GMOD DEV/GarrysMod/garrysmod/addons/test/materials/models/props_gbr/lamps/FlourecentLamp002a/')
-
 
 class ExporterBasic:
     def __init__(self, model:Model, AllMaterialsProps:SOURCEOPS_AllMaterialsProps, pil_images):

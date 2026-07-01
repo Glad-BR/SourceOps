@@ -104,13 +104,28 @@ def probe_bsdf(material, probe_node:BlenderInputNodes):
         )
 
         if principled:
-            base_color_input = principled.inputs[probe_node.value]
+            selected_input = principled.inputs[probe_node.value]
 
             #for x in principled.inputs:
             #    print(x)
+ 
 
-            if base_color_input.is_linked:
-                from_node = base_color_input.links[0].from_node
+            if selected_input.is_linked:
+                from_node = selected_input.links[0].from_node
+
+
+                if from_node.type == 'NORMAL_MAP':
+                    normal_map_node = from_node
+                    normal_map_input = normal_map_node.inputs['Color']
+
+                    if normal_map_input.is_linked:
+                        from_node = normal_map_input.links[0].from_node
+
+                        if from_node.type == 'TEX_IMAGE':
+                            image = from_node.image
+                            if image:
+                                return image
+
 
                 if from_node.type == 'TEX_IMAGE':
                     image = from_node.image
