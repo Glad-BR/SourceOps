@@ -69,10 +69,10 @@ class ExporterBasic:
 
                 rel = export_mat.basetexture.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
                 vmt.write(f'\t$basetexture      "{rel}"\n')
-                vmt.write(f'\t$normal           "{rel}"\n')
 
                 if export_mat.normal:
                     rel = export_mat.normal.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
+                    vmt.write(f'\t$normal           "{rel}"\n')
                     
                 if blender_mat.surfaceprop:
                     vmt.write('\n')
