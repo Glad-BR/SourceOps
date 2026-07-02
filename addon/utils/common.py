@@ -7,6 +7,7 @@ import shutil
 import bmesh
 import subprocess
 
+from rich import print
 import pathlib
 from pathlib import Path
 
