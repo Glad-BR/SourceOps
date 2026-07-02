@@ -10,6 +10,7 @@ import bmesh
 import subprocess
 import os
 
+from rich import print
 from pathlib import Path
 
 from mathutils import Vector

@@ -1,5 +1,6 @@
 import bpy
 
+from rich import print
 from ... utils import common
 from .model import Model
 

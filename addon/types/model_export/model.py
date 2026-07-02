@@ -3,6 +3,7 @@ import time
 import subprocess
 import os
 
+from rich import print
 from shutil import move
 from pathlib import Path
 from traceback import print_exc
