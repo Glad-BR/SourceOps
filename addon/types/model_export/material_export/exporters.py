@@ -74,7 +74,7 @@ class ExporterBasic:
                     rel = export_mat.normal.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
                     vmt.write(f'\t$normal           "{rel}"\n')
                     
-                if blender_mat.surfaceprop:
+                if blender_mat.surfaceprop and blender_mat.surfaceprop != 'default':
                     vmt.write('\n')
                     vmt.write(f'\t$surfaceprop "{str(blender_mat.surfaceprop)}"\n')
 
@@ -204,7 +204,7 @@ class Pbr2Source:
                     rel = self._relative(export_mat.normal.output_path)
                     vmt.write(f'\t$bumpmap      "{rel}"\n')
 
-                if blender_mat.surfaceprop:
+                if blender_mat.surfaceprop and blender_mat.surfaceprop != 'default':
                     vmt.write('\n')
                     vmt.write(f'\t$surfaceprop\t"{str(blender_mat.surfaceprop)}"\n')
 

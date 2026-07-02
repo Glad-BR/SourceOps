@@ -200,15 +200,17 @@ class Model:
             else:
                 cwd = None
                 args = [str(self.studiomdl), '-nop4', '-fullcollide', '-game', str(self.game), str(qc)]
-            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
+            
 
-            while True:
-                code = pipe.returncode
-                if code is None:
-                    log = self.directory.joinpath(f'{self.stem}.log')
-                    log.write_bytes(b'\n\n\n'.join(pipe.communicate()))
-                else:
-                    break
+            log = self.directory.joinpath(f'{self.stem}.log')
+
+            with log.open('wb') as f:
+                with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd, env=env) as pipe:
+                    for line in pipe.stdout:
+                        f.write(line)
+                        print(line.decode('utf-8').rstrip())
+
+            code = pipe.returncode
 
             if code == 0:
                 self.move_files()
