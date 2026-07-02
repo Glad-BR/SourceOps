@@ -16,6 +16,7 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
 
     all_models: bpy.props.BoolProperty(name='All Models', description='Export all models in the scene', default=False)
     export_meshes: bpy.props.BoolProperty(name='Export Meshes', description='Export the meshes and animations as SMD/FBX', default=True)
+    export_materials: bpy.props.BoolProperty(name='Export Materials', description='Export the model materials', default=True)
     generate_qc: bpy.props.BoolProperty(name='Generate QC', description='Generate the QC based on your settings', default=True)
     compile_qc: bpy.props.BoolProperty(name='Compile QC', description='Compile the QC to an MDL', default=True)
     view_model: bpy.props.BoolProperty(name='View Model', description='Open the selected model in HLMV', default=False)
@@ -26,6 +27,7 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         col.prop(self, 'all_models')
 
         col.prop(self, 'export_meshes')
+        col.prop(self, 'export_materials')
         col.prop(self, 'generate_qc')
         col.prop(self, 'compile_qc')
 
@@ -121,6 +123,11 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
 
         if not self.ctrl or self.generate_qc:
             error = qc.generate_qc(source_model)
+            if error:
+                return error
+            
+        if not self.ctrl or self.export_materials:
+            error = source_model.export_materials()
             if error:
                 return error
 

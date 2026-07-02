@@ -1,6 +1,7 @@
 import bpy
 import numpy as np
 
+from rich import print
 from pathlib import Path
 from enum import Enum
 from PIL import Image
@@ -87,7 +88,7 @@ def create_vtf(image: Image.Image, output_path: str|Path, options: vtfpp.VTF.Cre
     err = vtf.bake_to_file(vtf_path=output_path)
 
     if output_path.exists():
-        print(f'VTF Created {str(output_path)} {err}')
+        print('VTF Created', output_path, err)
         return output_path
     else:
         print(err)

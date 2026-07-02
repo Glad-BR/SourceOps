@@ -273,10 +273,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col1.prop(material, 'emissivetype')
                 col1.separator()
 
-
                 c = row.column(align=True)
                 box = c.box()
-                
                 r = box.row()
                 r.alignment = 'CENTER'
                 r.label(text='VTF Format')
@@ -285,11 +283,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col2.prop(material, 'basetexture_format')
                 col2.prop(material, 'emissive_format')
                 col2.prop(material, 'normal_format')
-                #col2.prop(material, 'phong_format')
-
 
                 box = c.box()
-
                 r = box.row()
                 r.alignment = 'CENTER'
                 r.label(text='Export Settings')
@@ -303,33 +298,19 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                     c = common.split_column(col3)
                     c.prop(material, 'fakepbr1_max_exponent')
 
-                
-
-
-                warns = 0
-
                 if not material.tex_diffuse:
                     col3.alert = True
                     col3.label(text=f'Base Color is required for Export', icon='ERROR')
-                    warns += 1
-
 
                 if material.convert_method != 'simple':
                     if not material.tex_normal:
                         col3.alert = True 
                         col3.label(text=f'Normalmap is required for FakePBR Export', icon='ERROR')
-                        warns += 1
                     if not material.tex_roughness:
                         col3.alert = True 
                         col3.label(text=f'Roughness is required for FakePBR Export', icon='ERROR')
-                        warns += 1
 
                 col2.separator(factor=2)
-
-                row = layout.box().row()
-                row.operator('sourceops.export_materials', text='Export Materials')
-                row.operator('sourceops.open_material_folder', text='Open Material Folder')
-
 
 
         elif model and sourceops.panel == 'SEQUENCES':
@@ -440,15 +421,23 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             box = layout.box()
             row = box.row()
-            row.scale_x = row.scale_y = 1.5
+            row.scale_x = 1.5
+            row.scale_y = 1.5
             row.label(text='Export')
+
             row = row.row(align=True)
             row.alignment = 'RIGHT'
 
-            row.operator('sourceops.open_folder', text='', icon='FILEBROWSER')
+            r = row.row(align=True)
+            r.scale_x = 0.44
+            #r.scale_y = 1.5
+            r.operator('sourceops.open_folder', text='MDL', icon='FILEBROWSER')
+            r.operator('sourceops.open_material_folder', text='TEX', icon='FILEBROWSER')
+            row.separator()
             row.operator('sourceops.export_meshes', text='', icon_value=icons.id('smd'))
             row.operator('sourceops.generate_qc', text='', icon_value=icons.id('qc'))
             row.operator('sourceops.compile_qc', text='', icon_value=icons.id('mdl'))
+            row.operator('sourceops.export_materials', text='', icon='TEXTURE')
             row.operator('sourceops.view_model', text='', icon_value=icons.id('hlmv'))
             row.operator('sourceops.export_auto', text='', icon='AUTO')
 

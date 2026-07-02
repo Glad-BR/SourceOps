@@ -20,6 +20,7 @@ from . import (
 classes = (
     autofill_materials.SOURCEOPS_OT_AutofillMaterials,
     open_folder.SOURCEOPS_OT_OpenFolder,
+    open_folder.SOURCEOPS_OT_OpenMaterialFolder,
     export_meshes.SOURCEOPS_OT_ExportMeshes,
     generate_qc.SOURCEOPS_OT_GenerateQC,
     compile_qc.SOURCEOPS_OT_CompileQC,
@@ -34,7 +35,6 @@ classes = (
     backup.SOURCEOPS_OT_BackupPreferences,
     backup.SOURCEOPS_OT_RestorePreferences,
     export_materials.SOURCEOPS_OT_ExportMaterials,
-    export_materials.SOURCEOPS_OT_OpenMaterialFolder,
 )
 
 class_register, class_unregister = bpy.utils.register_classes_factory(classes)
