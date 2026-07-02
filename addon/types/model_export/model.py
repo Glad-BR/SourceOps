@@ -228,6 +228,15 @@ class Model:
             bpy.ops.wm.path_open(filepath=str(self.directory))
         except:
             return self.report(f'Failed to open: {self.directory}', exception=True)
+    
+    def open_material_folder(self):
+        relative_path = Path(self.material_folder_items[0].name)
+        mat_folder = Path(self.materials / relative_path)
+        try:
+            print(f'Opening: {mat_folder}')
+            bpy.ops.wm.path_open(filepath=str(mat_folder))
+        except:
+            return self.report(f'Failed to open: {mat_folder}', exception=True)
 
     def view_model(self):
         model = self.models.joinpath(self.name)

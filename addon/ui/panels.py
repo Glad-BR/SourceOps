@@ -326,8 +326,9 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
                 col2.separator(factor=2)
 
-
-                col3.operator('sourceops.export_materials', text='Export Materials')
+                row = layout.box().row()
+                row.operator('sourceops.export_materials', text='Export Materials')
+                row.operator('sourceops.open_material_folder', text='Open Material Folder')
 
 
 

@@ -34,6 +34,7 @@ classes = (
     backup.SOURCEOPS_OT_BackupPreferences,
     backup.SOURCEOPS_OT_RestorePreferences,
     export_materials.SOURCEOPS_OT_ExportMaterials,
+    export_materials.SOURCEOPS_OT_OpenMaterialFolder,
 )
 
 class_register, class_unregister = bpy.utils.register_classes_factory(classes)

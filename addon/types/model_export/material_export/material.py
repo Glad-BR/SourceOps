@@ -35,10 +35,11 @@ def _hashimg(image:Image.Image):
 def export_materials(self:Model):
     start = time.perf_counter()
 
+    print(f"Exporting Material {self.name}")
+
     error = []
 
     relative_path = Path(self.material_folder_items[0].name)
-
     mat_folder = Path(self.materials / relative_path)
     tex_folder = mat_folder / Path(self.name).name
 
@@ -60,6 +61,8 @@ def export_materials(self:Model):
         'tex_emissive',
     )
 
+    
+    print(f"Building unique texture list for {len(self.materials_items)} materials")
     for mat in self.materials_items:
         mat:SOURCEOPS_AllMaterialsProps
 
@@ -171,6 +174,7 @@ def export_materials(self:Model):
         )
 
     # Step 2: Convert textures for each material
+    print(f"Converting textures for {len(self.materials_items)} materials")
     with ThreadPoolExecutor() as executor:
         list(executor.map(convert_textures, self.materials_items))
 
@@ -179,6 +183,7 @@ def export_materials(self:Model):
         tex.output_path = tex_folder / f"{bpy.path.clean_name(tex.image_name)}_{tex.image_hash[:8]}.vtf"
     
     # Step 3: create textures and save as vtf
+    print(f"Exporting {len(textures)} VTF textures to {tex_folder}")
     with ThreadPoolExecutor() as executor:
         list(executor.map(export_texture, textures.values()))
 
