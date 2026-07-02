@@ -1,3 +1,5 @@
+from .dependency_setup import check_dependencies
+
 bl_info = {
     'name': 'SourceOps',
     'author': 'bonjorno7, Almaas, Cabbage McGravel, CryptAlchemy, Gorange, Krystian, RED_EYE, SethTooQuick, Yonder, Blueberry_pie, Glad_BR',
@@ -8,13 +10,12 @@ bl_info = {
     'category': 'Import-Export',
 }
 
-
-from . import addon
-
-
 def register():
+    check_dependencies()
+    from . import addon
     addon.register()
 
 
 def unregister():
+    from . import addon
     addon.unregister()
