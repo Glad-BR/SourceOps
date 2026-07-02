@@ -1,22 +1,16 @@
-import bpy
+import numpy as np
 
 from pathlib import Path
 from PIL import Image, ImageChops
 
 from sourcepp import vtfpp
-
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
+from .types import ExportMaterial
 from ..model import Model
 from ....props.material_props import SOURCEOPS_AllMaterialsProps
 
-from ....utils import mats
-
-from .types import ExportMaterial
-
-
-import numpy as np
 
 def _norm_img(source:Image.Image, target:Image.Image) -> Image.Image:
     if source.size != target.size:

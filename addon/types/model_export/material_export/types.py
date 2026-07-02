@@ -1,6 +1,8 @@
-from dataclasses import dataclass
-from pathlib import Path
+import numpy as np
 
+from dataclasses import dataclass
+from enum import Enum
+from pathlib import Path
 from PIL import Image
 
 from sourcepp import vtfpp
@@ -8,12 +10,6 @@ Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
 from ....props.material_props import SOURCEOPS_AllMaterialsProps
-
-
-from enum import Enum
-
-import numpy as np
-
 
 
 @dataclass

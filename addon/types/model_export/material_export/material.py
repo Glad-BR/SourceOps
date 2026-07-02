@@ -2,10 +2,10 @@ import bpy
 import time
 import hashlib
 
+from rich import print
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from PIL import Image
-
 from sourcepp import vtfpp
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
