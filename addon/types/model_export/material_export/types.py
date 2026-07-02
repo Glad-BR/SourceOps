@@ -10,6 +10,8 @@ ImageFormat = vtfpp.ImageFormat
 from ....props.material_props import SOURCEOPS_AllMaterialsProps
 
 
+from enum import Enum
+
 import numpy as np
 
 
@@ -34,3 +36,9 @@ class ExportMaterial:
     emissive: ExportTexture = None
     phong: ExportTexture = None
     envmapmask: ExportTexture = None
+
+class PIL_VTF_map(Enum):
+    RGB = ImageFormat.RGB888
+    RGBA = ImageFormat.RGBA8888
+    L = ImageFormat.I8
+    LA = ImageFormat.IA88

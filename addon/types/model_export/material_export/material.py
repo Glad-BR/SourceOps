@@ -1,28 +1,20 @@
 import bpy
 import time
-import zlib
 import hashlib
 
-from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from ....utils import mats
-
 from PIL import Image
 
 from sourcepp import vtfpp
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
-from ..model import Model
-from ....props.material_props import SOURCEOPS_AllMaterialsProps
-
-
-from .exporters import ExporterBasic, Pbr2Source
-
 from .types import *
-
-
+from .exporters import ExporterBasic, Pbr2Source
+from ..model import Model
+from ....utils import mats
+from ....props.material_props import SOURCEOPS_AllMaterialsProps
 
 
 def _hashimg(image:Image.Image):
@@ -45,9 +37,7 @@ def export_materials(self:Model):
 
     tex_folder.mkdir(parents=True, exist_ok=True)
 
-
     pil_images = {}
-
     textures = {}
     materials = []
 
@@ -60,7 +50,6 @@ def export_materials(self:Model):
         'tex_normal',
         'tex_emissive',
     )
-
     
     print(f"Building unique texture list for {len(self.materials_items)} materials")
     for mat in self.materials_items:
@@ -90,7 +79,6 @@ def export_materials(self:Model):
         tex = textures.get(key)
 
         if tex is None:
-
             tex = ExportTexture(
                 image=image,
                 image_hash=image_hash,
@@ -100,9 +88,7 @@ def export_materials(self:Model):
                 flags=flags,
                 invert_green=invert_green,
             )
-
             textures[key] = tex
-
         return tex
 
 
@@ -136,7 +122,7 @@ def export_materials(self:Model):
         export.emissive = register_texture(
             image=exporter.emissive(),
             image_name='emissive',
-            format=ImageFormat[mat.emissive_format],
+            format=ImageFormat[mat.emissive_format] if mat.emissivetype == 'COLOR' else ImageFormat.I8,
             flags=flags,
         )
         export.phong = register_texture(
@@ -164,7 +150,7 @@ def export_materials(self:Model):
         opts.output_format = tex.format
         opts.invert_green_channel = tex.invert_green
 
-        print(f'Creating VTF With format: {tex.format}')
+        print(f'Submitting VTF create job {tex.image.mode} {tex.image.size} {tex.image_name} {tex.image_hash[:8]} -> {tex.output_path.relative_to(self.materials)}')
 
         mats.create_vtf(
             image=tex.image,
@@ -187,25 +173,13 @@ def export_materials(self:Model):
     with ThreadPoolExecutor() as executor:
         list(executor.map(export_texture, textures.values()))
 
-
     print(f"Converted {len(textures)} textures in {time.perf_counter()-start:.3f}s")
 
-
-
-
     # Write VMTs
-
     for mat in materials:
         mat:ExportMaterial # Me like type
-
-
         blender_mat = mat.source
         exporter = _exporter(blender_mat)
-
         exporter.vmt(export_mat=mat, outpath=(mat_folder / blender_mat.name))
-
-
-
-
 
     return error if error else None

@@ -4,12 +4,14 @@ from pathlib import Path
 from PIL import Image, ImageChops
 
 from sourcepp import vtfpp
+
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
 from ..model import Model
 from ....props.material_props import SOURCEOPS_AllMaterialsProps
 
+from ....utils import mats
 
 from .types import ExportMaterial
 
@@ -33,21 +35,27 @@ class ExporterBasic:
         self.images = pil_images
         self.mat = AllMaterialsProps
 
+    def _img(self, name) -> Image.Image:
+        return self.images[name]
+
     def basetexture(self) -> Image.Image:
         if self.mat.tex_ao:
-            return _multiply(self.images[self.mat.tex_ao], self.images[self.mat.tex_diffuse])
+            return _multiply(self._img(self.mat.tex_ao), self._img(self.mat.tex_diffuse))
         else:
-            return self.images[self.mat.tex_diffuse]
+            return self._img(self.mat.tex_diffuse)
 
     def normal(self) -> Image.Image:
         if self.mat.tex_normal:
-            return self.images[self.mat.tex_normal]
+            return self._img(self.mat.tex_normal)
         else:
             return None
 
     def emissive(self) -> Image.Image:
         if self.mat.tex_emissive:
-            return self.images[self.mat.tex_emissive]
+            if self.mat.emissivetype == 'MASK':
+                return self._img(self.mat.tex_emissive).convert('L')
+            else:
+                return self._img(self.mat.tex_emissive)
         else:
             return None
 
@@ -72,7 +80,6 @@ class ExporterBasic:
                 if export_mat.normal:
                     rel = export_mat.normal.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
                     
-
                 if blender_mat.surfaceprop:
                     vmt.write('\n')
                     vmt.write(f'\t$surfaceprop "{str(blender_mat.surfaceprop)}"\n')
@@ -93,12 +100,8 @@ class ExporterBasic:
 
 
 
-
-
-
-
 # PBR-2-SOURCE secret sauce
-
+# Magic numbers galore
 class Pbr2Source:
     def __init__(self, model:Model, AllMaterialsProps:SOURCEOPS_AllMaterialsProps, pil_images):
         self.model = model
@@ -156,10 +159,10 @@ class Pbr2Source:
 
     def basetexture(self) -> Image.Image:
         if self.mat.tex_ao:
-            return _multiply(self.images[self.mat.tex_ao], self.images[self.mat.tex_diffuse])
+            return _multiply(self._img(self.mat.tex_ao), self._img(self.mat.tex_diffuse))
         else:
-            return self.images[self.mat.tex_diffuse]
-    
+            return self._img(self.mat.tex_diffuse)
+
     def normal(self) -> Image.Image:
         r = self.np_bumbpmap_x
         g = self.np_bumbpmap_y
@@ -171,27 +174,26 @@ class Pbr2Source:
     
     def emissive(self) -> Image.Image:
         if self.mat.tex_emissive:
-            return self.images[self.mat.tex_emissive]
+            if self.mat.emissivetype == 'MASK':
+                return self._img(self.mat.tex_emissive).convert('L')
+            else:
+                return self._img(self.mat.tex_emissive)
         else:
             return None
 
     def phong(self) -> Image.Image:
-        r = self._phongexponent()
-        g = r
-        b = r
-        a = np.ones_like(r)
-
-        rgb_array = np.dstack( (r, g, b, a) )
-        return self._arr_to_img(rgb_array)
+        l = self._phongexponent()
+        return self._arr_to_img(l)
     
     def envmapmask(self) -> Image.Image:
         if self.mat.tex_metallic:
             l = self._envmapmask()
-            rgb_array = np.dstack( (l, l, l, np.ones_like(l)) )
-            return self._arr_to_img(rgb_array)
+            return self._arr_to_img(l)
         else:
             return None
 
+    def _relative(self, path:Path) -> str:
+        return path.relative_to(self.model.materials).with_suffix("").as_posix()
 
     def vmt(self, export_mat:ExportMaterial, outpath:Path):
             blender_mat = export_mat.source
@@ -201,11 +203,11 @@ class Pbr2Source:
                 vmt.write(f"{blender_mat.type}\n")
                 vmt.write("{\n")
 
-                rel = export_mat.basetexture.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
+                rel = self._relative(export_mat.basetexture.output_path)
                 vmt.write(f'\t$basetexture  "{rel}"\n')
                 
                 if export_mat.normal:
-                    rel = export_mat.normal.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
+                    rel = self._relative(export_mat.normal.output_path)
                     vmt.write(f'\t$bumpmap      "{rel}"\n')
 
                 if blender_mat.surfaceprop:
@@ -213,7 +215,7 @@ class Pbr2Source:
                     vmt.write(f'\t$surfaceprop\t"{str(blender_mat.surfaceprop)}"\n')
 
                 if export_mat.envmapmask:
-                    rel = export_mat.envmapmask.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
+                    rel = self._relative(export_mat.envmapmask.output_path)
                     vmt.write('\n')
                     vmt.write(f'\t$envmap                "env_cubemap"\n')
                     vmt.write(f'\t$envmapmask            "{rel}"\n')
@@ -223,7 +225,7 @@ class Pbr2Source:
                     vmt.write(f'\t$envmapfresnel         "1"\n')
                     vmt.write(f'\t$envmaplightscale      "1.0"\n')
 
-                rel = export_mat.phong.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
+                rel = self._relative(export_mat.phong.output_path)
                 vmt.write('\n')
                 vmt.write(f'\t$phong                 "1"\n')
                 vmt.write(f'\t$phongexponenttexture  "{rel}"\n')
@@ -231,9 +233,8 @@ class Pbr2Source:
                 vmt.write(f'\t$phongboost            "5.0"\n')
                 vmt.write(f'\t$phongfresnelranges    "[0.1 0.8 1.0]"\n')
                 
-
                 if export_mat.emissive:
-                    rel = export_mat.emissive.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
+                    rel = self._relative(export_mat.emissive.output_path)
                     vmt.write('\n')
                     if blender_mat.emissivetype == 'COLOR':
                         vmt.write(f'\t$detail                "{rel}"\n')

@@ -1,12 +1,12 @@
 import bpy
-
-import time
+import numpy as np
 
 from pathlib import Path
 from enum import Enum
+from PIL import Image
+from sourcepp import vtfpp
 
-from PIL import Image, ImageChops
-import numpy as np
+from ..types.model_export.material_export.types import PIL_VTF_map
 
 class BlenderInputNodes(Enum):
     BaseColor = 'Base Color'
@@ -17,7 +17,7 @@ class BlenderInputNodes(Enum):
     Emissive = 'Emission Color'
 
 
-def save_blender_img(image, save_path:str|Path, name_override:str=None) -> Path:
+def save_blender_img(image: bpy.types.Image, save_path: str|Path, name_override: str|None = None) -> Path|None:
     name = f'{image.name if not name_override else name_override}.{str(image.file_format).lower()}' # i cry
     file = (Path(save_path) / name)
     image.save(filepath=str(file))
@@ -30,7 +30,7 @@ def save_blender_img(image, save_path:str|Path, name_override:str=None) -> Path:
         return None
 
 
-def blender_to_numpy(bpy_img) -> np.ndarray:
+def blender_to_numpy(bpy_img: bpy.types.Image) -> np.ndarray:
     '''Converts a Blender image to a numpy array with shape (height, width, channels) as a float32 array with values in the range [0, 1].'''
     width = bpy_img.size[0]
     height = bpy_img.size[1]
@@ -43,20 +43,19 @@ def blender_to_numpy(bpy_img) -> np.ndarray:
     flipped = float_pixels[::-1, :, :]
     return flipped
     
-def blender_to_byte(bpy_img) -> bytes:
+
+def blender_to_byte(bpy_img: bpy.types.Image) -> bytes:
     '''Converts a Blender image to a byte array with shape (height, width, channels) as a uint8 array with values in the range [0, 255].'''
     flipped = (np.clip(blender_to_numpy(bpy_img) * 255, 0, 255).astype(np.uint8))
     return flipped.tobytes()
 
 
-def blender_to_pil(bpy_img) -> Image.Image:
+def blender_to_pil(bpy_img: bpy.types.Image) -> Image.Image:
     '''Converts a Blender image to a PIL Image object.'''
     return Image.frombytes("RGBA", (bpy_img.size[0], bpy_img.size[1]), blender_to_byte(bpy_img))
 
 
-from sourcepp import vtfpp
-def create_vtf(image:Image.Image, output_path:str|Path, options:vtfpp.VTF.CreationOptions = None, flags:list(vtfpp.VTF.Flags) = None):
-
+def create_vtf(image: Image.Image, output_path: str|Path, options: vtfpp.VTF.CreationOptions|None = None, flags: list[vtfpp.VTF.Flags]|None = None):
     if not image: return None
     if not output_path: return None
 
@@ -69,13 +68,13 @@ def create_vtf(image:Image.Image, output_path:str|Path, options:vtfpp.VTF.Creati
     output_path.parent.mkdir(exist_ok=True, parents=True)
 
     # Just to make sure
-    options.compute_mips = True
-    options.compute_thumbnail = True
-    options.compute_reflectivity = True
+    options.compute_mips         = True if not options.compute_mips         else options.compute_mips
+    options.compute_thumbnail    = True if not options.compute_thumbnail    else options.compute_thumbnail
+    options.compute_reflectivity = True if not options.compute_reflectivity else options.compute_reflectivity
 
     vtf = vtfpp.VTF.create(
-        image_data=image.tobytes(), # Convert to RGBA just in case
-        format=vtfpp.ImageFormat.RGBA8888,
+        image_data=image.tobytes(),
+        format=PIL_VTF_map[image.mode].value,
         width=image.width,
         height=image.height,
         creation_options=options
@@ -94,25 +93,25 @@ def create_vtf(image:Image.Image, output_path:str|Path, options:vtfpp.VTF.Creati
         print(err)
 
 
-
-def probe_bsdf(material, probe_node:BlenderInputNodes):
-
+def get_bsdf_node(material: bpy.types.Material, node_type: str = 'BSDF_PRINCIPLED') -> bpy.types.ShaderNodeBsdfPrincipled|None:
     if material and material.node_tree:
         principled = next(
-            (n for n in material.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'),
+            (n for n in material.node_tree.nodes if n.type == node_type),
             None
         )
+        return principled
+    return None
+
+
+def probe_bsdf(material: bpy.types.Material, probe_node: BlenderInputNodes) -> bpy.types.Image|None:
+
+    if material and material.node_tree:
+        principled = get_bsdf_node(material, node_type='BSDF_PRINCIPLED')
 
         if principled:
             selected_input = principled.inputs[probe_node.value]
-
-            #for x in principled.inputs:
-            #    print(x)
- 
-
             if selected_input.is_linked:
                 from_node = selected_input.links[0].from_node
-
 
                 if from_node.type == 'NORMAL_MAP':
                     normal_map_node = from_node
@@ -126,7 +125,6 @@ def probe_bsdf(material, probe_node:BlenderInputNodes):
                             if image:
                                 return image
 
-
                 if from_node.type == 'TEX_IMAGE':
                     image = from_node.image
                     if image:
@@ -134,8 +132,8 @@ def probe_bsdf(material, probe_node:BlenderInputNodes):
     return None
 
 
-def get_all_mats(collection) -> set:
-    materials = set()
+def get_all_mats(collection: bpy.types.Collection) -> set[bpy.types.Material]:
+    materials: set[bpy.types.Material] = set()
     for obj in collection.all_objects:
         if hasattr(obj.data, "materials"):
             for mat in obj.data.materials:
@@ -143,9 +141,10 @@ def get_all_mats(collection) -> set:
                     materials.add(mat)
     return materials
 
-def get_all_coll(model) -> set:
 
-    colls = set()
+def get_all_coll(model) -> set[bpy.types.Collection]:
+
+    colls: set[bpy.types.Collection] = set()
 
     reference = model.reference
     bodygroups = model.bodygroups_items
@@ -171,9 +170,10 @@ def get_all_coll(model) -> set:
                         colls.add(replace.target)
     return colls
 
-def mats_from_model(model) -> set:
 
-    materials = set()
+def mats_from_model(model) -> set[bpy.types.Material]:
+
+    materials: set[bpy.types.Material] = set()
 
     colls = get_all_coll(model)
 
