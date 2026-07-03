@@ -7,7 +7,7 @@ from sourcepp import vtfpp
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
-from .types import ExportMaterial
+from .types import ExportMaterial, VTF_ALPHAS
 from ..model import Model
 from ....props.material_props import SOURCEOPS_AllMaterialsProps
 
@@ -77,6 +77,10 @@ class ExporterBasic:
                 if blender_mat.surfaceprop and blender_mat.surfaceprop != 'default':
                     vmt.write('\n')
                     vmt.write(f'\t$surfaceprop "{str(blender_mat.surfaceprop)}"\n')
+
+                if blender_mat.basetexture_format in VTF_ALPHAS:
+                    vmt.write('\n')
+                    vmt.write(f'\t$translucent      "1"\n')
 
                 if export_mat.emissive:
                     rel = export_mat.emissive.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
@@ -207,6 +211,10 @@ class Pbr2Source:
                 if blender_mat.surfaceprop and blender_mat.surfaceprop != 'default':
                     vmt.write('\n')
                     vmt.write(f'\t$surfaceprop\t"{str(blender_mat.surfaceprop)}"\n')
+
+                if blender_mat.basetexture_format in VTF_ALPHAS:
+                    vmt.write('\n')
+                    vmt.write(f'\t$translucent      "1"\n')
 
                 if export_mat.envmapmask:
                     rel = self._relative(export_mat.envmapmask.output_path)

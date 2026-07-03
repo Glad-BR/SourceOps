@@ -38,3 +38,16 @@ class PIL_VTF_map(Enum):
     RGBA = ImageFormat.RGBA8888
     L = ImageFormat.I8
     LA = ImageFormat.IA88
+
+VTF_ALPHAS = (
+    'ABGR8888',
+    'BGRA4444',
+    'BGRA5551',
+    'BGRA8888',
+    'DXT3',
+    'DXT5',
+    'IA88',
+    'RGBA16161616',
+    'RGBA16161616F',
+    'RGBA8888',
+)
