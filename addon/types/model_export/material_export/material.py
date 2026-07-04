@@ -3,7 +3,7 @@ import time
 import hashlib
 
 from rich import print
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 from pathlib import Path
 from PIL import Image
 from sourcepp import vtfpp
@@ -17,8 +17,8 @@ from ....utils import mats
 from ....props.material_props import SOURCEOPS_AllMaterialsProps
 
 
-def _hashimg(image:Image.Image):
-    if image:
+def _hashimg(image:np.ndarray):
+    if image is not None:
         return hashlib.sha1(image.tobytes()).hexdigest()
     else:
         return None
@@ -60,7 +60,7 @@ def export_materials(self:Model):
 
             if image and image not in pil_images:
                 print(f'Adding New Image to list: [{image}]')
-                pil_images[image] = mats.blender_to_pil(image)
+                pil_images[image] = mats.blender_to_numpy(image)
 
 
     def register_texture(image, image_name, format, flags=None, invert_green=False):
@@ -102,10 +102,39 @@ def export_materials(self:Model):
     def convert_textures(mat:SOURCEOPS_AllMaterialsProps):
         if not mat.tex_diffuse: return "!!!!!! Base Color Not Found"
         
-        flags = tuple()
         exporter = _exporter(mat)
         print(f'Using Exporter: {exporter}')
         export = ExportMaterial(source=mat)
+
+
+        flags = tuple(Flags.V0_NORMAL)
+        export.normal = register_texture(
+            image=exporter.normal(),
+            image_name='normal',
+            format=ImageFormat[mat.normal_format],
+            flags=flags,
+        )
+        flags = tuple()
+        export.phong = register_texture(
+            image=exporter.phong(),
+            image_name='phong',
+            format=ImageFormat.I8,
+            flags=flags,
+        )
+        flags = tuple()
+        export.envmapmask = register_texture(
+            image=exporter.envmapmask(),
+            image_name='envmapmask',
+            format=ImageFormat.I8,
+            flags=flags,
+        )
+
+        if int(self.vtf_version) >= 5:
+            flags = tuple(Flags.V5_SRGB)
+        elif int(self.vtf_version) >= 4:
+            flags = tuple(Flags.V4_SRGB)
+        else:
+            flags = tuple()
 
         export.basetexture = register_texture(
             image=exporter.basetexture(),
@@ -113,28 +142,10 @@ def export_materials(self:Model):
             format=ImageFormat[mat.basetexture_format],
             flags=flags,
         )
-        export.normal = register_texture(
-            image=exporter.normal(),
-            image_name='normal',
-            format=ImageFormat[mat.normal_format],
-            flags=flags,
-        )
         export.emissive = register_texture(
             image=exporter.emissive(),
             image_name='emissive',
             format=ImageFormat[mat.emissive_format] if mat.emissivetype == 'COLOR' else ImageFormat.I8,
-            flags=flags,
-        )
-        export.phong = register_texture(
-            image=exporter.phong(),
-            image_name='phong',
-            format=ImageFormat.I8,
-            flags=flags,
-        )
-        export.envmapmask = register_texture(
-            image=exporter.envmapmask(),
-            image_name='envmapmask',
-            format=ImageFormat.I8,
             flags=flags,
         )
 
@@ -150,7 +161,7 @@ def export_materials(self:Model):
         opts.output_format = tex.format
         opts.invert_green_channel = tex.invert_green
 
-        print(f'Submitting VTF create job {tex.image.mode} {tex.image.size} {tex.image_name} {tex.image_hash[:8]} -> {tex.output_path.relative_to(self.materials)}')
+        print(f'Submitting VTF create job {tex.image.shape} {tex.image_name} {tex.image_hash[:8]} -> {tex.output_path.relative_to(self.materials)}')
 
         mats.create_vtf(
             image=tex.image,
@@ -162,16 +173,27 @@ def export_materials(self:Model):
     # Step 2: Convert textures for each material
     print(f"Converting textures for {len(self.materials_items)} materials")
     with ThreadPoolExecutor() as executor:
-        list(executor.map(convert_textures, self.materials_items))
+        #executor.map(convert_textures, self.materials_items)
+        futures = [executor.submit(convert_textures, mat) for mat in self.materials_items]
+        wait(futures) 
+        for future in futures: 
+            if future.exception(): print(f"Thread failed with error: {future.exception()}")
+
 
     # Assign filenames
     for tex in textures.values():
+        tex: ExportTexture
         tex.output_path = tex_folder / f"{bpy.path.clean_name(tex.image_name)}_{tex.image_hash[:8]}.vtf"
     
     # Step 3: create textures and save as vtf
-    print(f"Exporting {len(textures)} VTF textures to {tex_folder}")
-    with ThreadPoolExecutor() as executor:
-        list(executor.map(export_texture, textures.values()))
+    print(f"Exporting {len(textures.values())} VTF textures to {tex_folder}")
+    with ThreadPoolExecutor() as executor: # Very fun
+        #executor.map(export_texture, textures.values())
+        futures = [executor.submit(export_texture, tex) for tex in textures.values()]
+        wait(futures) 
+        for future in futures:
+            if future.exception(): print(f"Thread failed with error: {future.exception()}")
+
 
     print(f"Converted {len(textures)} textures in {time.perf_counter()-start:.3f}s")
 

@@ -9,18 +9,9 @@ ImageFormat = vtfpp.ImageFormat
 
 from .types import ExportMaterial, VTF_ALPHAS
 from ..model import Model
+from ....utils import mats
 from ....props.material_props import SOURCEOPS_AllMaterialsProps
 
-
-def _norm_img(source:Image.Image, target:Image.Image) -> Image.Image:
-    if source.size != target.size:
-        source = source.resize(target.size)
-    if source.mode != target.mode:
-        source = source.convert(target.mode)
-    return source
-
-def _multiply(image1:Image.Image, image2:Image.Image) -> Image.Image:
-    return ImageChops.multiply(_norm_img(image1, image2), image2)
 
 
 class ExporterBasic:
@@ -29,35 +20,44 @@ class ExporterBasic:
         self.images = pil_images
         self.mat = AllMaterialsProps
 
-    def _img(self, name) -> Image.Image:
-        return self.images[name]
+        assert self.mat.tex_diffuse != None
 
-    def basetexture(self) -> Image.Image:
-        if self.mat.tex_ao:
-            return _multiply(self._img(self.mat.tex_ao), self._img(self.mat.tex_diffuse))
-        else:
-            return self._img(self.mat.tex_diffuse)
+        ao = self._img(self.mat.tex_ao)
+        diffuse = self._img(self.mat.tex_diffuse)
+        self.np_diffuse_r = diffuse[:, :, 0]
+        self.np_diffuse_g = diffuse[:, :, 1]
+        self.np_diffuse_b = diffuse[:, :, 2]
+        self.np_diffuse_a = diffuse[:, :, 3]
+        self.np_ao = mats.np_grayscale( mats.norm_size(ao, diffuse) )
 
-    def normal(self) -> Image.Image:
-        if self.mat.tex_normal:
-            return self._img(self.mat.tex_normal)
-        else:
-            return None
+    def _img(self, name) -> np.ndarray:
+        if name: return self.images[name] if self.images[name] is not None else None
 
-    def emissive(self) -> Image.Image:
-        if self.mat.tex_emissive:
-            if self.mat.emissivetype == 'MASK':
-                return self._img(self.mat.tex_emissive).convert('L')
-            else:
-                return self._img(self.mat.tex_emissive)
-        else:
-            return None
 
-    def phong(self) -> Image.Image:
+    def basetexture(self) -> np.ndarray:
+        r = self.np_diffuse_r * self.np_ao if self.np_ao is not None else self.np_diffuse_r
+        g = self.np_diffuse_g * self.np_ao if self.np_ao is not None else self.np_diffuse_g
+        b = self.np_diffuse_b * self.np_ao if self.np_ao is not None else self.np_diffuse_b
+        a = self.np_diffuse_a
+
+        rgb_array = np.dstack( (r, g, b, a) )
+        return rgb_array
+
+    def normal(self) -> np.ndarray:
+        return self._img(self.mat.tex_normal)
+    
+    def emissive(self) -> np.ndarray:
+        return self._img(self.mat.tex_emissive)
+
+    def phong(self) -> np.ndarray:
         return None
     
-    def envmapmask(self) -> Image.Image:
+    def envmapmask(self) -> np.ndarray:
         return None
+
+
+    def _relative(self, path:Path) -> str:
+        return path.relative_to(self.model.materials).with_suffix("").as_posix()
 
     def vmt(self, export_mat:ExportMaterial, outpath:Path):
             blender_mat = export_mat.source
@@ -67,32 +67,31 @@ class ExporterBasic:
                 vmt.write(f"{blender_mat.type}\n")
                 vmt.write("{\n")
 
-                rel = export_mat.basetexture.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
-                vmt.write(f'\t$basetexture      "{rel}"\n')
-
+                rel = self._relative(export_mat.basetexture.output_path)
+                vmt.write(f'\t$basetexture  "{rel}"\n')
+                
                 if export_mat.normal:
-                    rel = export_mat.normal.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
-                    vmt.write(f'\t$normal           "{rel}"\n')
-                    
+                    rel = self._relative(export_mat.normal.output_path)
+                    vmt.write(f'\t$normal      "{rel}"\n')
+
                 if blender_mat.surfaceprop and blender_mat.surfaceprop != 'default':
                     vmt.write('\n')
-                    vmt.write(f'\t$surfaceprop "{str(blender_mat.surfaceprop)}"\n')
+                    vmt.write(f'\t$surfaceprop\t"{str(blender_mat.surfaceprop)}"\n')
 
                 if blender_mat.basetexture_format in VTF_ALPHAS:
                     vmt.write('\n')
                     vmt.write(f'\t$translucent      "1"\n')
-
+                
                 if export_mat.emissive:
-                    rel = export_mat.emissive.output_path.relative_to(self.model.materials).with_suffix("").as_posix()
+                    rel = self._relative(export_mat.emissive.output_path)
                     vmt.write('\n')
-
                     if blender_mat.emissivetype == 'COLOR':
-                        vmt.write(f'\t$detail           "{rel}"\n')
-                        vmt.write(f'\t$detailscale      "1"\n')
-                        vmt.write(f'\t$detailblendmode  "5"\n')
+                        vmt.write(f'\t$detail                "{rel}"\n')
+                        vmt.write(f'\t$detailscale           "1"\n')
+                        vmt.write(f'\t$detailblendmode       "5"\n')
                     elif blender_mat.emissivetype == 'MASK':
-                        vmt.write(f'\t$selfillum        "1"\n')
-                        vmt.write(f'\t$selfillummask    "{rel}"\n')
+                        vmt.write(f'\t$selfillum             "1"\n')
+                        vmt.write(f'\t$selfillummask         "{rel}"\n')
 
                 vmt.write("}")
 
@@ -112,33 +111,30 @@ class Pbr2Source:
 
         flat_normal_color = (128, 128, 255)
 
-        self.diffuse   = self._img(self.mat.tex_diffuse).convert('RGBA')
-        self.ao        = self._img(self.mat.tex_ao) if self.mat.tex_ao else None
-        self.roughness = self._img(self.mat.tex_roughness).convert('L')
-        self.bumbpmap  = self._img(self.mat.tex_normal).convert('RGB').resize(self.roughness.size)
-        self.metallic  = self._img(self.mat.tex_metallic).convert('L').resize(self.roughness.size) \
-            if self.mat.tex_metallic else None
+        self.np_roughness = mats.np_grayscale( self._img(self.mat.tex_roughness) )
+        self.np_metallic  = mats.np_grayscale( mats.norm_size(self._img(self.mat.tex_metallic), self.np_roughness) )
 
-        #r, g, b, a = self.diffuse.split()
-        #self.np_diffuse_r = np.array(r , dtype=np.float32) / 255.0
-        #self.np_diffuse_g = np.array(g , dtype=np.float32) / 255.0
-        #self.np_diffuse_b = np.array(b , dtype=np.float32) / 255.0
-        #self.np_diffuse_a = np.array(a , dtype=np.float32) / 255.0
+        self.np_emissive_rgba = self._img(self.mat.tex_emissive)
 
-        r, g, b = self.bumbpmap.split()
-        self.np_bumbpmap_x = np.array(r , dtype=np.float32) / 255.0
-        self.np_bumbpmap_y = np.array(g , dtype=np.float32) / 255.0
-        self.np_bumbpmap_z = np.array(b , dtype=np.float32) / 255.0
+        ao = self._img(self.mat.tex_ao)
+        diffuse = self._img(self.mat.tex_diffuse)
+        self.np_diffuse_r = diffuse[:, :, 0]
+        self.np_diffuse_g = diffuse[:, :, 1]
+        self.np_diffuse_b = diffuse[:, :, 2]
+        self.np_diffuse_a = diffuse[:, :, 3]
+        self.np_ao = mats.np_grayscale( mats.norm_size(ao, diffuse) )
 
-        self.np_roughness = np.array(self.roughness , dtype=np.float32) / 255.0
-        self.np_metallic  = np.array(self.metallic  , dtype=np.float32) / 255.0 if self.mat.tex_metallic else None
-        self.np_ao        = np.array(self.ao        , dtype=np.float32) / 255.0 if self.mat.tex_ao else None
+        normal = self._img(self.mat.tex_normal)
+        self.np_bumbpmap_x = normal[:, :, 0]
+        self.np_bumbpmap_y = normal[:, :, 1]
+        self.np_bumbpmap_z = normal[:, :, 2]
+
 
         self.MAX_EXPONENT = self.mat.fakepbr1_max_exponent
 
 
-    def _img(self, name) -> Image.Image:
-        return self.images[name]
+    def _img(self, name) -> np.ndarray:
+        if name: return self.images[name] if self.images[name] is not None else None
 
     def _envmapmask(self):
         roughness_exp = 5
@@ -150,45 +146,36 @@ class Pbr2Source:
     def _phongexponent(self):
         return ((0.8 / self.MAX_EXPONENT) * (self.np_roughness ** -2))
 
-    def _arr_to_img(self, arr) -> Image.Image:
-        clip = np.clip(arr * 255.0, 0, 255)
-        return Image.fromarray( clip.astype(np.uint8) )
 
 
-    def basetexture(self) -> Image.Image:
-        if self.mat.tex_ao:
-            return _multiply(self._img(self.mat.tex_ao), self._img(self.mat.tex_diffuse))
-        else:
-            return self._img(self.mat.tex_diffuse)
+    def basetexture(self) -> np.ndarray:
+        r = self.np_diffuse_r * self.np_ao if self.np_ao is not None else self.np_diffuse_r
+        g = self.np_diffuse_g * self.np_ao if self.np_ao is not None else self.np_diffuse_g
+        b = self.np_diffuse_b * self.np_ao if self.np_ao is not None else self.np_diffuse_b
+        a = self.np_diffuse_a
+        rgb_array = np.dstack( (r, g, b, a) )
+        return rgb_array
 
-    def normal(self) -> Image.Image:
+    def normal(self) -> np.ndarray:
         r = self.np_bumbpmap_x
         g = self.np_bumbpmap_y
         b = self.np_bumbpmap_z
         a = self._phongmask()
 
         rgb_array = np.dstack( (r, g, b, a) )
-        return self._arr_to_img(rgb_array)
+        return rgb_array
     
-    def emissive(self) -> Image.Image:
-        if self.mat.tex_emissive:
-            if self.mat.emissivetype == 'MASK':
-                return self._img(self.mat.tex_emissive).convert('L')
-            else:
-                return self._img(self.mat.tex_emissive)
-        else:
-            return None
+    def emissive(self) -> np.ndarray:
+        return self._img(self.mat.tex_emissive)
 
-    def phong(self) -> Image.Image:
+    def phong(self) -> np.ndarray:
         l = self._phongexponent()
-        return self._arr_to_img(l)
+        return l
     
-    def envmapmask(self) -> Image.Image:
-        if self.mat.tex_metallic:
-            l = self._envmapmask()
-            return self._arr_to_img(l)
-        else:
-            return None
+    def envmapmask(self) -> np.ndarray: # can't use both envmapmask and phongmask 
+        return None
+
+
 
     def _relative(self, path:Path) -> str:
         return path.relative_to(self.model.materials).with_suffix("").as_posix()

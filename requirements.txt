@@ -1,3 +1,4 @@
 Pillow
 sourcepp
 numpy
+opencv-python-headless

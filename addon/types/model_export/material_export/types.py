@@ -14,7 +14,8 @@ from ....props.material_props import SOURCEOPS_AllMaterialsProps
 
 @dataclass
 class ExportTexture:
-    image: Image.Image | np.ndarray
+    #image: Image.Image
+    image: np.ndarray
     image_hash: str
     image_name: str
 

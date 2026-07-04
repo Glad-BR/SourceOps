@@ -1,4 +1,5 @@
 import bpy
+import cv2
 import numpy as np
 
 from rich import print
@@ -42,22 +43,40 @@ def blender_to_numpy(bpy_img: bpy.types.Image) -> np.ndarray:
 
     float_pixels = float_pixels.reshape((height, width, channels))
     flipped = float_pixels[::-1, :, :]
-    return flipped
+    return flipped.astype(dtype=np.float32)
     
-
 def blender_to_byte(bpy_img: bpy.types.Image) -> bytes:
     '''Converts a Blender image to a byte array with shape (height, width, channels) as a uint8 array with values in the range [0, 255].'''
     flipped = (np.clip(blender_to_numpy(bpy_img) * 255, 0, 255).astype(np.uint8))
     return flipped.tobytes()
-
 
 def blender_to_pil(bpy_img: bpy.types.Image) -> Image.Image:
     '''Converts a Blender image to a PIL Image object.'''
     return Image.frombytes("RGBA", (bpy_img.size[0], bpy_img.size[1]), blender_to_byte(bpy_img))
 
 
-def create_vtf(image: Image.Image, output_path: str|Path, options: vtfpp.VTF.CreationOptions|None = None, flags: list[vtfpp.VTF.Flags]|None = None):
-    if not image: return None
+def np_grayscale(image: np.ndarray) -> np.ndarray:
+    if image is not None:
+        gray = np.mean(image[:, :, :3], axis=2).astype(np.float32)
+        return gray
+    else:
+        return None
+
+
+def norm_size(image1: np.ndarray, image2: np.ndarray) -> np.ndarray:
+    if image1 is not None: 
+        if image2 is not None:
+            if image1.shape[:2] != image2.shape[:2]:
+                target_size = image2.shape[:2][::-1] 
+                return cv2.resize(image1, target_size)
+        return image1
+    return None
+
+
+
+
+def create_vtf(image: Image.Image|np.ndarray, output_path: str|Path, options: vtfpp.VTF.CreationOptions|None = None, flags: list[vtfpp.VTF.Flags]|None = None):
+    if image is None: return None
     if not output_path: return None
 
     if not options:
@@ -73,11 +92,44 @@ def create_vtf(image: Image.Image, output_path: str|Path, options: vtfpp.VTF.Cre
     options.compute_thumbnail    = True if not options.compute_thumbnail    else options.compute_thumbnail
     options.compute_reflectivity = True if not options.compute_reflectivity else options.compute_reflectivity
 
+    if isinstance(image, Image.Image):
+        DATA = image.tobytes()
+        WIDTH = image.width
+        HEIGHT = image.height
+        FORMAT = PIL_VTF_map[image.mode].value
+    
+    elif isinstance(image, np.ndarray):
+        image = np.clip(image * 255.0, 0, 255).astype(np.uint8)
+
+        if image.ndim == 2:
+            HEIGHT, WIDTH = image.shape
+            DATA = image.tobytes()
+            FORMAT = vtfpp.ImageFormat.I8
+        elif image.ndim == 3:
+            HEIGHT, WIDTH, CHANNELS = image.shape
+            if CHANNELS == 1:
+                DATA = image.tobytes()
+                FORMAT = vtfpp.ImageFormat.I8
+            elif CHANNELS == 2:
+                DATA = image.tobytes()
+                FORMAT = vtfpp.ImageFormat.IA88
+            elif CHANNELS == 3:
+                DATA = image.tobytes()
+                FORMAT = vtfpp.ImageFormat.RGB888
+            elif CHANNELS == 4:
+                DATA = image.tobytes()
+                FORMAT = vtfpp.ImageFormat.RGBA8888
+            else:
+                raise ValueError(f"Unsupported number of channels: {CHANNELS}")
+        else:
+            raise ValueError(f"Unsupported number of dimensions: {image.ndim}")
+
+
     vtf = vtfpp.VTF.create(
-        image_data=image.tobytes(),
-        format=PIL_VTF_map[image.mode].value,
-        width=image.width,
-        height=image.height,
+        image_data=DATA,
+        format=FORMAT,
+        width=WIDTH,
+        height=HEIGHT,
         creation_options=options
     )
 
