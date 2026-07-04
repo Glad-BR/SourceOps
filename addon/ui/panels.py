@@ -260,6 +260,9 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
                 col1 = box.column(align=True)
                 col1.prop(material, 'tex_diffuse')
+                col1.prop(material, 'basecolor_alpha_mode')
+
+                col1.separator()
                 col1.prop(material, 'tex_ao')
                 col1.prop(material, 'tex_roughness')
                 col1.prop(material, 'tex_metallic')

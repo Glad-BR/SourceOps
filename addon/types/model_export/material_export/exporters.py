@@ -1,22 +1,15 @@
 import numpy as np
 
 from pathlib import Path
-from PIL import Image, ImageChops
 
 from sourcepp import vtfpp
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
-from .types import ExportMaterial, VTF_ALPHAS
+from .types import ExportMaterial
 from ..model import Model
 from ....utils import mats
 from ....props.material_props import SOURCEOPS_AllMaterialsProps
-
-
-        #self.np_diffuse_r = diffuse[:, :, 0]
-        #self.np_diffuse_g = diffuse[:, :, 1]
-        #self.np_diffuse_b = diffuse[:, :, 2]
-        #self.np_diffuse_a = diffuse[:, :, 3]
 
 
 
@@ -92,9 +85,9 @@ class ExporterCommon:
                 vmt.write('\n')
                 vmt.write(f'\t$surfaceprop\t"{str(blender_mat.surfaceprop)}"\n')
 
-            if blender_mat.basetexture_format in VTF_ALPHAS:
+            if blender_mat.basecolor_alpha_mode != 'none':
                 vmt.write('\n')
-                vmt.write(f'\t$translucent      "1"\n')
+                vmt.write(f'\t${str(blender_mat.basecolor_alpha_mode)}\t"1"\n')
 
             if export_mat.envmapmask:
                 rel = self._relative(export_mat.envmapmask.output_path)

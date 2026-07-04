@@ -29,21 +29,27 @@ SOURCEOPS_VTFVersion = ([
     ('6', '7.6', ''),
 ])
 
+SOURCEOPS_BaseColorAlphaMode = ([
+    ('none',        'None',       ''),
+    ('additive',    'Additive',    ''),
+    ('translucent', 'Translucent', ''),
+    ('alphatest',   'Alphatest',   ''),
+])
 SOURCEOPS_NormalMaptypes = ([
-    ('OPENGL', 'OpenGL', ''),
-    ('DIRECTX', 'DirectX', '')
+    ('OPENGL',  'OpenGL',  ''),
+    ('DIRECTX', 'DirectX', ''),
 ])
 SOURCEOPS_Emissivetypes = ([
     ('COLOR', 'Color | $detail method', ''),
-    ('MASK', 'Mask | $selfillum ', '')
+    ('MASK',   'Mask | $selfillum ',    ''),
 ])
 SOURCEOPS_VMTtypes = ([
     ('VertexLitGeneric', 'VertexLitGeneric', ''),
-    ('UnlitGeneric', 'UnlitGeneric', ''),
+    ('UnlitGeneric',     'UnlitGeneric',     ''),
 ])
 SOURCEOPS_MatsConverMethod = ([
-    ('simple', 'Simple', ''),
-    ('fakepbr1', 'PBR2Source', '')
+    ('simple',   'Simple',     ''),
+    ('fakepbr1', 'PBR2Source', ''),
 ])
 
 
@@ -52,6 +58,11 @@ vtf_format_description='VTF export format. Commonly Used Values are\n' \
 'DXT5 (also known as BC3). Use for typical textures with alpha channel.\n' \
 'BGRA8888 Use for textures with an alpha channel and very fine gradients (i.e. normal maps or light halos). It can also be used to produce Very High quality textures. '
 
+basecolor_alpha_mode_description = 'Witch shader parameter should be used to acheive transparency:\n\n' \
+'None: Material is not transparent\n\n' \
+'Additive: Specifies that the material should be rendered additively; that is, its colour values will be added to underlying pixels.\n\n' \
+'Translucent: Specifies that the material should be partially see-through. The alpha channel of the $basetexture is used to decide translucency per-pixel.\n\n' \
+'Alphatest: Specifies a mask to use to determine binary opacity. White represents fully opaque, while black represents fully transparent. Any values in-between are rounded to either 0 or 1'
 
 class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(
@@ -77,6 +88,13 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         items=SOURCEOPS_SurfaceProps,
         default='default',
     )
+    basecolor_alpha_mode: bpy.props.EnumProperty(
+        name='Translucency',
+        description=basecolor_alpha_mode_description,
+        items=SOURCEOPS_BaseColorAlphaMode,
+        default='none',
+    )
+
 
     tex_diffuse: bpy.props.PointerProperty(
         name='Base Color',
@@ -122,7 +140,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         name='Basetexture',
         description=vtf_format_description,
         items=SOURCEOPS_VTF_FORMAT,
-        default=vtfpp.ImageFormat.DXT5.name,
+        default=vtfpp.ImageFormat.DXT1.name,
     )
     emissive_format: bpy.props.EnumProperty(
         name='Emissive',

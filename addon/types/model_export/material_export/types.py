@@ -3,8 +3,6 @@ import numpy as np
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from PIL import Image
-
 from sourcepp import vtfpp
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
@@ -39,16 +37,3 @@ class PIL_VTF_map(Enum):
     RGBA = ImageFormat.RGBA8888
     L = ImageFormat.I8
     LA = ImageFormat.IA88
-
-VTF_ALPHAS = (
-    'ABGR8888',
-    'BGRA4444',
-    'BGRA5551',
-    'BGRA8888',
-    'DXT3',
-    'DXT5',
-    'IA88',
-    'RGBA16161616',
-    'RGBA16161616F',
-    'RGBA8888',
-)

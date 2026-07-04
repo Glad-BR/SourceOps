@@ -5,7 +5,6 @@ import hashlib
 from rich import print
 from concurrent.futures import ThreadPoolExecutor, wait
 from pathlib import Path
-from PIL import Image
 from sourcepp import vtfpp
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
@@ -24,7 +23,7 @@ def _hashimg(image:np.ndarray):
         return None
 
 
-def export_materials(self:Model):
+def export_materials(self:Model, vmt_only:bool=False, tex_only:bool=False):
     start = time.perf_counter()
 
     print(f"Exporting Material {self.name}")
@@ -189,23 +188,26 @@ def export_materials(self:Model):
         tex: ExportTexture
         tex.output_path = tex_folder / f"{bpy.path.clean_name(tex.image_name)}_{tex.image_hash[:8]}.vtf"
     
-    # Step 3: create textures and save as vtf
-    print(f"Exporting {len(textures.values())} VTF textures to {tex_folder}")
-    with ThreadPoolExecutor() as executor: # Very fun
-        #executor.map(export_texture, textures.values())
-        futures = [executor.submit(export_texture, tex) for tex in textures.values()]
-        wait(futures) 
-        for future in futures:
-            if future.exception(): print(f"Thread failed with error: {future.exception()}")
+
+    if not vmt_only:
+        # Step 3: create textures and save as vtf
+        print(f"Exporting {len(textures.values())} VTF textures to {tex_folder}")
+        with ThreadPoolExecutor() as executor: # Very fun
+            #executor.map(export_texture, textures.values())
+            futures = [executor.submit(export_texture, tex) for tex in textures.values()]
+            wait(futures) 
+            for future in futures:
+                if future.exception(): print(f"Thread failed with error: {future.exception()}")
 
 
     print(f"Converted {len(textures)} textures in {time.perf_counter()-start:.3f}s")
 
-    # Write VMTs
-    for mat in materials:
-        mat:ExportMaterial # Me like type
-        blender_mat = mat.source
-        exporter = _exporter(blender_mat)
-        exporter.vmt(export_mat=mat, outpath=(mat_folder / blender_mat.name))
+    if not tex_only:
+        # Write VMTs
+        for mat in materials:
+            mat:ExportMaterial # Me like type
+            blender_mat = mat.source
+            exporter = _exporter(blender_mat)
+            exporter.vmt(export_mat=mat, outpath=(mat_folder / blender_mat.name))
 
-    return error if error else None
+        return error if error else None
