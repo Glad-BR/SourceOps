@@ -51,7 +51,7 @@ class ExporterCommon:
         return path.relative_to(self.model.materials).with_suffix("").as_posix()
 
     def _basetexture(self) -> np.ndarray:
-        if self.np_ao != None:
+        if self.np_ao is not None:
             self.np_diffuse[..., :3] *= self.np_ao[..., np.newaxis]
         return self.np_diffuse
 
