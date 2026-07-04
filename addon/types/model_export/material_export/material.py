@@ -11,7 +11,7 @@ Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
 from .types import *
-from .exporters import ExporterBasic, Pbr2Source
+from .exporters import Basic, fakepbr1
 from ..model import Model
 from ....utils import mats
 from ....props.material_props import SOURCEOPS_AllMaterialsProps
@@ -94,9 +94,9 @@ def export_materials(self:Model):
 
     def _exporter(mat:SOURCEOPS_AllMaterialsProps):
         if mat.convert_method == 'simple':
-            return ExporterBasic(model=self, AllMaterialsProps=mat,pil_images=pil_images)
+            return Basic(model=self, AllMaterialsProps=mat,pil_images=pil_images)
         elif mat.convert_method == 'fakepbr1':
-            return Pbr2Source(model=self, AllMaterialsProps=mat,pil_images=pil_images)
+            return fakepbr1(model=self, AllMaterialsProps=mat,pil_images=pil_images)
 
 
     def convert_textures(mat:SOURCEOPS_AllMaterialsProps):
@@ -178,6 +178,10 @@ def export_materials(self:Model):
         wait(futures) 
         for future in futures: 
             if future.exception(): print(f"Thread failed with error: {future.exception()}")
+
+    #for mat in self.materials_items: #Debug
+    #    convert_textures(mat)
+
 
 
     # Assign filenames
