@@ -151,7 +151,11 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         default=32,
         min=0,
     )
-
+    fakepbr1_use_albedotint: bpy.props.BoolProperty(
+        name='$phongalbedotint',
+        description='$phongalbedotint',
+        default=True,
+    )
 
 
     # VertexLitGeneric and UnlitGeneric stuff

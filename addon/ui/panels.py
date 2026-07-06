@@ -204,12 +204,14 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
 
         elif model and sourceops.panel == 'TEXTURES':
-            row1 = layout.row()
+            row1 = layout.row(align=True).split(factor=0.5, align=True)
+
             box = row1.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Material Folders')
 
+            row = box.row(align=True).split(factor=0.5, align=True)
             row = box.row()
             row.template_list('SOURCEOPS_UL_MaterialFolderList', '', model, 'material_folder_items', model, 'material_folder_index', rows=5)
             col = row.column(align=True)
@@ -287,48 +289,44 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col2.prop(material, 'emissive_format')
                 col2.prop(material, 'normal_format')
 
-                box = c.box()
-                r = box.row()
+                col2.separator()
+                r = col2.row()
                 r.alignment = 'CENTER'
                 r.label(text='Export Settings')
+                col2.separator()
 
-                col3 = box.column(align=True)
-                col3.prop(material, 'type')
-                
-                col3.prop(game, 'vtf_version')
+                col2.prop(material, 'type')
+                col2.prop(game, 'vtf_version')
 
                 if (material.type == 'ExoPBR'):
                     box.separator(factor=9.7)
                 else:
-                    col3.prop(material, 'convert_method')
+                    col2.prop(material, 'convert_method')
 
                     if material.convert_method == 'fakepbr1':
-                        #c = common.split_column(col3)
+                        #c = common.split_column(col2)
                         c = box.split(factor=0.23, align=True)
                         c.label(text='Max Exponent')
                         c.prop(material, 'fakepbr1_max_exponent', text='')
-                        box.separator(factor=1.8)
+
+                        c = box.split(factor=0.23, align=True)
+                        c.label(text='            ')
+                        c.prop(material, 'fakepbr1_use_albedotint')
 
                     if not material.tex_diffuse:
-                        col3.alert = True
-                        col3.label(text=f'Base Color is required for Export', icon='ERROR')
+                        col2.alert = True
+                        col2.label(text=f'Base Color is required for Export', icon='ERROR')
 
                     if material.convert_method != 'simple':
                         if not material.tex_normal:
-                            col3.alert = True 
-                            col3.label(text=f'Normalmap is required for FakePBR Export', icon='ERROR')
+                            col2.alert = True 
+                            col2.label(text=f'Normalmap is required for FakePBR Export', icon='ERROR')
                         if not material.tex_roughness:
-                            col3.alert = True 
-                            col3.label(text=f'Roughness is required for FakePBR Export', icon='ERROR')
-                    
-                    if material.convert_method == 'fakepbr1':
-                        pass
-                    elif material.convert_method == 'fakepbr2':
-                        box.separator(factor=6.4)
-                    else:
-                        box.separator(factor=6.4)
+                            col2.alert = True 
+                            col2.label(text=f'Roughness is required for FakePBR Export', icon='ERROR')
+                
 
-                col2.separator(factor=2)
+                #col2.separator(factor=2)
 
 
         elif model and sourceops.panel == 'SEQUENCES':
