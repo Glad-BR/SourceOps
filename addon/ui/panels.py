@@ -294,24 +294,39 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
                 col3 = box.column(align=True)
                 col3.prop(material, 'type')
-                col3.prop(material, 'convert_method')
+                
                 col3.prop(game, 'vtf_version')
 
-                if material.convert_method == 'fakepbr1':
-                    c = common.split_column(col3)
-                    c.prop(material, 'fakepbr1_max_exponent')
+                if (material.type == 'ExoPBR'):
+                    box.separator(factor=9.7)
+                else:
+                    col3.prop(material, 'convert_method')
 
-                if not material.tex_diffuse:
-                    col3.alert = True
-                    col3.label(text=f'Base Color is required for Export', icon='ERROR')
+                    if material.convert_method == 'fakepbr1':
+                        #c = common.split_column(col3)
+                        c = box.split(factor=0.23, align=True)
+                        c.label(text='Max Exponent')
+                        c.prop(material, 'fakepbr1_max_exponent', text='')
+                        box.separator(factor=1.8)
 
-                if material.convert_method != 'simple':
-                    if not material.tex_normal:
-                        col3.alert = True 
-                        col3.label(text=f'Normalmap is required for FakePBR Export', icon='ERROR')
-                    if not material.tex_roughness:
-                        col3.alert = True 
-                        col3.label(text=f'Roughness is required for FakePBR Export', icon='ERROR')
+                    if not material.tex_diffuse:
+                        col3.alert = True
+                        col3.label(text=f'Base Color is required for Export', icon='ERROR')
+
+                    if material.convert_method != 'simple':
+                        if not material.tex_normal:
+                            col3.alert = True 
+                            col3.label(text=f'Normalmap is required for FakePBR Export', icon='ERROR')
+                        if not material.tex_roughness:
+                            col3.alert = True 
+                            col3.label(text=f'Roughness is required for FakePBR Export', icon='ERROR')
+                    
+                    if material.convert_method == 'fakepbr1':
+                        pass
+                    elif material.convert_method == 'fakepbr2':
+                        box.separator(factor=6.4)
+                    else:
+                        box.separator(factor=6.4)
 
                 col2.separator(factor=2)
 
@@ -432,7 +447,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.alignment = 'RIGHT'
 
             r = row.row(align=True)
-            r.scale_x = 0.44
+            r.scale_x = 0.45
             #r.scale_y = 1.5
             r.operator('sourceops.open_folder', text='MDL', icon='FILEBROWSER')
             r.operator('sourceops.open_material_folder', text='TEX', icon='FILEBROWSER')

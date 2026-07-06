@@ -75,9 +75,20 @@ def norm_size(image1: np.ndarray, image2: np.ndarray) -> np.ndarray:
 
 
 
-def create_vtf(image: Image.Image|np.ndarray, output_path: str|Path, options: vtfpp.VTF.CreationOptions|None = None, flags: list[vtfpp.VTF.Flags]|None = None):
+def create_vtf(
+        image: Image.Image|np.ndarray,
+        output_path: str|Path,
+        options: vtfpp.VTF.CreationOptions|None = None,
+        flags: list[vtfpp.VTF.Flags]|None = None,
+        exists_ok: bool = True
+    ):
+
     if image is None: return None
     if not output_path: return None
+
+    if exists_ok and output_path.exists():
+        print(f'VTF {output_path} Already Exists, exists_ok={exists_ok}. Skipping')
+        return output_path
 
     if not options:
         options = vtfpp.VTF.CreationOptions()

@@ -20,8 +20,8 @@ class SOURCEOPS_SkinProps(bpy.types.PropertyGroup):
     )
 
 SOURCEOPS_VTFVersion = ([
-    ('0', '7.0', ''),
-    ('1', '7.1', ''),
+#    ('0', '7.0', ''),
+#    ('1', '7.1', ''),
     ('2', '7.2', ''),
     ('3', '7.3', ''),
     ('4', '7.4', ''),
@@ -30,10 +30,10 @@ SOURCEOPS_VTFVersion = ([
 ])
 
 SOURCEOPS_BaseColorAlphaMode = ([
-    ('none',        'None',       ''),
-    ('additive',    'Additive',    ''),
+    ('none',        'None',        ''),
     ('translucent', 'Translucent', ''),
     ('alphatest',   'Alphatest',   ''),
+    ('additive',    'Additive',    ''),
 ])
 SOURCEOPS_NormalMaptypes = ([
     ('OPENGL',  'OpenGL',  ''),
@@ -46,17 +46,25 @@ SOURCEOPS_Emissivetypes = ([
 SOURCEOPS_VMTtypes = ([
     ('VertexLitGeneric', 'VertexLitGeneric', ''),
     ('UnlitGeneric',     'UnlitGeneric',     ''),
+    ('ExoPBR',           'ExoPBR (GMOD)',    ''),
 ])
 SOURCEOPS_MatsConverMethod = ([
-    ('simple',   'Simple',     ''),
-    ('fakepbr1', 'PBR2Source', ''),
+    ('simple',   'Simple',             ''),
+    ('fakepbr1', 'PBR2Source $phong',  ''),
+    ('fakepbr2', 'PBR2Source &envmap', ''),
 ])
 
-
-vtf_format_description='VTF export format. Commonly Used Values are\n' \
+vtf_format_description = 'VTF export format. Commonly Used Values are\n' \
 'DXT1 (also known as BC1). Use for typical textures with NO alpha channel. \n' \
 'DXT5 (also known as BC3). Use for typical textures with alpha channel.\n' \
 'BGRA8888 Use for textures with an alpha channel and very fine gradients (i.e. normal maps or light halos). It can also be used to produce Very High quality textures. '
+
+vtf_version_description = 'VTF versions from the Valve wiki:\n' \
+'7.2 | Supported by Source 2004 and later engine branches.\n' \
+'7.3 | Supported by Source 2007 and newer engine branches.\n' \
+'7.4 | Supported by Source 2007 and newer engine branches; used for Xbox 360/PlayStation 3 VTFs.\n' \
+'7.5 | Supported by Alien Swarm and newer engine branches; mainly used for newer Games. Not compatible with older Source 2004/Source 2013-era branches.\n' \
+'7.6 | Unofficially supported by Strata Source; adds deflate/zstd compression and BC6H/BC7 support.\n'
 
 basecolor_alpha_mode_description = 'Witch shader parameter should be used to acheive transparency:\n\n' \
 'None: Material is not transparent\n\n' \
@@ -136,6 +144,17 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
     )
 
 
+
+    fakepbr1_max_exponent: bpy.props.IntProperty(
+        name='Max Exponent',
+        description='Max Exponent',
+        default=32,
+        min=0,
+    )
+
+
+
+    # VertexLitGeneric and UnlitGeneric stuff
     basetexture_format: bpy.props.EnumProperty(
         name='Basetexture',
         description=vtf_format_description,
@@ -154,16 +173,18 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         items=SOURCEOPS_VTF_FORMAT,
         default=vtfpp.ImageFormat.BGRA8888.name,
     )
-    #phong_format: bpy.props.EnumProperty(
-    #    name='Phong',
-    #    description=vtf_format_description,
-    #    items=SOURCEOPS_VTF_FORMAT,
-    #    default=vtfpp.ImageFormat.I8.name,
-    #)
 
-    fakepbr1_max_exponent: bpy.props.IntProperty(
-        name='Max Exponent',
-        description='Max Exponent',
-        default=32,
-        min=0,
+    #
+    pbr1_arm_format: bpy.props.EnumProperty(
+        name='ARM map',
+        description=vtf_format_description,
+        items=SOURCEOPS_VTF_FORMAT,
+        default=vtfpp.ImageFormat.ATI2N.name,
     )
+    pbr1_normal_format: bpy.props.EnumProperty(
+        name='ARM map',
+        description=vtf_format_description,
+        items=SOURCEOPS_VTF_FORMAT,
+        default=vtfpp.ImageFormat.ATI2N.name,
+    )
+
