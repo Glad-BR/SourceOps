@@ -193,7 +193,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             box = row1.box()
             common.center_label(box, text='Material Folders')
 
-            row = box.row(align=True).split(factor=0.5, align=True)
             row = box.row()
             row.template_list('SOURCEOPS_UL_MaterialFolderList', '', model, 'material_folder_items', model, 'material_folder_index', rows=5)
             col = row.column(align=True)
