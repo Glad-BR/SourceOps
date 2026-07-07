@@ -140,6 +140,11 @@ def align_column(layout):
     col.use_property_decorate = False
     return col
 
+def center_label(layout, text:str):
+    r = layout.row()
+    r.alignment = 'CENTER'
+    r.label(text=text)
+
 filename_chars_valid = '-_.() %s%s' % (string.ascii_letters, string.digits)
 filename_chars_replace = ' '
 filename_char_limit = 255

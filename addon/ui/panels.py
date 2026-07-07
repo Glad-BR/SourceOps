@@ -39,9 +39,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
         if prefs and sourceops.panel == 'GAMES':
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Games')
+            common.center_label(box, text='Games')
 
             row = box.row()
             row.template_list('SOURCEOPS_UL_GameList', '', prefs, 'game_items', prefs, 'game_index', rows=5)
@@ -72,9 +70,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
         elif sourceops and sourceops.panel == 'MODELS':
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Models')
+            common.center_label(box, text='Models')
 
             row = box.row()
             row.template_list('SOURCEOPS_UL_ModelList', '', sourceops, 'model_items', sourceops, 'model_index', rows=5)
@@ -93,9 +89,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         elif model and sourceops.panel == 'MODEL_BODYGROUPS':
 
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Bodygroups')
+            common.center_label(box, text='Bodygroups')
 
             row = box.row()
             row.template_list('SOURCEOPS_UL_ModelBodygroupsList', '', model, 'bodygroups_items', model, 'bodygroups_index', rows=5)
@@ -107,9 +101,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(bodygroups, 'name')
 
                 box = layout.box()
-                row = box.row()
-                row.alignment = 'CENTER'
-                row.label(text='studio')
+                common.center_label(box, text='studio')
 
                 row = box.row()
                 row.template_list('SOURCEOPS_UL_BodygroupsSublist', '', bodygroups, 'sublist_items', bodygroups, 'sublist_index', rows=5)
@@ -124,9 +116,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
         elif model and sourceops.panel == 'MODEL_LODS':
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Level of Details (LODs)')
+            common.center_label(box, text='Level of Details (LODs)')
 
             row = box.row()
             row.template_list('SOURCEOPS_UL_ModelLodsList', '', model, 'lods_items', model, 'lods_index', rows=5)
@@ -138,9 +128,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(lods, 'distance')
 
                 box = layout.box()
-                row = box.row()
-                row.alignment = 'CENTER'
-                row.label(text='Replacemodels')
+                common.center_label(box, text='Replacemodels')
 
                 row = box.row()
                 row.template_list('SOURCEOPS_UL_LodsReplaceList', '', lods, 'replacemodel_items', lods, 'replacemodel_index', rows=5)
@@ -157,9 +145,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
         elif model and sourceops.panel == 'MODEL_OPTIONS':
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Model Options')
+            common.center_label(box, text='Model Options')
 
             col = common.split_column(box)
             col.prop(model, 'surface')
@@ -175,9 +161,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col.prop(model, 'mass')
 
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Transform Options')
+            common.center_label(box, text='Transform Options')
 
             col = common.split_column(box)
             col.prop(model, 'prepend_armature')
@@ -207,9 +191,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row1 = layout.row(align=True).split(factor=0.5, align=True)
 
             box = row1.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Material Folders')
+            common.center_label(box, text='Material Folders')
 
             row = box.row(align=True).split(factor=0.5, align=True)
             row = box.row()
@@ -222,9 +204,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(material_folder, 'name')
 
             box = row1.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Skins')
+            common.center_label(box, text='Skins')
 
             row = box.row()
             row.template_list('SOURCEOPS_UL_SkinList', '', model, 'skin_items', model, 'skin_index', rows=5)
@@ -236,10 +216,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(skin, 'name')
 
             box = layout.box()
-
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Materials')
+            common.center_label(box, text='Materials')
 
             row = box.row()
             row.template_list('SOURCEOPS_UL_AllMaterialsList', '', model, 'materials_items', model, 'materials_index', rows=5)
@@ -255,10 +232,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             if material:
                 box = row.box()
-
-                r = box.row()
-                r.alignment = 'CENTER'
-                r.label(text='Textures')
+                common.center_label(box, text='Textures')
 
                 col1 = box.column(align=True)
                 col1.prop(material, 'tex_diffuse')
@@ -278,9 +252,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
                 c = row.column(align=True)
                 box = c.box()
-                r = box.row()
-                r.alignment = 'CENTER'
-                r.label(text='VTF Format')
+                common.center_label(box, text='VTF Format')
 
                 col2 = box.column(align=True)
                 col2.prop(material, 'basetexture_format')
@@ -288,9 +260,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col2.prop(material, 'normal_format')
 
                 col2.separator()
-                r = col2.row()
-                r.alignment = 'CENTER'
-                r.label(text='Export Settings')
+                common.center_label(col2, text='Export Settings')
+
                 col2.separator()
 
                 col2.prop(material, 'type')
@@ -307,15 +278,12 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
                     if material.convert_method == 'fakepbr1':
                         split = col2.split(factor=factor, align=True)
-                        c1 = split.row().column()
-                        c2 = split.row().column()
-                        c1.label(text='Max Exponent')
-                        c2.prop(material, 'fakepbr1_max_exponent', text='')
+                        split.label(text='Max Exponent')
+                        split.prop(material, 'fakepbr1_max_exponent', text='')
 
                         split = col2.split(factor=factor, align=True)
-                        c1 = split.row().column()
-                        c2 = split.row().column()
-                        c1.prop(material, 'fakepbr1_use_albedotint', text='Albedo Tint')
+                        split.prop(material, 'fakepbr1_use_albedotint', text='Albedo Tint')
+                        c2 = split.row()
                         c2.enabled = material.fakepbr1_use_albedotint
                         c2.prop(material, 'fakepbr1_albedotint_phongboost')
                         
@@ -338,9 +306,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
         elif model and sourceops.panel == 'SEQUENCES':
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Sequences')
+            common.center_label(box, text='Sequences')
 
             row = box.row()
             row.template_list('SOURCEOPS_UL_SequenceList', '', model, 'sequence_items', model, 'sequence_index', rows=5)
@@ -371,9 +337,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
         elif sequence and sourceops.panel == 'EVENTS':
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Events')
+            common.center_label(box, text='Events')
 
             row = box.row()
             row.template_list('SOURCEOPS_UL_EventList', '', sequence, 'event_items', sequence, 'event_index', rows=5)
@@ -390,9 +354,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
         elif model and sourceops.panel == 'PARTICLES':
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Particles')
+            common.center_label(box, text='Particles')
             
             row = box.row()
             row.template_list('SOURCEOPS_UL_ParticleList', '', model, 'particle_items', model, 'particle_index', rows=5)
@@ -408,9 +370,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
         elif model and sourceops.panel == 'ATTACHMENTS':
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Attachments')
+            common.center_label(box, text='Attachments')
 
             row = box.row()
             row.template_list('SOURCEOPS_UL_AttachmentList', '', model, 'attachment_items', model, 'attachment_index', rows=5)
@@ -466,9 +426,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
         if sourceops and sourceops.panel == 'MAPS':
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Maps')
+            common.center_label(box, text='Maps')
 
             row = box.row()
             row.template_list('SOURCEOPS_UL_MapList', '', sourceops, 'map_items', sourceops, 'map_index', rows=5)
@@ -497,9 +455,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
         if sourceops and sourceops.panel == 'SIMULATION':
             box = layout.box()
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Simulation')
+            common.center_label(box, text='Simulation')
 
             col = common.split_column(box)
             col.prop(sourceops, 'simulation_input')
@@ -509,9 +465,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         if sourceops and sourceops.panel == 'MISC':
             box = layout.box()
 
-            row = box.row()
-            row.alignment = 'CENTER'
-            row.label(text='Misc')
+            common.center_label(box, text='Misc')
 
             col = box.column()
             col.operator('sourceops.weighted_normal')
