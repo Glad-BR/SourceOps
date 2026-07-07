@@ -269,10 +269,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col1.prop(material, 'tex_roughness')
                 col1.prop(material, 'tex_metallic')
                 col1.separator()
-                col1.separator()
                 col1.prop(material, 'tex_normal')
                 col1.prop(material, 'normaltype')
-                col1.separator()
                 col1.separator()
                 col1.prop(material, 'tex_emissive')
                 col1.prop(material, 'emissivetype')
@@ -303,15 +301,24 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 else:
                     col2.prop(material, 'convert_method')
 
-                    if material.convert_method == 'fakepbr1':
-                        #c = common.split_column(col2)
-                        c = box.split(factor=0.23, align=True)
-                        c.label(text='Max Exponent')
-                        c.prop(material, 'fakepbr1_max_exponent', text='')
+                    col2.separator()
 
-                        c = box.split(factor=0.23, align=True)
-                        c.label(text='            ')
-                        c.prop(material, 'fakepbr1_use_albedotint')
+                    factor = 0.23
+
+                    if material.convert_method == 'fakepbr1':
+                        split = col2.split(factor=factor, align=True)
+                        c1 = split.row().column()
+                        c2 = split.row().column()
+                        c1.label(text='Max Exponent')
+                        c2.prop(material, 'fakepbr1_max_exponent', text='')
+
+                        split = col2.split(factor=factor, align=True)
+                        c1 = split.row().column()
+                        c2 = split.row().column()
+                        c1.prop(material, 'fakepbr1_use_albedotint', text='Albedo Tint')
+                        c2.enabled = material.fakepbr1_use_albedotint
+                        c2.prop(material, 'fakepbr1_albedotint_phongboost')
+                        
 
                     if not material.tex_diffuse:
                         col2.alert = True

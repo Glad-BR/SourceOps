@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 
-REQUIRED_MODULES = ('numpy', 'PIL', 'sourcepp', 'cv2')
+REQUIRED_MODULES = ('PIL', 'sourcepp', 'cv2')
 
 
 def _get_virtualenv_python(base_dir: Path) -> Path:

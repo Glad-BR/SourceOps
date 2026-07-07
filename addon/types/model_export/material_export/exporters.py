@@ -179,7 +179,7 @@ class ExporterCommon:
                 print(blender_mat.fakepbr1_use_albedotint)
 
                 if blender_mat.fakepbr1_use_albedotint:
-                    vmt.write(f'\t$phongboost           "100"\n')
+                    vmt.write(f'\t$phongboost           "{str(blender_mat.fakepbr1_albedotint_phongboost)}"\n')
                     vmt.write(f'\t$phongalbedotint      "1"\n')
                 else:
                     vmt.write(f'\t$phongboost           "5.0"\n')

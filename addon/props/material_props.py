@@ -156,6 +156,12 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         description='$phongalbedotint',
         default=True,
     )
+    fakepbr1_albedotint_phongboost: bpy.props.IntProperty(
+        name='$phongboost',
+        description='$phongboost',
+        min=0,
+        default=50,
+    )
 
 
     # VertexLitGeneric and UnlitGeneric stuff
