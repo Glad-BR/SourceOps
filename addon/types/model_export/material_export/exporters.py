@@ -123,13 +123,9 @@ class ExporterCommon:
     def _basetexture(self) -> np.ndarray:
         img = self.np_diffuse.copy()
 
-        threa = 0.1
         if (self.np_metallic is not None) and (self.mat.fakepbr1_darken_albedo):
-            if np.any(self.np_metallic > threa) and np.any(self.np_metallic < threa):
-                metal = self._resize_to_target(self.np_metallic[..., np.newaxis], img)
-                img = self._specular(self.np_diffuse, metal)
-            else:
-                print(f'Metalic Mat {self.mat.name} Skipping')
+            metal = self._resize_to_target(self.np_metallic[..., np.newaxis], img)
+            img = self._specular(self.np_diffuse, metal)
 
         if self.np_ao is not None:
             img[..., :3] *= self.np_ao[..., np.newaxis]

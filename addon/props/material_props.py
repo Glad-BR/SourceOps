@@ -20,8 +20,6 @@ class SOURCEOPS_SkinProps(bpy.types.PropertyGroup):
     )
 
 SOURCEOPS_VTFVersion = ([
-#    ('0', '7.0', ''),
-#    ('1', '7.1', ''),
     ('2', '7.2', ''),
     ('3', '7.3', ''),
     ('4', '7.4', ''),
@@ -144,7 +142,6 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
     )
 
 
-
     fakepbr1_max_exponent: bpy.props.IntProperty(
         name='Max Exponent',
         description='Max Exponent',
@@ -167,6 +164,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         description='Uses Metallic Map to darken BaseColor',
         default=False
     )
+
 
     # VertexLitGeneric and UnlitGeneric stuff
     basetexture_format: bpy.props.EnumProperty(
