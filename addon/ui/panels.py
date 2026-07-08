@@ -285,7 +285,10 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                         c2 = split.row()
                         c2.enabled = material.fakepbr1_use_albedotint
                         c2.prop(material, 'fakepbr1_albedotint_phongboost')
-                        
+
+                        r1 = col2.row()
+                        r1.enabled = (material.tex_metallic is not None)
+                        r1.prop(material, 'fakepbr1_darken_albedo', text='Darken Albedo')
 
                     if not material.tex_diffuse:
                         col2.alert = True

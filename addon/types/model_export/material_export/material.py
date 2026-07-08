@@ -3,22 +3,21 @@ import time
 import hashlib
 import traceback
 
+import numpy as np
+
 from rich import print
-from concurrent.futures import ThreadPoolExecutor, wait, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from sourcepp import vtfpp
-import numpy as np
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
+from . import vtf
 from .types import *
 from .exporters import Basic, fakepbr1, fakepbr2, ExoPBR1
 from ..model import Model
 from ....utils import mats
 from ....props.material_props import SOURCEOPS_AllMaterialsProps
-
-
-
 
 
 
@@ -33,6 +32,8 @@ class ExporterMain:
 
         self.materials = []
         self.errors = []
+
+        assert self.model.material_folder_items is not None
 
         self.relative_path = Path(self.model.material_folder_items[0].name)
         self.mat_folder = Path(self.model.materials / self.relative_path)
@@ -114,7 +115,7 @@ class ExporterMain:
         opts.version = self.model.vtf_version
         opts.output_format = tex.format
         opts.invert_green_channel = tex.invert_green
-        mats.create_vtf(
+        vtf.create_vtf(
             image=tex.image,
             output_path=tex.output_path,
             options=opts,
@@ -133,7 +134,14 @@ class ExporterMain:
         flags = tuple()
 
         # Use Phong thingy for ExoPBR ARM texture
-        phong_format = ImageFormat.BGR888 if mat.type == 'ExoPBR' else ImageFormat.BGR888
+
+        if mat.type == 'ExoPBR':
+            phong_format = ImageFormat.BGR888
+        elif mat.fakepbr1_use_albedotint:
+            phong_format = ImageFormat.BGR888
+        else:
+            phong_format = ImageFormat.I8
+            
 
         export.normal = self._register_texture(
             image=exporter.normal(),
@@ -199,15 +207,11 @@ class ExporterMain:
 
         # Step 3: create textures and save as vtf
         print(f"Exporting {len(self.textures.values())} VTF textures to {self.tex_folder}")
-        with ThreadPoolExecutor() as executor: # Very fun
-            futures = [executor.submit(self._mk_vtf, tex) for tex in self.textures.values()]
-            for future in as_completed(futures):
-                try:
-                    future.result()
-                except Exception as exc:
-                    self.errors.append(exc)
-                    print(f"Thread failed with error: {exc}")
-                    traceback.print_exception(type(exc), exc, exc.__traceback__)
+
+
+        for tex in self.textures.values():
+            self._mk_vtf(tex)
+
 
         print(f"Converted {len(self.textures)} textures in {time.perf_counter()-start:.3f}s")
 

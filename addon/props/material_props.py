@@ -162,7 +162,11 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         min=0,
         default=50,
     )
-
+    fakepbr1_darken_albedo: bpy.props.BoolProperty(
+        name='darken albedo',
+        description='Uses Metallic Map to darken BaseColor',
+        default=False
+    )
 
     # VertexLitGeneric and UnlitGeneric stuff
     basetexture_format: bpy.props.EnumProperty(
@@ -184,7 +188,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         default=vtfpp.ImageFormat.BGRA8888.name,
     )
 
-    #
+    # ExoPBR stuff
     pbr1_arm_format: bpy.props.EnumProperty(
         name='ARM map',
         description=vtf_format_description,

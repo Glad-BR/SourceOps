@@ -1,12 +1,12 @@
 import bpy
 import cv2
 import numpy as np
+import time
 
 from rich import print
 from pathlib import Path
 from enum import Enum
 from PIL import Image
-from sourcepp import vtfpp
 
 from ..types.model_export.material_export.types import PIL_VTF_map
 
@@ -72,89 +72,6 @@ def norm_size(image1: np.ndarray, image2: np.ndarray) -> np.ndarray:
         return image1
     return None
 
-
-
-
-def create_vtf(
-        image: Image.Image|np.ndarray,
-        output_path: str|Path,
-        options: vtfpp.VTF.CreationOptions|None = None,
-        flags: list[vtfpp.VTF.Flags]|None = None,
-        exists_ok: bool = True
-    ):
-
-    if image is None: return None
-    if not output_path: return None
-
-    if exists_ok and output_path.exists():
-        print(f'VTF {output_path} Already Exists, exists_ok={exists_ok}. Skipping')
-        return output_path
-
-    if not options:
-        options = vtfpp.VTF.CreationOptions()
-        options.output_format = vtfpp.ImageFormat.DXT5
-        options.version = 2
-
-    output_path = Path(output_path).resolve()
-    output_path.parent.mkdir(exist_ok=True, parents=True)
-
-    # Just to make sure
-    options.compute_mips         = True if not options.compute_mips         else options.compute_mips
-    options.compute_thumbnail    = True if not options.compute_thumbnail    else options.compute_thumbnail
-    options.compute_reflectivity = True if not options.compute_reflectivity else options.compute_reflectivity
-
-    if isinstance(image, Image.Image):
-        DATA = image.tobytes()
-        WIDTH = image.width
-        HEIGHT = image.height
-        FORMAT = PIL_VTF_map[image.mode].value
-    
-    elif isinstance(image, np.ndarray):
-        image = np.clip(image * 255.0, 0, 255).astype(np.uint8)
-
-        if image.ndim == 2:
-            HEIGHT, WIDTH = image.shape
-            DATA = image.tobytes()
-            FORMAT = vtfpp.ImageFormat.I8
-        elif image.ndim == 3:
-            HEIGHT, WIDTH, CHANNELS = image.shape
-            if CHANNELS == 1:
-                DATA = image.tobytes()
-                FORMAT = vtfpp.ImageFormat.I8
-            elif CHANNELS == 2:
-                DATA = image.tobytes()
-                FORMAT = vtfpp.ImageFormat.IA88
-            elif CHANNELS == 3:
-                DATA = image.tobytes()
-                FORMAT = vtfpp.ImageFormat.RGB888
-            elif CHANNELS == 4:
-                DATA = image.tobytes()
-                FORMAT = vtfpp.ImageFormat.RGBA8888
-            else:
-                raise ValueError(f"Unsupported number of channels: {CHANNELS}")
-        else:
-            raise ValueError(f"Unsupported number of dimensions: {image.ndim}")
-
-
-    vtf = vtfpp.VTF.create(
-        image_data=DATA,
-        format=FORMAT,
-        width=WIDTH,
-        height=HEIGHT,
-        creation_options=options
-    )
-
-    if flags:
-        for flag in flags:
-            vtf.add_flags(flag.value)
-
-    err = vtf.bake_to_file(vtf_path=output_path)
-
-    if output_path.exists():
-        print('VTF Created', output_path, err)
-        return output_path
-    else:
-        print(err)
 
 
 def get_bsdf_node(material: bpy.types.Material, node_type: str = 'BSDF_PRINCIPLED') -> bpy.types.ShaderNodeBsdfPrincipled|None:

@@ -26,37 +26,29 @@ class ExporterCommon:
 
 
         self.np_diffuse = self._img(self.mat.tex_diffuse)
-        target = self.np_diffuse
-
-        def _resize_to_target(image):
-            if image is None or target is None:
-                return image
-            if image.shape[:2] != target.shape[:2]:
-                return cv2.resize(image, target.shape[:2][::-1])
-            return image
 
         # Super Secret ARM map
         if self.mat.tex_ao == self.mat.tex_roughness == self.mat.tex_metallic:
-            arm_map = _resize_to_target(self._img(self.mat.tex_roughness))
+            arm_map = self._img(self.mat.tex_roughness)
             self.np_ao = arm_map[:, :, 0]
             self.np_roughness = arm_map[:, :, 1]
             self.np_metallic = arm_map[:, :, 2]
         else:
-            self.np_ao = mats.np_grayscale(_resize_to_target(self._img(self.mat.tex_ao))) \
+            self.np_ao = mats.np_grayscale(self._resize_to_target(image=self._img(self.mat.tex_ao), target=self.np_diffuse)) \
                 if self.mat.tex_ao else None
             
-            self.np_roughness = mats.np_grayscale(_resize_to_target(self._img(self.mat.tex_roughness))) \
+            self.np_roughness = mats.np_grayscale(self._img(self.mat.tex_roughness)) \
                 if self.mat.tex_roughness else None
             
-            self.np_metallic  = mats.np_grayscale(_resize_to_target(self._img(self.mat.tex_metallic))) \
+            self.np_metallic  = mats.np_grayscale(self._resize_to_target(image=self._img(self.mat.tex_metallic), target=self.np_roughness)) \
                 if (self.mat.tex_metallic and self.mat.tex_roughness) else \
                 np.zeros_like(self.np_roughness)
 
 
-        self.np_emissive = _resize_to_target(self._img(self.mat.tex_emissive)) \
+        self.np_emissive = self._img(self.mat.tex_emissive) \
             if self.mat.tex_emissive else None
 
-        self.np_bumbpmap = _resize_to_target(self._img(self.mat.tex_normal))\
+        self.np_bumbpmap = self._img(self.mat.tex_normal) \
             if self.mat.tex_normal else None
 
         self.MAX_EXPONENT = self.mat.fakepbr1_max_exponent
@@ -69,7 +61,24 @@ class ExporterCommon:
             return self.images[name] if self.images[name] is not None else None
         else:
             return None
-        
+
+    def _resize_to_target(self, image, target):
+        if image is None or target is None:
+            return image
+        if image.shape[:2] != target.shape[:2]:
+            return cv2.resize(image, target.shape[:2][::-1])
+        return image
+
+    def _screen(self, base:np.ndarray, blend:np.ndarray) -> np.ndarray:
+        return 1.0 - (1.0 - base) * (1.0 - blend)
+
+    def _specular(self, albedo, metalic):
+        dielectric_spec = np.full_like(albedo, 0.04)
+        specular = (dielectric_spec * (1.0 - metalic)) + (albedo * metalic)
+        return specular
+
+
+
     #-------------------------------------------------------------------------------------------
 
 #    def _envmapmask(self) -> np.ndarray:
@@ -113,9 +122,18 @@ class ExporterCommon:
 
     def _basetexture(self) -> np.ndarray:
         img = self.np_diffuse.copy()
+
+        threa = 0.1
+        if (self.np_metallic is not None) and (self.mat.fakepbr1_darken_albedo):
+            if np.any(self.np_metallic > threa) and np.any(self.np_metallic < threa):
+                metal = self._resize_to_target(self.np_metallic[..., np.newaxis], img)
+                img = self._specular(self.np_diffuse, metal)
+            else:
+                print(f'Metalic Mat {self.mat.name} Skipping')
+
         if self.np_ao is not None:
             img[..., :3] *= self.np_ao[..., np.newaxis]
-
+        
         return img
 
 
@@ -244,14 +262,13 @@ class fakepbr1(ExporterCommon):
         return self._emissive()
 
     def phong(self) -> np.ndarray:
-
-        r = self._phongexponent()
-        g = np.ones_like(r)
-        b = g
-
-        return np.dstack( (r,g,b) )
-
-        #return self._phongexponent()
+        if self.mat.fakepbr1_use_albedotint:
+            r = self._phongexponent()
+            g = np.ones_like(r)
+            b = g
+            return np.dstack( (r,g,b) )
+        else:
+            return self._phongexponent()
     
     def envmapmask(self) -> np.ndarray: # can't use both envmapmask and phongmask 
         return None
