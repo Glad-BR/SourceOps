@@ -8,8 +8,6 @@ from pathlib import Path
 from enum import Enum
 from PIL import Image
 
-from ..types.model_export.material_export.types import PIL_VTF_map
-
 class BlenderInputNodes(Enum):
     BaseColor = 'Base Color'
     Diffuse = BaseColor #Alias

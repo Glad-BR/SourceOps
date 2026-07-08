@@ -134,14 +134,18 @@ class ExporterMain:
         flags = tuple()
 
         # Use Phong thingy for ExoPBR ARM texture
-
         if mat.type == 'ExoPBR':
             phong_format = ImageFormat.BGR888
         elif mat.fakepbr1_use_albedotint:
             phong_format = ImageFormat.BGR888
         else:
             phong_format = ImageFormat.I8
-            
+        
+
+        if mat.emissivetype in ('COLOR', 'MASK2'):
+            emissive_format = ImageFormat[mat.emissive_format]
+        elif mat.emissivetype == 'MASK':
+            emissive_format = ImageFormat.I8
 
         export.normal = self._register_texture(
             image=exporter.normal(),
@@ -170,7 +174,7 @@ class ExporterMain:
         export.emissive = self._register_texture(
             image=exporter.emissive(),
             image_name='emissive',
-            format=ImageFormat[mat.emissive_format] if mat.emissivetype == 'COLOR' else ImageFormat.I8,
+            format=emissive_format,
             flags=flags,
         )
 

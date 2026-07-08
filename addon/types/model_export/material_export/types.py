@@ -32,7 +32,6 @@ class ExportMaterial:
     phong: ExportTexture = None
     envmapmask: ExportTexture = None
 
-
 class PIL_VTF_map(Enum):
     RGB = ImageFormat.RGB888
     RGBA = ImageFormat.RGBA8888

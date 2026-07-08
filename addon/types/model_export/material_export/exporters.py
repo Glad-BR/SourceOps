@@ -134,7 +134,15 @@ class ExporterCommon:
 
 
     def _emissive(self) -> np.ndarray:
-        return self.np_emissive
+        if self.np_emissive is not None:
+            if self.mat.emissivetype == 'COLOR':
+                emissive = self.np_emissive
+            elif self.mat.emissivetype == 'MASK':
+                emissive = self.np_emissive
+            elif self.mat.emissivetype == 'MASK2':
+                emissive = self.np_diffuse * self.np_emissive
+            return emissive
+        return None
 
     #-------------------------------------------------------------------------------------------
 
@@ -201,7 +209,7 @@ class ExporterCommon:
             if export_mat.emissive:
                 rel = self._relative(export_mat.emissive.output_path)
                 vmt.write('\n')
-                if blender_mat.emissivetype == 'COLOR':
+                if blender_mat.emissivetype in ('COLOR', 'MASK2'):
                     vmt.write(f'\t$detail                "{rel}"\n')
                     vmt.write(f'\t$detailscale           "1"\n')
                     vmt.write(f'\t$detailblendmode       "5"\n')
