@@ -228,6 +228,7 @@ class Model:
     def open_folder(self):
         try:
             print(f'Opening: {self.directory}')
+            self.directory.mkdir(exist_ok=True)
             bpy.ops.wm.path_open(filepath=str(self.directory))
         except:
             return self.report(f'Failed to open: {self.directory}', exception=True)
@@ -237,6 +238,7 @@ class Model:
         mat_folder = Path(self.materials / relative_path)
         try:
             print(f'Opening: {mat_folder}')
+            mat_folder.mkdir(exist_ok=True)
             bpy.ops.wm.path_open(filepath=str(mat_folder))
         except:
             return self.report(f'Failed to open: {mat_folder}', exception=True)
