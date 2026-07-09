@@ -74,7 +74,8 @@ class SOURCEOPS_UL_BodygroupsSublist(bpy.types.UIList):
     bl_idname = 'SOURCEOPS_UL_BodygroupsSublist'
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
-        layout.prop(item, 'reference', text='', emboss=False, translate=False)
+        split = layout.split(factor=0.5, align=True)
+        split.prop(item, 'reference', text='', emboss=False, translate=False)
 
 
 
