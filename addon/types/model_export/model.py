@@ -193,7 +193,7 @@ class Model:
             # Use wine to run StudioMDL on Linux.
             # Run winepath to get a sure path
 
-            fastbuild = '-fastbuild' if self.fastbuild else None
+            fastbuild = '-fastbuild' if self.fastbuild else ''
 
             env = os.environ.copy()
             if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
