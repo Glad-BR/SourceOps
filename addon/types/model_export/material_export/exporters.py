@@ -27,8 +27,9 @@ class ExporterCommon:
 
         self.np_diffuse = self._img(self.mat.tex_diffuse)
 
+
         # Super Secret ARM map
-        if self.mat.tex_ao == self.mat.tex_roughness == self.mat.tex_metallic:
+        if (self.mat.tex_ao == self.mat.tex_roughness == self.mat.tex_metallic) and (self.mat.tex_roughness is not None):
             arm_map = self._img(self.mat.tex_roughness)
             self.np_ao = arm_map[:, :, 0]
             self.np_roughness = arm_map[:, :, 1]
