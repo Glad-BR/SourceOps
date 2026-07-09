@@ -1,7 +1,6 @@
 from __future__ import annotations
 import re
 from copy import deepcopy
-from rich import print
 import sys
 import time
 import math

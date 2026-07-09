@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 import time
 
-from rich import print
 from pathlib import Path
 from enum import Enum
 from PIL import Image

@@ -3,7 +3,6 @@ import bmesh
 import mathutils
 import math
 import typing
-from rich import print
 from .. pyvmf import pyvmf
 
 

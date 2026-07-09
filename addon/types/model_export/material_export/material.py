@@ -5,7 +5,6 @@ import traceback
 
 import numpy as np
 
-from rich import print
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from sourcepp import vtfpp
