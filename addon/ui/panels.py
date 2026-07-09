@@ -151,6 +151,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col.prop(model, 'surface')
             col.prop(model, 'glass')
             col.prop(model, 'static')
+            col.prop(model, 'fastbuild')
             col.prop(model, 'rename_material')
             row = col.row()
             row.enabled = model.static

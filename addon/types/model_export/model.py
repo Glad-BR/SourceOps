@@ -70,6 +70,7 @@ class Model:
         self.surface = model.surface
         self.glass = model.glass
         self.static = model.static
+        self.fastbuild = model.fastbuild
         self.static_prop_combine = model.static_prop_combine
         self.joints = model.joints
         self.illumposition = common.get_illumposition(model)
@@ -192,16 +193,17 @@ class Model:
             # Use wine to run StudioMDL on Linux.
             # Run winepath to get a sure path
 
+            fastbuild = '-fastbuild' if self.fastbuild else None
+
             env = os.environ.copy()
             if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
                 cwd = self.game.parent
-                args = [str(self.wine), common.winepath(self.studiomdl), '-nop4', '-fullcollide', '-game', common.winepath(self.game), common.winepath(qc)]
+                args = [str(self.wine), common.winepath(self.studiomdl), '-nop4', '-fullcollide', fastbuild, '-game', common.winepath(self.game), common.winepath(qc)]
                 env['WINEDEBUG'] = '-all'
             else:
                 cwd = None
-                args = [str(self.studiomdl), '-nop4', '-fullcollide', '-game', str(self.game), str(qc)]
+                args = [str(self.studiomdl), '-nop4', '-fullcollide', fastbuild, '-game', str(self.game), str(qc)]
             
-
             log = self.directory.joinpath(f'{self.stem}.log')
 
             with log.open('wb') as f:

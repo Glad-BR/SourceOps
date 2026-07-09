@@ -119,6 +119,12 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
+    fastbuild: bpy.props.BoolProperty(
+        name='Fast Build',
+        description='Skip processing .sw.vtx (DX6/DX7), .dx80.vtx, and .360.vtx variants (use .dx90.vtx only).\nThis speeds up compiling.',
+        default=False,
+    )
+
     static_prop_combine: bpy.props.BoolProperty(
         name='Static Prop Combine',
         description='Whether to use the steamapps/content path instead of modelsrc, necessary for autocombine, a neat CS:GO feature.\nWarning: does not work with $origin',
