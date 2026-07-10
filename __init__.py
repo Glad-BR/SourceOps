@@ -1,4 +1,4 @@
-from . import dependency_setup
+from . import dependency
 
 bl_info = {
     'name': 'SourceOps',
@@ -10,13 +10,16 @@ bl_info = {
     'category': 'Import-Export',
 }
 
-dependency_setup.run()
-
-from . import addon
 
 def register():
+    dependency.register()
+
+    from . import addon
     addon.register()
 
 
 def unregister():
+    dependency.unregister()
+
+    from . import addon
     addon.unregister()

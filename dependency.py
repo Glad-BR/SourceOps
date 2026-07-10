@@ -16,9 +16,6 @@ target = Path(__file__).resolve().parent / 'deps'
 print(f"Deps Target Path: {target}")
 
 
-dir_str = str(target)
-if dir_str not in sys.path:
-    sys.path.insert(0, dir_str)
 
 
 def install(package, target:Path):
@@ -35,6 +32,20 @@ def run():
             install(pkg, target)
 
 
+
+def register():
+    dir_str = str(target)
+    if dir_str not in sys.path:
+        sys.path.insert(0, dir_str)
+
+    run()
+
+
+def unregister():
+
+    dir_str = str(target)
+    if dir_str not in sys.path:
+        sys.path.remove(dir_str)
 
 
 
