@@ -5,7 +5,6 @@ import time
 
 from pathlib import Path
 from enum import Enum
-from PIL import Image
 
 class BlenderInputNodes(Enum):
     BaseColor = 'Base Color'
@@ -47,9 +46,9 @@ def blender_to_byte(bpy_img: bpy.types.Image) -> bytes:
     flipped = (np.clip(blender_to_numpy(bpy_img) * 255, 0, 255).astype(np.uint8))
     return flipped.tobytes()
 
-def blender_to_pil(bpy_img: bpy.types.Image) -> Image.Image:
-    '''Converts a Blender image to a PIL Image object.'''
-    return Image.frombytes("RGBA", (bpy_img.size[0], bpy_img.size[1]), blender_to_byte(bpy_img))
+#def blender_to_pil(bpy_img: bpy.types.Image) -> Image.Image:
+#    '''Converts a Blender image to a PIL Image object.'''
+#    return Image.frombytes("RGBA", (bpy_img.size[0], bpy_img.size[1]), blender_to_byte(bpy_img))
 
 
 def np_grayscale(image: np.ndarray) -> np.ndarray:

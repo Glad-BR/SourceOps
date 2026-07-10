@@ -15,8 +15,6 @@ from pathlib import Path
 from mathutils import Vector
 import math
 
-from ..props import SOURCEOPS_AllMaterialsProps
-
 def get_version():
     from ... import bl_info
     return '.'.join(str(n) for n in bl_info['version'])
@@ -80,7 +78,7 @@ def get_material_folder(model):
         return None
 
 
-def get_material(model) -> SOURCEOPS_AllMaterialsProps:
+def get_material(model):
     try: 
         return model.materials_items[model.materials_index]
     except:
