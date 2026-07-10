@@ -1,4 +1,3 @@
-from . import dependency
 
 bl_info = {
     'name': 'SourceOps',
@@ -11,15 +10,14 @@ bl_info = {
 }
 
 
-def register():
-    dependency.register()
+from . import dependency
+dependency.register()
 
-    from . import addon
+from . import addon
+
+def register():
     addon.register()
 
 
 def unregister():
-    dependency.unregister()
-
-    from . import addon
     addon.unregister()

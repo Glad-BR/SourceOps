@@ -1,6 +1,7 @@
 import sys
 import importlib
 import subprocess
+import platform
 
 from pathlib import Path
 
@@ -12,10 +13,9 @@ REQUIRED_MODULES = {
     'cv2' : 'opencv-python-headless',
 }
 
+
 target = Path(__file__).resolve().parent / 'deps'
 print(f"Deps Target Path: {target}")
-
-
 
 
 def install(package, target:Path):
@@ -34,6 +34,8 @@ def run():
 
 
 def register():
+    target.mkdir(exist_ok=True)
+
     dir_str = str(target)
     if dir_str not in sys.path:
         sys.path.insert(0, dir_str)
