@@ -1,7 +1,7 @@
 import bpy
-
 from .vtf_props import SOURCEOPS_VTF_FORMAT
 from . surface_props import SOURCEOPS_SurfaceProps
+from .. import utils
 
 from sourcepp import vtfpp
 
@@ -10,6 +10,8 @@ class SOURCEOPS_MaterialFolderProps(bpy.types.PropertyGroup):
         name='Relative Path',
         description='$cdmaterials, the folder inside of which to look for materials, relative to your game\'s materials folder',
         default='models/example',
+        subtype='DIR_PATH',
+        update=utils.game.update_mat_folder
     )
 
 class SOURCEOPS_SkinProps(bpy.types.PropertyGroup):

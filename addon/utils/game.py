@@ -1,5 +1,5 @@
 from pathlib import Path
-from ..utils.common import resolve
+from ..utils.common import resolve, get_game, get_prefs
 
 
 def update_game(self, context):
@@ -62,6 +62,16 @@ def update_models(self, context):
 
 def update_mapsrc(self, context):
     self['mapsrc'] = resolve(self.mapsrc)
+
+
+def update_mat_folder(self, context):
+    name = Path(self.name)
+    if name.is_absolute():
+        game = get_game(get_prefs(context))
+        materials = Path(game.materials).resolve()
+        self['name'] = str(name.resolve().relative_to(materials))
+    else:
+        self['name'] = str(name)
 
 
 def verify(game):
