@@ -10,10 +10,12 @@ import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from sourcepp import vtfpp
+
+from . import vtf
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
-from . import vtf, vtf_helpme
+from . import vtf
 from .types import *
 from .exporters import Basic, fakepbr1, fakepbr2, ExoPBR1
 from ..model import Model
@@ -119,8 +121,7 @@ class ExporterMain:
         opts.version = self.model.vtf_version
         opts.output_format = tex.format
         opts.invert_green_channel = tex.invert_green
-        #vtf.create_vtf(
-        vtf_helpme.create_vtf( #Pain
+        vtf.create_vtf( #Pain
             image=tex.image,
             output_path=tex.output_path,
             options=opts,
