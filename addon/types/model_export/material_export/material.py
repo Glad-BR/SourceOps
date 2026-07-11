@@ -2,6 +2,8 @@ import bpy
 import time
 import hashlib
 import traceback
+import threading
+
 
 import numpy as np
 
@@ -11,7 +13,7 @@ from sourcepp import vtfpp
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
-from . import vtf
+from . import vtf, vtf_helpme
 from .types import *
 from .exporters import Basic, fakepbr1, fakepbr2, ExoPBR1
 from ..model import Model
@@ -31,6 +33,8 @@ class ExporterMain:
 
         self.materials = []
         self.errors = []
+
+        self._lock = threading.Lock()
 
         assert self.model.material_folder_items is not None
 
@@ -115,7 +119,8 @@ class ExporterMain:
         opts.version = self.model.vtf_version
         opts.output_format = tex.format
         opts.invert_green_channel = tex.invert_green
-        vtf.create_vtf(
+        #vtf.create_vtf(
+        vtf_helpme.create_vtf( #Pain
             image=tex.image,
             output_path=tex.output_path,
             options=opts,
@@ -151,7 +156,7 @@ class ExporterMain:
             image=exporter.normal(),
             image_name='normal',
             format=ImageFormat[mat.normal_format],
-            flags=flags,
+            flags=tuple(Flags.V0_NORMAL),
             parent_name=mat.name
         )
         export.phong = self._register_texture(
@@ -187,45 +192,51 @@ class ExporterMain:
 
     #-------------------------------------------------------------------------------------------
 
+
     def export(self):
         start = time.perf_counter()
         print(f"Exporting Material {self.model.name}")
 
-        #Step 1
         self._build_unique_tex()
 
-        # Step 2: Convert textures for each material
+        # Step 2: Convert textures
         print(f"Converting textures for {len(self.model.materials_items)} materials")
-        #with ThreadPoolExecutor() as executor:
-        #    futures = [executor.submit(self._convert_textures, mat) for mat in self.model.materials_items]
-        #    for future in as_completed(futures):
-        #        try:
-        #            res = future.result()
-        #            if isinstance(res, str):
-        #                self.errors.append(res)
-        #                print(f"Texture conversion returned error: {res}")
-        #        except Exception as exc:
-        #            self.errors.append(exc)
-        #            print(f"Thread failed with error: {exc}")
-        #            traceback.print_exception(type(exc), exc, exc.__traceback__)
-        
-        for mat in self.model.materials_items:
-            self._convert_textures(mat)
+        with ThreadPoolExecutor() as executor:
+            futures = [executor.submit(self._convert_textures, mat) for mat in self.model.materials_items]
+            for future in as_completed(futures):
+                try:
+                    res = future.result()
+                    if isinstance(res, str):
+                        self.errors.append(res)
+                        print(f"Texture conversion returned error: {res}")
+                except Exception as exc:
+                    self.errors.append(exc)
+                    print(f"Thread failed with error: {exc}")
+                    traceback.print_exception(type(exc), exc, exc.__traceback__)
 
         # Assign filenames
         for tex in self.textures.values():
-            tex: ExportTexture                                                                                            # _{tex.image_hash[:8]}
+            tex: ExportTexture
             tex.output_path = self.mat_folder / bpy.path.clean_name(tex.parent_name) / f"{bpy.path.clean_name(tex.image_name)}.vtf"
 
-        # Step 3: create textures and save as vtf
+        # Step 3: Save VTF
         print(f"Exporting {len(self.textures.values())} VTF textures to {self.tex_folder}")
+        with ThreadPoolExecutor() as executor:
+            futures = {executor.submit(self._mk_vtf, tex): tex for tex in self.textures.values()}
+            for future in as_completed(futures):
+                tex_obj = futures[future]
+                try:
+                    res = future.result()
+                    if isinstance(res, str):
+                        self.errors.append(res)
+                        print(f"Texture bake error encountered on '{tex_obj.image_name}': {res}")
+                except Exception as exc:
+                    self.errors.append(exc)
+                    print(f"Parallel dispatch worker thread collapsed on '{tex_obj.image_name}' with error: {exc}")
+                    traceback.print_exception(type(exc), exc, exc.__traceback__)
 
+        print(f"Converted all {len(self.textures.values())} textures in {time.perf_counter() - start:.3f}s")
 
-        for tex in self.textures.values():
-            self._mk_vtf(tex)
-
-
-        print(f"Converted {len(self.textures)} textures in {time.perf_counter()-start:.3f}s")
 
         # Write VMTs
         for mat in self.materials:
