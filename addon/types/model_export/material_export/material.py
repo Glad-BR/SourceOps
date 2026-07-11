@@ -196,19 +196,22 @@ class ExporterMain:
 
         # Step 2: Convert textures for each material
         print(f"Converting textures for {len(self.model.materials_items)} materials")
-        with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(self._convert_textures, mat) for mat in self.model.materials_items]
-            for future in as_completed(futures):
-                try:
-                    res = future.result()
-                    if isinstance(res, str):
-                        self.errors.append(res)
-                        print(f"Texture conversion returned error: {res}")
-                except Exception as exc:
-                    self.errors.append(exc)
-                    print(f"Thread failed with error: {exc}")
-                    traceback.print_exception(type(exc), exc, exc.__traceback__)
-                
+        #with ThreadPoolExecutor() as executor:
+        #    futures = [executor.submit(self._convert_textures, mat) for mat in self.model.materials_items]
+        #    for future in as_completed(futures):
+        #        try:
+        #            res = future.result()
+        #            if isinstance(res, str):
+        #                self.errors.append(res)
+        #                print(f"Texture conversion returned error: {res}")
+        #        except Exception as exc:
+        #            self.errors.append(exc)
+        #            print(f"Thread failed with error: {exc}")
+        #            traceback.print_exception(type(exc), exc, exc.__traceback__)
+        
+        for mat in self.model.materials_items:
+            self._convert_textures(mat)
+
         # Assign filenames
         for tex in self.textures.values():
             tex: ExportTexture                                                                                            # _{tex.image_hash[:8]}

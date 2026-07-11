@@ -175,6 +175,12 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         max=1.0,
     )
 
+    fakepbr2_use_phong: bpy.props.BoolProperty(
+        name='test',
+        description='test',
+        default=False
+    )
+
 
     # VertexLitGeneric and UnlitGeneric stuff
     basetexture_format: bpy.props.EnumProperty(

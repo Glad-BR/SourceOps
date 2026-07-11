@@ -267,6 +267,26 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col2.prop(game, 'vtf_version')
                 col2.prop(material, 'type')
 
+
+                def _phong(col2):
+                    split = col2.split(factor=factor, align=True)
+                    split.label(text='Max Exponent')
+                    split.prop(material, 'fakepbr1_max_exponent', text='')
+
+                    split = col2.split(factor=factor, align=True)
+                    split.prop(material, 'fakepbr1_use_albedotint', text='Albedo Tint')
+                    c2 = split.row()
+                    c2.enabled = material.fakepbr1_use_albedotint
+                    c2.prop(material, 'fakepbr1_albedotint_phongboost')
+
+                    split = col2.split(factor=factor, align=True)
+                    split.enabled = (material.tex_metallic is not None)
+                    split.prop(material, 'fakepbr1_darken_albedo', text='Darken Albedo')
+
+                    c = split.row()
+                    c.enabled = (material.tex_metallic is not None) and (material.fakepbr1_darken_albedo)
+                    c.prop(material, 'fakepbr1_darken_albedo_factor', text='Factor')
+
                 if (material.type == 'ExoPBR'):
                     box.separator(factor=9.7)
                 else:
@@ -277,23 +297,14 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                     factor = 0.23
 
                     if material.convert_method == 'fakepbr1':
-                        split = col2.split(factor=factor, align=True)
-                        split.label(text='Max Exponent')
-                        split.prop(material, 'fakepbr1_max_exponent', text='')
+                        _phong(col2)
 
-                        split = col2.split(factor=factor, align=True)
-                        split.prop(material, 'fakepbr1_use_albedotint', text='Albedo Tint')
-                        c2 = split.row()
-                        c2.enabled = material.fakepbr1_use_albedotint
-                        c2.prop(material, 'fakepbr1_albedotint_phongboost')
+                    
+                    elif material.convert_method == 'fakepbr2':
+                        col2.prop(material, 'fakepbr2_use_phong', text='Also Use Phong')
 
-                        split = col2.split(factor=factor, align=True)
-                        split.enabled = (material.tex_metallic is not None)
-                        split.prop(material, 'fakepbr1_darken_albedo', text='Darken Albedo')
-
-                        c = split.row()
-                        c.enabled = (material.tex_metallic is not None) and (material.fakepbr1_darken_albedo)
-                        c.prop(material, 'fakepbr1_darken_albedo_factor', text='Factor')
+                        if material.fakepbr2_use_phong:
+                            _phong(col2)
 
                     if not material.tex_diffuse:
                         col2.alert = True

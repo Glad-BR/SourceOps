@@ -124,11 +124,8 @@ class ExporterCommon:
     def _basetexture(self) -> np.ndarray:
         img = self.np_diffuse.copy()
 
-        #if (self.np_metallic is not None) and (self.mat.fakepbr1_darken_albedo):
-        #    metal = self._resize_to_target(self.np_metallic[..., np.newaxis], img)
-
-        #    img[..., :3] *= (1.0-metal)
-        #    #img = self._specular(self.np_diffuse, metal)
+        if (self.mat.fakepbr1_darken_albedo) and (self.mat.basecolor_alpha_mode == 'none'):
+            img[:, :, 3] = (self.np_metallic)
 
         if self.np_ao is not None:
             img[..., :3] *= self.np_ao[..., np.newaxis]
@@ -264,12 +261,10 @@ class fakepbr1(ExporterCommon):
 
 
     def basetexture(self) -> np.ndarray:
-        basetexture = self._basetexture()
-
-        if (self.mat.fakepbr1_darken_albedo) and (self.mat.basecolor_alpha_mode == 'none'):
-            basetexture[:, :, 3] = (self.np_metallic)
-
-        return basetexture
+        #basetexture = self._basetexture()
+        #if (self.mat.fakepbr1_darken_albedo) and (self.mat.basecolor_alpha_mode == 'none'):
+        #    basetexture[:, :, 3] = (self.np_metallic)
+        return self._basetexture()
 
     def normal(self) -> np.ndarray:
         img = self.np_bumbpmap.copy()
@@ -315,6 +310,14 @@ class fakepbr2(ExporterCommon):
         return self._emissive()
 
     def phong(self) -> np.ndarray:
+        if self.mat.fakepbr2_use_phong:
+            if self.mat.fakepbr1_use_albedotint:
+                r = self._phongexponent()
+                g = np.ones_like(r)
+                b = g
+                return np.dstack( (r,g,b) )
+            else:
+                return self._phongexponent()
         return None
     
     def envmapmask(self) -> np.ndarray:
@@ -322,7 +325,7 @@ class fakepbr2(ExporterCommon):
 
 
     def vmt(self, export_mat:ExportMaterial, outpath:Path):
-        self._write_vmt(export_mat, outpath, normal_key="$bumpmap", envmap=True,)
+        self._write_vmt(export_mat, outpath, normal_key="$bumpmap", envmap=True, phong=self.mat.fakepbr2_use_phong)
 
 #---------------------------------------------------------------------------------------------------------
 
