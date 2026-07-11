@@ -268,10 +268,10 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col2.prop(material, 'type')
 
 
-                def _phong(col2):
-                    split = col2.split(factor=factor, align=True)
-                    split.label(text='Max Exponent')
-                    split.prop(material, 'fakepbr1_max_exponent', text='')
+                def _phong(col2: bpy.types.UILayout):
+                    #split = col2.split(factor=factor, align=True)
+                    #split.label(text='Max Exponent')
+                    #split.prop(material, 'fakepbr1_max_exponent', text='')
 
                     split = col2.split(factor=factor, align=True)
                     split.prop(material, 'fakepbr1_use_albedotint', text='Albedo Tint')

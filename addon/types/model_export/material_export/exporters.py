@@ -124,8 +124,11 @@ class ExporterCommon:
     def _basetexture(self) -> np.ndarray:
         img = self.np_diffuse.copy()
 
-        if (self.mat.fakepbr1_darken_albedo) and (self.mat.basecolor_alpha_mode == 'none'):
-            img[:, :, 3] = (self.np_metallic)
+        if (self.mat.fakepbr1_darken_albedo):
+            if (self.mat.basecolor_alpha_mode == 'none'):
+                img[:, :, 3] = (self.np_metallic)
+            else:
+                img[..., :3] *= (self.np_metallic*np.float32(self.mat.fakepbr1_darken_albedo_factor))[..., np.newaxis]
 
         if self.np_ao is not None:
             img[..., :3] *= self.np_ao[..., np.newaxis]
@@ -179,11 +182,12 @@ class ExporterCommon:
                 vmt.write('\n')
                 vmt.write(f'\t${str(blender_mat.basecolor_alpha_mode)}\t"1"\n')
 
-            if (blender_mat.fakepbr1_darken_albedo) and (blender_mat.basecolor_alpha_mode == 'none'):
-                f = f'{(1-blender_mat.fakepbr1_darken_albedo_factor):.4f}'
-                vmt.write('\n')
-                vmt.write(f'\t$color2               "[{f} {f} {f}]"\n')
-                vmt.write(f'\t$blendtintbybasealpha "1"\n')
+            if (blender_mat.fakepbr1_darken_albedo):
+                if (blender_mat.basecolor_alpha_mode == 'none'):
+                    f = f'{(1-blender_mat.fakepbr1_darken_albedo_factor):.2f}'
+                    vmt.write('\n')
+                    vmt.write(f'\t$color2               "[{f} {f} {f}]"\n')
+                    vmt.write(f'\t$blendtintbybasealpha "1"\n')
 
             if envmap:
                 #rel = self._relative(export_mat.envmapmask.output_path)
