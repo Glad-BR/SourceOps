@@ -1,6 +1,8 @@
 import bpy
 import time
-from threading import Lock, Thread
+from threading import Lock
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from .. import utils
 from ..types.model_export.model import Model
 from ..types.model_export import qc
@@ -78,13 +80,15 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
                     self.report({'ERROR'}, error)
                     return {'CANCELLED'}
 
-            threads = [Thread(target=self.compile, args=[m], daemon=True) for m in source_models]
 
-            for thread in threads:
-                thread.start()
-
-            for thread in threads:
-                thread.join()
+            with ThreadPoolExecutor() as executor:
+                futures = (
+                    [executor.submit(self.export_mat, mat) for mat in source_models] +
+                    [executor.submit(self.compile, mat) for mat in source_models]
+                )
+                    
+                for future in as_completed(futures):
+                    print(future.result())
 
             for error in self._results:
                 self.report({'ERROR'}, error)
@@ -103,11 +107,17 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             if error:
                 self.report({'ERROR'}, error)
                 return {'CANCELLED'}
-
-            error = self.compile(source_model)
-            if error:
-                self.report({'ERROR'}, error)
-                return {'CANCELLED'}
+            
+            with ThreadPoolExecutor() as executor:
+                futures = (
+                    executor.submit(self.export_mat, source_model),
+                    executor.submit(self.compile, source_model)
+                )
+                for future in as_completed(futures):
+                    error = future.result()
+                    if error:
+                        self.report({'ERROR'}, error)
+                        return {'CANCELLED'}
 
             forced_static = not model.armature and not model.static
             static_message = ' (forced static due to lack of armature)' if forced_static else ''
@@ -126,9 +136,12 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             if error:
                 return error
             
+    def export_mat(self, source_model: Model):
         if not self.ctrl or self.export_materials:
             error = source_model.export_materials()
             if error:
+                with self._lock:
+                    self._results.append(error)
                 return error
 
     def compile(self, source_model: Model):
@@ -137,11 +150,11 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             if error:
                 with self._lock:
                     self._results.append(error)
-                return
+                return error
 
         if self.ctrl and (not self.all_models and self.view_model):
             error = source_model.view_model()
             if error:
                 with self._lock:
                     self._results.append(error)
-                return
+                return error
