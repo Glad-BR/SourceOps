@@ -181,7 +181,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         name='Basetexture',
         description=vtf_format_description,
         items=SOURCEOPS_VTF_FORMAT,
-        default=vtfpp.ImageFormat.DXT1.name,
+        default=vtfpp.ImageFormat.DXT5.name,
     )
     emissive_format: bpy.props.EnumProperty(
         name='Emissive',
