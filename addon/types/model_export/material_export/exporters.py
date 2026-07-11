@@ -124,9 +124,11 @@ class ExporterCommon:
     def _basetexture(self) -> np.ndarray:
         img = self.np_diffuse.copy()
 
-        if (self.np_metallic is not None) and (self.mat.fakepbr1_darken_albedo):
-            metal = self._resize_to_target(self.np_metallic[..., np.newaxis], img)
-            img = self._specular(self.np_diffuse, metal)
+        #if (self.np_metallic is not None) and (self.mat.fakepbr1_darken_albedo):
+        #    metal = self._resize_to_target(self.np_metallic[..., np.newaxis], img)
+
+        #    img[..., :3] *= (1.0-metal)
+        #    #img = self._specular(self.np_diffuse, metal)
 
         if self.np_ao is not None:
             img[..., :3] *= self.np_ao[..., np.newaxis]
@@ -179,6 +181,12 @@ class ExporterCommon:
             if blender_mat.basecolor_alpha_mode != 'none':
                 vmt.write('\n')
                 vmt.write(f'\t${str(blender_mat.basecolor_alpha_mode)}\t"1"\n')
+
+            if (blender_mat.fakepbr1_darken_albedo) and (blender_mat.basecolor_alpha_mode == 'none'):
+                f = f'{(1-blender_mat.fakepbr1_darken_albedo_factor):.4f}'
+                vmt.write('\n')
+                vmt.write(f'\t$color2               "[{f} {f} {f}]"\n')
+                vmt.write(f'\t$blendtintbybasealpha "1"\n')
 
             if envmap:
                 #rel = self._relative(export_mat.envmapmask.output_path)
@@ -256,7 +264,12 @@ class fakepbr1(ExporterCommon):
 
 
     def basetexture(self) -> np.ndarray:
-        return self._basetexture()
+        basetexture = self._basetexture()
+
+        if (self.mat.fakepbr1_darken_albedo) and (self.mat.basecolor_alpha_mode == 'none'):
+            basetexture[:, :, 3] = (self.np_metallic)
+
+        return basetexture
 
     def normal(self) -> np.ndarray:
         img = self.np_bumbpmap.copy()
@@ -277,7 +290,6 @@ class fakepbr1(ExporterCommon):
     
     def envmapmask(self) -> np.ndarray: # can't use both envmapmask and phongmask 
         return None
-
 
     def vmt(self, export_mat, outpath:Path):
         self._write_vmt(export_mat, outpath, normal_key="$bumpmap", phong=True)

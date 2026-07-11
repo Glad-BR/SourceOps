@@ -50,9 +50,9 @@ SOURCEOPS_VMTtypes = ([
     ('ExoPBR',           'ExoPBR (GMOD)',    ''),
 ])
 SOURCEOPS_MatsConverMethod = ([
-    ('simple',   'Simple',             ''),
-    ('fakepbr1', 'PBR2Source $phong',  ''),
-    ('fakepbr2', 'PBR2Source &envmap', ''),
+    ('simple',   'Simple',          ''),
+    ('fakepbr1', 'FakePBR $phong',  ''),
+    ('fakepbr2', 'FakePBR &envmap', ''),
 ])
 
 vtf_format_description = 'VTF export format. Commonly Used Values are\n' \
@@ -166,6 +166,13 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         name='darken albedo',
         description='Uses Metallic Map to darken BaseColor',
         default=False
+    )
+    fakepbr1_darken_albedo_factor: bpy.props.FloatProperty(
+        name='factor',
+        description='How much should the $basetexture be darkend by metallic map',
+        default=0.5,
+        min=0.0,
+        max=1.0,
     )
 
 

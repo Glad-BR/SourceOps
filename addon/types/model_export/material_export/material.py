@@ -38,7 +38,7 @@ class ExporterMain:
         self.mat_folder = Path(self.model.materials / self.relative_path)
         self.tex_folder = self.mat_folder / Path(self.model.name).name
 
-        self.tex_folder.mkdir(parents=True, exist_ok=True)
+        self.mat_folder.mkdir(parents=True, exist_ok=True)
 
         self.tex_search_list = (
             'tex_ao',
@@ -76,11 +76,11 @@ class ExporterMain:
                 image = getattr(mat, name, None)
                 
                 if image and image not in self.images_arrs:
-                    print(f'Adding New Image to list: [{image}]')
+                    print(f'Loading Blender Image: [{image}]')
                     self.images_arrs[image] = mats.blender_to_numpy(image)
     
 
-    def _register_texture(self, image, image_name, format, flags=None, invert_green=False):
+    def _register_texture(self, image, image_name, format, flags=None, invert_green=False, parent_name=None):
         if image is None: return None
         if flags is None: flags = ()
 
@@ -99,6 +99,7 @@ class ExporterMain:
                 image=image,
                 image_hash=image_hash,
                 image_name=image_name,
+                parent_name=parent_name,
                 output_path=None,
                 format=format,
                 flags=flags,
@@ -151,30 +152,35 @@ class ExporterMain:
             image_name='normal',
             format=ImageFormat[mat.normal_format],
             flags=flags,
+            parent_name=mat.name
         )
         export.phong = self._register_texture(
             image=exporter.phong(),
             image_name='phong',
             format=phong_format,
             flags=flags,
+            parent_name=mat.name
         )
         export.envmapmask = self._register_texture(
             image=exporter.envmapmask(),
             image_name='envmapmask',
             format=ImageFormat.IA88,
             flags=flags,
+            parent_name=mat.name
         )
         export.basetexture = self._register_texture(
             image=exporter.basetexture(),
             image_name='basetexture',
             format=ImageFormat[mat.basetexture_format],
             flags=flags,
+            parent_name=mat.name
         )
         export.emissive = self._register_texture(
             image=exporter.emissive(),
             image_name='emissive',
             format=emissive_format,
             flags=flags,
+            parent_name=mat.name
         )
 
         self.materials.append(export)
@@ -205,8 +211,8 @@ class ExporterMain:
                 
         # Assign filenames
         for tex in self.textures.values():
-            tex: ExportTexture
-            tex.output_path = self.tex_folder / f"{bpy.path.clean_name(tex.image_name)}_{tex.image_hash[:8]}.vtf"
+            tex: ExportTexture                                                                                            # _{tex.image_hash[:8]}
+            tex.output_path = self.mat_folder / bpy.path.clean_name(tex.parent_name) / f"{bpy.path.clean_name(tex.image_name)}.vtf"
 
         # Step 3: create textures and save as vtf
         print(f"Exporting {len(self.textures.values())} VTF textures to {self.tex_folder}")
