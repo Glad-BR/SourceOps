@@ -16,6 +16,7 @@ class ExportTexture:
     image: np.ndarray
     image_hash: str
     image_name: str
+    parent_name : str
 
     output_path: Path = None
 

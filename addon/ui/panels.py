@@ -264,8 +264,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
                 col2.separator()
 
-                col2.prop(material, 'type')
                 col2.prop(game, 'vtf_version')
+                col2.prop(material, 'type')
 
                 if (material.type == 'ExoPBR'):
                     box.separator(factor=9.7)
@@ -287,9 +287,13 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                         c2.enabled = material.fakepbr1_use_albedotint
                         c2.prop(material, 'fakepbr1_albedotint_phongboost')
 
-                        r1 = col2.row()
-                        r1.enabled = (material.tex_metallic is not None)
-                        r1.prop(material, 'fakepbr1_darken_albedo', text='Darken Albedo')
+                        split = col2.split(factor=factor, align=True)
+                        split.enabled = (material.tex_metallic is not None)
+                        split.prop(material, 'fakepbr1_darken_albedo', text='Darken Albedo')
+
+                        c = split.row()
+                        c.enabled = (material.tex_metallic is not None) and (material.fakepbr1_darken_albedo)
+                        c.prop(material, 'fakepbr1_darken_albedo_factor', text='Factor')
 
                     if not material.tex_diffuse:
                         col2.alert = True
