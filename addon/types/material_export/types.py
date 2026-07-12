@@ -7,8 +7,7 @@ from sourcepp import vtfpp
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
-from ....props.material_props import SOURCEOPS_AllMaterialsProps
-
+from ...props.material_props import SOURCEOPS_AllMaterialsProps
 
 @dataclass
 class ExportTexture:

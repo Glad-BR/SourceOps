@@ -9,6 +9,9 @@ bl_info = {
     'category': 'Import-Export',
 }
 
+import sys
+print(f'Starting {bl_info['name']} Version {bl_info["version"]}')
+print(f'GIL:{sys._is_gil_enabled()}')
 
 from . import dependency
 dependency.register()

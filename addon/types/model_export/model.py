@@ -222,7 +222,7 @@ class Model:
 
 
     def export_materials(self):
-        from .material_export import material
+        from ..material_export import material
         return material.export_materials(self)
 
 

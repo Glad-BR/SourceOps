@@ -3,14 +3,11 @@ import time
 import hashlib
 import traceback
 import threading
-
-
 import numpy as np
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from sourcepp import vtfpp
-
 from . import vtf
 Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
@@ -18,10 +15,9 @@ ImageFormat = vtfpp.ImageFormat
 from . import vtf
 from .types import *
 from .exporters import Basic, fakepbr1, fakepbr2, ExoPBR1
-from ..model import Model
-from ....utils import mats
-from ....props.material_props import SOURCEOPS_AllMaterialsProps
-
+from ..model_export.model import Model
+from ...utils import mats
+from ...props.material_props import SOURCEOPS_AllMaterialsProps
 
 
 class ExporterMain:

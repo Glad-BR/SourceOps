@@ -9,9 +9,10 @@ Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
 from .types import *
-from ..model import Model
-from ....utils import mats
-from ....props.material_props import SOURCEOPS_AllMaterialsProps
+from ..model_export.model import Model
+
+from ...utils import mats
+from ...props.material_props import SOURCEOPS_AllMaterialsProps
 
 
 

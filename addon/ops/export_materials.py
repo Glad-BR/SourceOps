@@ -2,7 +2,7 @@ import bpy
 from .. import utils
 from ..types.model_export.model import Model
 
-from ..types.model_export.material_export import material
+#from ..types.material_export import material
 
 class SOURCEOPS_OT_ExportMaterials(bpy.types.Operator):
     bl_idname = 'sourceops.export_materials'
