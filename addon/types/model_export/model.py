@@ -10,6 +10,7 @@ from ... utils import common, mats
 from ... import props
 from . smd import SMD
 from . fbx import export_fbx
+from ...utils.logger import log
 
 from concurrent.futures import ThreadPoolExecutor
 import subprocess
@@ -163,7 +164,7 @@ class Model:
             smd_file.write(smd.to_string())
             smd_file.close()
 
-            print(f'Exported: {path} in {round(time.time() - start, 1)} seconds')
+            log.info(f'Exported: {path} in {round(time.time() - start, 1)} seconds')
 
     def export_fbx(self, armature, objects, path):
         start = time.time()
@@ -173,7 +174,7 @@ class Model:
         except:
             self.report(f'Failed to export: {path}', exception=True)
         else:
-            print(f'Exported: {path} in {round(time.time() - start, 1)} seconds')
+            log.info(f'Exported: {path} in {round(time.time() - start, 1)} seconds')
 
     def get_all_objects(self, collection):
         return common.remove_duplicates(collection.all_objects) if collection else []
@@ -185,7 +186,7 @@ class Model:
     def compile_qc(self):
         qc = self.directory.joinpath(f'{self.stem}.qc')
         if qc.is_file():
-            print(f'Compiling: {qc}')
+            log.info(f'Compiling: {qc}')
             self.ensure_models_folder()
             self.remove_models_old()
 
@@ -203,13 +204,13 @@ class Model:
                 cwd = None
                 args = [str(self.studiomdl), '-nop4', '-fullcollide', fastbuild, '-game', str(self.game), str(qc)]
             
-            log = self.directory.joinpath(f'{self.stem}.log')
+            logfile = self.directory.joinpath(f'{self.stem}.log')
 
-            with log.open('wb') as f:
+            with logfile.open('wb') as f:
                 with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd, env=env) as pipe:
                     for line in pipe.stdout:
                         f.write(line)
-                        print(line.decode('utf-8').rstrip())
+                        log.debug(line.decode('utf-8').rstrip())
 
             code = pipe.returncode
 
@@ -228,7 +229,7 @@ class Model:
 
     def open_folder(self):
         try:
-            print(f'Opening: {self.directory}')
+            log.info(f'Opening: {self.directory}')
             self.directory.mkdir(exist_ok=True)
             bpy.ops.wm.path_open(filepath=str(self.directory))
         except:
@@ -238,7 +239,7 @@ class Model:
         relative_path = Path(self.material_folder_items[0].name)
         mat_folder = Path(self.materials / relative_path)
         try:
-            print(f'Opening: {mat_folder}')
+            log.info(f'Opening: {mat_folder}')
             mat_folder.mkdir(exist_ok=True)
             bpy.ops.wm.path_open(filepath=str(mat_folder))
         except:
@@ -264,7 +265,7 @@ class Model:
             args = [str(self.hlmv), '-game', str(self.game), str(mdl)]
 
         if dx90.is_file():
-            print(f'Viewing: {mdl}')
+            log.info(f'Viewing: {mdl}')
             subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
         else:
             return self.report(f'Failed to view: {mdl}')
@@ -276,7 +277,7 @@ class Model:
         if path_src == path_dst:
             return
 
-        print(f'Moving to: {self.models}')
+        log.info(f'Moving to: {self.models}')
         common.verify_folder(path_dst.parent)
 
         for suffix in ('.dx90.vtx', '.dx80.vtx', '.sw.vtx', '.vvd', '.mdl', '.phy'):
@@ -285,12 +286,12 @@ class Model:
 
             if src.exists():
                 try:
-                    print(f'Moving {src} > {dst}')
+                    log.info(f'Moving {src} > {dst}')
                     move(src, dst)
                 except:
                     self.report(f'Failed to move {src} to {dst}', exception=True)
             else:
-                print(f'{src} Does not exist')
+                log.warning(f'{src} Does not exist')
 
     def ensure_modelsrc_folder(self):
         self.directory.mkdir(parents=True, exist_ok=True)
@@ -314,9 +315,9 @@ class Model:
                 path.unlink()
 
     def report(self, message, exception=False):
-        print(message)
+        log.info(message)
 
         if exception:
-            print_exc()
+            log.exception(exception)
 
         return message

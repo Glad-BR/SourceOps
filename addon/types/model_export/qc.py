@@ -3,20 +3,22 @@ import bpy
 from ... utils import common
 from .model import Model
 
+from ...utils.logger import log
+
 def generate_qc(self:Model):
     if not self.reference and not self.stacking:
         return self.report(f'Unable to generate QC for: {self.name} (reference and stacking both not set)')
 
     if not self.armature and not self.static:
         self.static = True
-        print(f'Armature not set for {self.name}, using static')
+        log.info(f'Armature not set for {self.name}, using static')
 
     self.ensure_modelsrc_folder()
     path = self.directory.joinpath(f'{self.stem}.qc')
 
     try:
         qc = path.open('w')
-        print(f'Generating: {path}')
+        log.info(f'Generating: {path}')
     except:
         return self.report(f'Failed to open: {path}', exception=True)
 

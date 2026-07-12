@@ -15,19 +15,6 @@ class BlenderInputNodes(Enum):
     Emissive = 'Emission Color'
 
 
-def save_blender_img(image: bpy.types.Image, save_path: str|Path, name_override: str|None = None) -> Path|None:
-    name = f'{image.name if not name_override else name_override}.{str(image.file_format).lower()}' # i cry
-    file = (Path(save_path) / name)
-    image.save(filepath=str(file))
-
-    if file.exists():
-        return file
-    else:
-        print(f'Failed to save {file}')
-        print(image)
-        return None
-
-
 def blender_to_numpy(bpy_img: bpy.types.Image) -> np.ndarray:
     '''Converts a Blender image to a numpy array with shape (height, width, channels) as a float32 array with values in the range [0, 1].'''
     width = bpy_img.size[0]

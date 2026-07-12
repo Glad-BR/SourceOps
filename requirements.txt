@@ -1,3 +1,0 @@
-Pillow
-sourcepp
-opencv-python-headless

@@ -1,19 +1,18 @@
-import time
-
 import bpy
+import time
+import math
+import bmesh
 import string
-import unicodedata
+import shutil
 import platform
 import traceback
-import shutil
-import bmesh
 import subprocess
-import os
+import unicodedata
 
 from pathlib import Path
-
 from mathutils import Vector
-import math
+
+from ..utils.logger import log
 
 def get_version():
     from ... import bl_info
@@ -159,8 +158,9 @@ def verify_folder(path:Path) -> Path:
         try:
             path.mkdir(parents=True, exist_ok=True)
         except:
-            print(f'Failed to create directory: {path}')
-            traceback.print_exc()
+            log.exception(f'Failed to create directory: {path}')
+            #print(f'Failed to create directory: {path}')
+            #traceback.print_exc()
     return path
 
 
@@ -300,14 +300,14 @@ def winepath(path: Path | str) -> str:
             text=True
         )
         windows_path = process.stdout.readline().strip()
-        print(windows_path)
+        log.debug(windows_path)
 
         # Clean up the background process gently
         process.terminate()
 
-        print(f"winepath took {time.perf_counter() - start_t:.4f} seconds {windows_path}")
+        log.debug(f"winepath took {time.perf_counter() - start_t:.4f} seconds {windows_path}")
 
         return windows_path
     except Exception as e:
-        print(f"Error running winepath: {e}")
+        log.exception(f"Error running winepath: {e}")
         return str(path)

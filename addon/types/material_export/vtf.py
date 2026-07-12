@@ -8,6 +8,8 @@ import subprocess
 import numpy as np
 from pathlib import Path
 
+from ...utils.logger import log
+
 # Cache path lookups and system temporary folder globally
 import sourcepp
 _SOURCEPP_ROOT = str(Path(sourcepp.__file__).resolve().parent.parent)
@@ -28,7 +30,7 @@ def create_vtf(
         return None
 
     if exists_ok and output_path.exists():
-        print(f"VTF {output_path.name} already exists. Skipping.")
+        log.info(f"VTF {output_path.name} already exists. Skipping.")
         return output_path
 
     output_path.parent.mkdir(exist_ok=True, parents=True)
@@ -91,6 +93,7 @@ def create_vtf(
     config_file.write_text(json.dumps(config_payload), encoding="utf-8")
 
     worker_code = f"""
+
 import json
 from pathlib import Path
 from sourcepp import vtfpp
@@ -120,7 +123,7 @@ if __name__ == "__main__":
         creation_options=native_options,
         vtf_path=Path(cfg["vtf_path"])
     )
-    print(f"WORKER_RESULT:{{err}}")
+
 """
     worker_script.write_text(worker_code.strip(), encoding="utf-8")
 
@@ -145,7 +148,7 @@ if __name__ == "__main__":
         pass
 
     if result.returncode != 0:
-        print(f"Subprocess worker crashed! StdErr:\n{result.stderr}")
+        log.critical(f"Subprocess worker crashed! StdErr:\n{result.stderr}")
         raise RuntimeError(f"VTF generation subprocess failed for {output_path.name}")
 
     err = None
@@ -154,5 +157,5 @@ if __name__ == "__main__":
             err = line.split(":", 1)
             break
 
-    print(f"VTF Creation for {output_path.name} finished in {time.perf_counter() - start:.2f}s")
+    log.info(f"VTF Creation for {output_path.name} finished in {time.perf_counter() - start:.2f}s")
     return err

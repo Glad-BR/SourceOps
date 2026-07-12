@@ -1,8 +1,9 @@
 import bpy
 import json
 import pathlib
-from .. import utils
 
+from .. import utils
+from .logger import log
 
 def valid_keys(group):
     '''Yield valid keys for this property group, meaning everything except rna_type and bl_idname.'''
@@ -24,19 +25,19 @@ def pref_prop_stored(group, storage, name):
     stored = storage.get(name) if storage else None
 
     if pref is None:
-        print(f'SKIPPING {group}["{name}"] because it is NONE')
+        log.warning(f'SKIPPING {group}["{name}"] because it is NONE')
 
     elif prop.is_skip_save:
-        print(f'SKIPPING {group}["{name}"] because it is SKIP SAVE')
+        log.warning(f'SKIPPING {group}["{name}"] because it is SKIP SAVE')
 
     elif prop.is_readonly and prop.type not in {'POINTER', 'COLLECTION'}:
-        print(f'SKIPPING {group}["{name}"] because it is READ ONLY')
+        log.warning(f'SKIPPING {group}["{name}"] because it is READ ONLY')
 
     elif invalid_enum_item(group, storage, name, pref, prop, stored):
-        print(f'SKIPPING {group}["{name}"] because it is INVALID ENUM ITEM')
+        log.warning(f'SKIPPING {group}["{name}"] because it is INVALID ENUM ITEM')
 
     elif storage and stored is None:
-        print(f'SKIPPING {group}["{name}"] because it is NOT STORED')
+        log.warning(f'SKIPPING {group}["{name}"] because it is NOT STORED')
 
     else:
         return pref, prop, stored
@@ -115,7 +116,7 @@ def load_recursive_by_name(group, storage, name):
                 load_recursive_group(a, b)
 
         except Exception as exception:
-            print(f'SKIPPING {group}["{name}"] because of EXCEPTION: {exception}')
+            log.exception(f'SKIPPING {group}["{name}"] because of EXCEPTION: {exception}')
 
     elif getattr(prop, 'is_array', None):
         try:
@@ -125,14 +126,14 @@ def load_recursive_by_name(group, storage, name):
                     pref[index] = value
 
         except Exception as exception:
-            print(f'SKIPPING {group}["{name}"] because of EXCEPTION: {exception}')
+            log.exception(f'SKIPPING {group}["{name}"] because of EXCEPTION: {exception}')
 
     elif pref != stored:
         try:
             setattr(group, name, stored)
 
         except Exception as exception:
-            print(f'SKIPPING {group}["{name}"] because of EXCEPTION: {exception}')
+            log.exception(f'SKIPPING {group}["{name}"] because of EXCEPTION: {exception}')
 
 
 def backup(path):

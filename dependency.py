@@ -1,7 +1,6 @@
 import sys
 import importlib
 import subprocess
-import platform
 
 from pathlib import Path
 
@@ -11,6 +10,7 @@ REQUIRED_MODULES = {
     'numpy' : 'numpy',
     'sourcepp': 'sourcepp',
     'cv2' : 'opencv-python-headless',
+    'logging': 'logging',
 }
 
 
