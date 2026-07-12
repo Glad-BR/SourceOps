@@ -3,6 +3,7 @@ import cv2
 import time
 
 from pathlib import Path
+from typing import List
 
 from sourcepp import vtfpp
 Flags = vtfpp.VTF.Flags
@@ -13,7 +14,7 @@ from ..model_export.model import Model
 
 from ...utils import mats
 from ...props.material_props import SOURCEOPS_AllMaterialsProps
-
+from ...utils.logger import log
 
 
 class ExporterCommon:
@@ -36,13 +37,14 @@ class ExporterCommon:
             self.np_roughness = arm_map[:, :, 1]
             self.np_metallic = arm_map[:, :, 2]
         else:
-            self.np_ao = mats.np_grayscale(self._resize_to_target(image=self._img(self.mat.tex_ao), target=self.np_diffuse)) \
+
+            self.np_ao = mats.np_grayscale(self._resize_to_largest(image=self._img(self.mat.tex_ao), target=self.np_diffuse)) \
                 if self.mat.tex_ao else None
             
             self.np_roughness = mats.np_grayscale(self._img(self.mat.tex_roughness)) \
                 if self.mat.tex_roughness else None
             
-            self.np_metallic  = mats.np_grayscale(self._resize_to_target(image=self._img(self.mat.tex_metallic), target=self.np_roughness)) \
+            self.np_metallic  = mats.np_grayscale(self._resize_to_largest(image=self._img(self.mat.tex_metallic), target=self.np_roughness)) \
                 if (self.mat.tex_metallic and self.mat.tex_roughness) else \
                 np.zeros_like(self.np_roughness)
 
@@ -55,7 +57,7 @@ class ExporterCommon:
 
         self.MAX_EXPONENT = self.mat.fakepbr1_max_exponent
 
-        print(f'Exporter __init__ done took: {time.perf_counter()-start:.3f}s')
+        log.debug(f'Exporter __init__ done took: {time.perf_counter()-start:.3f}s')
 
     #-------------------------------------------------------------------------------------------
     def _img(self, name) -> np.ndarray:
@@ -64,22 +66,57 @@ class ExporterCommon:
         else:
             return None
 
-    def _resize_to_target(self, image, target):
+    def _resize_to_target(self, image: np.ndarray, target: np.ndarray) -> np.ndarray:
         if image is None or target is None:
             return image
         if image.shape[:2] != target.shape[:2]:
             return cv2.resize(image, target.shape[:2][::-1])
         return image
+    
+    def _resize_to_largest(self, img1: np.ndarray, img2: np.ndarray) -> np.ndarray:
+        h1, w1 = img1.shape[:2]
+        h2, w2 = img2.shape[:2]
 
-    def _screen(self, base:np.ndarray, blend:np.ndarray) -> np.ndarray:
-        return 1.0 - (1.0 - base) * (1.0 - blend)
+        pixels1 = h1 * w1
+        pixels2 = h2 * w2
+        
+        if pixels1 >= pixels2:
+            target_width = w1
+            target_height = h1
+        else:
+            target_width = w2
+            target_height = h2
+            
+        target_size = (target_width, target_height)
+        img1_resized = cv2.resize(img1, target_size, interpolation=cv2.INTER_CUBIC)
+        return img1_resized
 
-    def _specular(self, albedo, metalic):
-        dielectric_spec = np.full_like(albedo, 0.04)
-        specular = (dielectric_spec * (1.0 - metalic)) + (albedo * metalic)
-        return specular
+    def _resize_list_to_largest(self, images: List[np.ndarray]) -> List[np.ndarray]:
+        if not images:
+            return []
 
+        max_height = 0
+        max_width = 0
+        
+        for img in images:
+            h, w = img.shape[:2]
+            if h > max_height:
+                max_height = h
+            if w > max_width:
+                max_width = w
 
+        target_size = (max_width, max_height)
+        resized_images = []
+
+        for img in images:
+            h, w = img.shape[:2]
+            if h == max_height and w == max_width:
+                resized_images.append(img.copy())
+            else:
+                img_resized = cv2.resize(img, target_size, interpolation=cv2.INTER_CUBIC)
+                resized_images.append(img_resized)
+
+        return resized_images
 
     #-------------------------------------------------------------------------------------------
 
@@ -125,13 +162,16 @@ class ExporterCommon:
     def _basetexture(self) -> np.ndarray:
         img = self.np_diffuse.copy()
 
-        if (self.mat.fakepbr1_darken_albedo):
+        if (self.mat.fakepbr1_darken_albedo) and (self.np_metallic is not None):
+            img = self._resize_to_largest(img, self.np_metallic)
+
             if (self.mat.basecolor_alpha_mode == 'none'):
                 img[:, :, 3] = (self.np_metallic)
             else:
                 img[..., :3] *= (self.np_metallic*np.float32(self.mat.fakepbr1_darken_albedo_factor))[..., np.newaxis]
 
         if self.np_ao is not None:
+            img = self._resize_to_largest(img, self.np_ao)
             img[..., :3] *= self.np_ao[..., np.newaxis]
         
         return img
@@ -144,7 +184,9 @@ class ExporterCommon:
             elif self.mat.emissivetype == 'MASK':
                 emissive = self.np_emissive
             elif self.mat.emissivetype == 'MASK2':
-                emissive = self.np_diffuse * self.np_emissive
+                diff, emiss = self._resize_list_to_largest( [self.np_diffuse,self.np_emissive] )
+                emissive = cv2.multiply(diff,emiss)
+                #emissive = self.np_diffuse * self.np_emissive
             return emissive
         return None
 
@@ -162,7 +204,7 @@ class ExporterCommon:
 
         surfaceprop = (blender_mat.surfaceprop and blender_mat.surfaceprop != 'default')
 
-        print(f'write {outpath}.vmt')
+        log.debug(f'write {outpath}.vmt')
 
         with open(f"{outpath}.vmt", "w") as vmt:
             vmt.write(f"{blender_mat.type}\n")
@@ -208,8 +250,6 @@ class ExporterCommon:
                 vmt.write(f'\t$phongexponenttexture "{rel}"\n')
                 vmt.write(f'\t$phongexponentfactor  "{self.MAX_EXPONENT}"\n')
                 vmt.write(f'\t$phongfresnelranges   "[0.1 0.8 1.0]"\n')
-
-                print(blender_mat.fakepbr1_use_albedotint)
 
                 if blender_mat.fakepbr1_use_albedotint:
                     vmt.write(f'\t$phongboost           "{str(blender_mat.fakepbr1_albedotint_phongboost)}"\n')
@@ -365,7 +405,7 @@ class ExoPBR1(ExporterCommon):
     def vmt(self, export_mat:ExportMaterial, outpath:Path):
         blender_mat = export_mat.source
 
-        print(f'write {outpath}.vmt')
+        log.debug(f'write {outpath}.vmt')
 
         with open(f"{outpath}.vmt", "w") as vmt:
             vmt.write(f"screenspace_general_8tex\n")
