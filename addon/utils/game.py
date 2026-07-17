@@ -1,5 +1,5 @@
 from pathlib import Path
-from ..utils.common import resolve, get_game, get_prefs
+from .common import resolve, get_game, get_prefs
 
 
 def update_game(self, context):

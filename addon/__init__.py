@@ -5,7 +5,6 @@ from . import ops
 from . import icons
 from . import ui
 
-
 def register():
     props.register()
     ops.register()

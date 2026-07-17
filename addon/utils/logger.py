@@ -1,7 +1,6 @@
 import logging
 
-from ... import bl_info
-
+NAME = 'SourceOps++'
 
 #FORMAT = "[%(name)s] | %(message)s"
 FORMAT = "[%(name)s]: %(message)s"
@@ -27,6 +26,7 @@ except ImportError:
     )
     
 
-log = logging.getLogger(bl_info['name'])
+
+log = logging.getLogger(NAME)
 log.setLevel(logging.DEBUG)
 log.debug('TEST')

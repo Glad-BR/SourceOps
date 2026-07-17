@@ -1,0 +1,47 @@
+schema_version = "1.0.0"
+
+id = "sourceops"
+version = "0.8.2"
+name = "SourceOps++"
+tagline = "A more convenient alternative to Blender Source Tools"
+maintainer = "Glad_BR"
+location = '3D View > Sidebar'
+category = 'Import-Export'
+type = "add-on"
+
+# # Optional: link to documentation, support, source files, etc
+# website = "https://extensions.blender.org/add-ons/my-example-package/"
+
+# # Optional: tag list defined by Blender and server, see:
+# # https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
+# tags = ["Animation", "Sequencer"]
+
+blender_version_min = "5.1.0"
+# blender_version_max = "5.1.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+platforms = ["windows-x64", "linux-x64"]
+
+wheels = [
+  "./wheels/markdown_it_py-4.2.0-py3-none-any.whl",
+  "./wheels/mdurl-0.1.2-py3-none-any.whl",
+  "./wheels/numpy-2.5.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+  "./wheels/numpy-2.5.1-cp313-cp313-win_amd64.whl",
+  "./wheels/opencv_python_headless-5.0.0.93-cp37-abi3-manylinux_2_28_x86_64.whl",
+  "./wheels/opencv_python_headless-5.0.0.93-cp37-abi3-win_amd64.whl",
+  "./wheels/pygments-2.20.0-py3-none-any.whl",
+  "./wheels/rich-15.0.0-py3-none-any.whl",
+  "./wheels/sourcepp-2026.4.2-cp312-abi3-manylinux_2_34_x86_64.whl",
+  "./wheels/sourcepp-2026.4.2-cp312-abi3-win_amd64.whl",
+
+]
+
+[build]
+paths_exclude_pattern = [
+  "__pycache__/",
+  "/.git/",
+  "/*.zip",
+  'build',
+  'dist'
+]

@@ -4,8 +4,9 @@ from .. import utils
 from . game_props import SOURCEOPS_GameProps
 
 
+
 class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
-    bl_idname =  __name__.partition('.')[0]
+    bl_idname = utils.common.get_name()
 
     wine: bpy.props.StringProperty(
         name='Wine',

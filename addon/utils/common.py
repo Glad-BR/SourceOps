@@ -11,18 +11,28 @@ import unicodedata
 
 from pathlib import Path
 from mathutils import Vector
+from .logger import log
 
-from ..utils.logger import log
+def get_version(context=None):
+    return '0.8.2'
 
-def get_version():
-    from ... import bl_info
-    return '.'.join(str(n) for n in bl_info['version'])
+def get_name():
+    package_root = __package__.rpartition('.')[0] if '.' in __package__ else __package__
+    if "bl_ext" in package_root:
+        parts = package_root.split('.')
+        package_root = ".".join(parts[:3])
+    else:
+        package_root = package_root.split('.')[0]
+    return package_root
 
 
 def get_prefs(context):
-    addons = context.preferences.addons
-    module = __name__.partition('.')[0]
-    return addons[module].preferences
+    package_root = get_name()
+    try:
+        return context.preferences.addons[package_root].preferences
+    except KeyError:
+        log.exception(f"Extension preferences key '{package_root}' not found.")
+        return None
 
 
 def get_game(prefs):
@@ -158,6 +168,7 @@ def verify_folder(path:Path) -> Path:
         try:
             path.mkdir(parents=True, exist_ok=True)
         except:
+            from .logger import log
             log.exception(f'Failed to create directory: {path}')
             #print(f'Failed to create directory: {path}')
             #traceback.print_exc()
@@ -289,6 +300,8 @@ def get_wine(self) -> Path:
 def winepath(path: Path | str) -> str:
     #cmd = f'winepath -w "{str(path)}"'
     start_t = time.perf_counter()
+
+    from .logger import log
 
     cmd = ['winepath', '-w', str(path)]
 
