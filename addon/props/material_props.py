@@ -180,7 +180,13 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         description='test',
         default=False
     )
-
+    fakepbr2_envmap_roughness_exp: bpy.props.FloatProperty(
+        name='test',
+        description='test',
+        min=0,
+        max=5,
+        default=5
+    )
 
     # VertexLitGeneric and UnlitGeneric stuff
     basetexture_format: bpy.props.EnumProperty(

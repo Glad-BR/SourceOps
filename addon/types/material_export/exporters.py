@@ -38,15 +38,23 @@ class ExporterCommon:
             self.np_metallic = arm_map[:, :, 2]
         else:
 
-            self.np_ao = mats.np_grayscale(self._resize_to_largest(image=self._img(self.mat.tex_ao), target=self.np_diffuse)) \
+            self.np_ao = mats.np_grayscale(self._resize_to_largest(self._img(self.mat.tex_ao), self.np_diffuse)) \
                 if self.mat.tex_ao else None
             
             self.np_roughness = mats.np_grayscale(self._img(self.mat.tex_roughness)) \
                 if self.mat.tex_roughness else None
             
-            self.np_metallic  = mats.np_grayscale(self._resize_to_largest(image=self._img(self.mat.tex_metallic), target=self.np_roughness)) \
-                if (self.mat.tex_metallic and self.mat.tex_roughness) else \
-                np.zeros_like(self.np_roughness)
+            if self.mat.tex_metallic and self.mat.tex_roughness:
+                self.np_metallic = mats.np_grayscale(
+                    self._resize_to_largest(
+                        self._img(self.mat.tex_metallic),
+                        self.np_roughness
+                    )
+                )
+            elif self.mat.tex_roughness:
+                self.np_metallic = np.zeros_like(self.np_roughness)
+            else:
+                self.np_metallic = None
 
 
         self.np_emissive = self._img(self.mat.tex_emissive) \
@@ -73,23 +81,16 @@ class ExporterCommon:
             return cv2.resize(image, target.shape[:2][::-1])
         return image
     
-    def _resize_to_largest(self, img1: np.ndarray, img2: np.ndarray) -> np.ndarray:
-        h1, w1 = img1.shape[:2]
-        h2, w2 = img2.shape[:2]
+    def _resize_to_largest(self, image: np.ndarray, target: np.ndarray) -> np.ndarray:
+        h1, w1 = image.shape[:2]
+        h2, w2 = target.shape[:2]
 
-        pixels1 = h1 * w1
-        pixels2 = h2 * w2
-        
-        if pixels1 >= pixels2:
-            target_width = w1
-            target_height = h1
+        if h1 * w1 >= h2 * w2:
+            target_size = (w1, h1)
         else:
-            target_width = w2
-            target_height = h2
-            
-        target_size = (target_width, target_height)
-        img1_resized = cv2.resize(img1, target_size, interpolation=cv2.INTER_CUBIC)
-        return img1_resized
+            target_size = (w2, h2)
+
+        return cv2.resize(image, target_size, interpolation=cv2.INTER_CUBIC)
 
     def _resize_list_to_largest(self, images: List[np.ndarray]) -> List[np.ndarray]:
         if not images:
@@ -131,9 +132,11 @@ class ExporterCommon:
 #        return ((0.8 / self.MAX_EXPONENT) * (self.np_roughness ** -2))
 
     def _envmapmask(self) -> np.ndarray:
+        #roughness_exp = 2
+        roughness_exp = self.mat.fakepbr2_envmap_roughness_exp
         left_side = cv2.addWeighted(self.np_metallic, 0.75, self.np_metallic, 0.0, 0.25)
         inv_roughness = cv2.subtract(1.0, self.np_roughness)
-        right_side = cv2.pow(inv_roughness, 5)
+        right_side = cv2.pow(inv_roughness, roughness_exp)
         return cv2.multiply(left_side, right_side)
 
     def _phongmask(self) -> np.ndarray:
@@ -342,13 +345,16 @@ class fakepbr2(ExporterCommon):
         assert self.mat.tex_normal    != None
         assert self.mat.tex_roughness != None
 
+        self.basetexture_result = self._basetexture()
+
 
     def basetexture(self) -> np.ndarray:
-        return self._basetexture()
+        return self.basetexture_result
 
     def normal(self) -> np.ndarray:
+        envmapmask = self._envmapmask()
         img = self.np_bumbpmap.copy()
-        img[..., 3] = self._envmapmask()
+        img[..., 3] = envmapmask
         return img
     
     def emissive(self) -> np.ndarray:

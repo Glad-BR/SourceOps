@@ -302,6 +302,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                     
                     elif material.convert_method == 'fakepbr2':
                         col2.prop(material, 'fakepbr2_use_phong', text='Also Use Phong')
+                        col2.prop(material, 'fakepbr2_envmap_roughness_exp', text='Env exp')
 
                         if material.fakepbr2_use_phong:
                             _phong(col2)
