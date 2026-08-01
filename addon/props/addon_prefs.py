@@ -15,6 +15,12 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         update=utils.common.update_wine,
     )
 
+    threading_export_all: bpy.props.BoolProperty(
+        name='Export All',
+        description='Use Multithreading to Export all Models\n!!! May cause your pc to explode on lots of models',
+        default=True,
+    )
+
     game_items: bpy.props.CollectionProperty(type=SOURCEOPS_GameProps)
     game_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
@@ -25,6 +31,8 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
 
         if os.name == 'posix':
             layout.prop(self, 'wine')
+
+        layout.prop(self, 'threading_export_all')
 
         row = layout.row()
         row.operator('sourceops.backup_preferences')

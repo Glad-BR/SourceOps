@@ -2,6 +2,7 @@ import bpy
 import time
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import multiprocessing
 
 from .. import utils
 from ..types.model_export.model import Model
@@ -71,6 +72,12 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         self._lock = Lock()
         self._results = []
 
+        if prefs.threading_export_all:
+            self._max_workers = multiprocessing.cpu_count()-1
+        else:
+            self._max_workers = 1
+
+
         if (not self.ctrl and self.shift) or (self.ctrl and self.all_models):
             source_models = [Model(game, model) for model in sourceops.model_items]
 
@@ -81,14 +88,19 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
                     return {'CANCELLED'}
 
 
-            with ThreadPoolExecutor() as executor:
-                futures = (
-                    [executor.submit(self.export_mat, mat) for mat in source_models] +
-                    [executor.submit(self.compile, mat) for mat in source_models]
-                )
-                    
-                for future in as_completed(futures):
-                    print(future.result())
+            try:
+                with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
+                    futures = (
+                        [executor.submit(self.export_mat, mat) for mat in source_models] +
+                        [executor.submit(self.compile, mat) for mat in source_models]
+                    )
+                        
+                    for future in as_completed(futures):
+                        print(future.result())
+            except KeyboardInterrupt as error:
+                self.report({'ERROR'}, error)
+                executor.shutdown()
+                return {'CANCELLED'}
 
             for error in self._results:
                 self.report({'ERROR'}, error)
@@ -108,7 +120,7 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
                 self.report({'ERROR'}, error)
                 return {'CANCELLED'}
             
-            with ThreadPoolExecutor() as executor:
+            with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
                 futures = (
                     executor.submit(self.export_mat, source_model),
                     executor.submit(self.compile, source_model)
