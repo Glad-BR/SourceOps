@@ -2,19 +2,30 @@ import os
 import sys
 import json
 import time
-import uuid
-import tempfile
 import subprocess
 import numpy as np
 from pathlib import Path
 
 from ...utils.logger import log
 
-# Cache path lookups and system temporary folder globally
+from multiprocessing import shared_memory
+
+# Cache the sourcepp package root globally.
 import sourcepp
 _SOURCEPP_ROOT = str(Path(sourcepp.__file__).resolve().parent.parent)
-_SHARED_TMP_DIR = Path(tempfile.gettempdir()).resolve()
 
+
+
+# Run Once on startup
+worker_file = Path(__file__).parent / 'vtfpp_worker.py'
+
+log.debug(worker_file.resolve())
+
+with open(worker_file.resolve(), 'r', encoding="utf-8") as file:
+    worker_code = file.read()
+
+
+#All this just because sourcepp doesn’t release the GIL
 def create_vtf(
         image: np.ndarray,
         output_path: str | Path,
@@ -75,77 +86,38 @@ def create_vtf(
     else:
         raise ValueError(f"Unsupported number of dimensions: {image.ndim}")
 
-    task_id = uuid.uuid4().hex
-    data_file = _SHARED_TMP_DIR / f"vtf_img_{task_id}.raw"
-    config_file = _SHARED_TMP_DIR / f"vtf_cfg_{task_id}.json"
-    worker_script = _SHARED_TMP_DIR / f"vtf_run_{task_id}.py"
+    image_shm = shared_memory.SharedMemory(create=True, size=image.nbytes)
+    image_shm.buf[:image.nbytes] = image.tobytes()
 
-    data_file.write_bytes(image.tobytes())
-    
     config_payload = {
-        "raw_path": str(data_file),
-        "format_value": FORMAT,
+        "shared_memory_name": image_shm.name,
+        "image_size": image.nbytes,
+        "np_format": FORMAT,
         "width": WIDTH,
         "height": HEIGHT,
         "options": options_dict,
         "vtf_path": str(output_path)
     }
-    config_file.write_text(json.dumps(config_payload), encoding="utf-8")
 
-    worker_code = f"""
-
-import json
-from pathlib import Path
-from sourcepp import vtfpp
-
-if __name__ == "__main__":
-    with open("{config_file}", "r") as f:
-        cfg = json.load(f)
-        
-    image_data = Path(cfg["raw_path"]).read_bytes()
-    
-    opts = cfg["options"]
-    native_options = vtfpp.VTF.CreationOptions()
-    native_options.output_format = vtfpp.ImageFormat(opts["output_format"])
-    native_options.version = opts["version"]
-    native_options.flags = opts["flags"]
-    native_options.compute_mips = opts["compute_mips"]
-    native_options.compute_thumbnail = opts["compute_thumbnail"]
-    native_options.compute_reflectivity = opts["compute_reflectivity"]
-
-    native_format = vtfpp.ImageFormat(cfg["format_value"])
-
-    err = vtfpp.VTF.create_and_bake(
-        image_data=image_data,
-        format=native_format,
-        width=cfg["width"],
-        height=cfg["height"],
-        creation_options=native_options,
-        vtf_path=Path(cfg["vtf_path"])
-    )
-
-"""
-    worker_script.write_text(worker_code.strip(), encoding="utf-8")
-
-    # Replicate environment paths 
+    # Replicate environment paths.
     env = os.environ.copy()
     existing_path = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = f"{_SOURCEPP_ROOT}{os.pathsep}{existing_path}" if existing_path else _SOURCEPP_ROOT
 
-    result = subprocess.run(
-        [sys.executable, str(worker_script)],
-        cwd=str(_SHARED_TMP_DIR),
-        capture_output=True,
-        text=True,
-        env=env
-    )
-
     try:
-        data_file.unlink(missing_ok=True)
-        config_file.unlink(missing_ok=True)
-        worker_script.unlink(missing_ok=True)
-    except OSError:
-        pass
+        result = subprocess.run(
+            [sys.executable, "-c", worker_code],
+            capture_output=True,
+            text=True,
+            input=json.dumps(config_payload),
+            env=env
+        )
+    finally:
+        image_shm.close()
+        try:
+            image_shm.unlink()
+        except FileNotFoundError:
+            pass
 
     if result.returncode != 0:
         log.critical(f"Subprocess worker crashed! StdErr:\n{result.stderr}")
@@ -156,6 +128,11 @@ if __name__ == "__main__":
         if line.startswith("WORKER_RESULT:"):
             err = line.split(":", 1)
             break
+
+    if not output_path.exists():
+        log.critical('VTF creation finished but output was not found')
+        log.critical(output_path)
+        return FileNotFoundError
 
     log.info(f"VTF Creation for {output_path.name} finished in {time.perf_counter() - start:.2f}s")
     return err
