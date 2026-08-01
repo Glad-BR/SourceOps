@@ -10,7 +10,7 @@ from ... utils import common, mats
 from ... import props
 from . smd import SMD
 from . fbx import export_fbx
-from ...utils.logger import log
+from ...utils.logger import log, getLogger
 
 from concurrent.futures import ThreadPoolExecutor
 import subprocess
@@ -208,9 +208,10 @@ class Model:
 
             with logfile.open('wb') as f:
                 with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd, env=env) as pipe:
+                    l = getLogger('studiomdl')
                     for line in pipe.stdout:
                         f.write(line)
-                        log.debug(line.decode('utf-8').rstrip())
+                        l.debug(line.decode('utf-8').rstrip())
 
             code = pipe.returncode
 

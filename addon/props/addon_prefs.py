@@ -15,9 +15,20 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         update=utils.common.update_wine,
     )
 
+    debug: bpy.props.BoolProperty(
+        name='test',
+        description='test',
+        default=True,
+    )
+
     threading_export_all: bpy.props.BoolProperty(
         name='Export All',
         description='Use Multithreading to Export all Models\n!!! May cause your pc to explode on lots of models',
+        default=True,
+    )
+    threading_mat_export: bpy.props.BoolProperty(
+        name='Materials',
+        description='test',
         default=True,
     )
 
@@ -32,7 +43,9 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         if os.name == 'posix':
             layout.prop(self, 'wine')
 
+        layout.label(text='Multithreading')
         layout.prop(self, 'threading_export_all')
+        layout.prop(self, 'threading_mat_export')
 
         row = layout.row()
         row.operator('sourceops.backup_preferences')
