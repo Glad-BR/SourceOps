@@ -1,7 +1,7 @@
 import bpy
 import time
 import hashlib
-import traceback
+import multiprocessing
 import threading
 import numpy as np
 
@@ -14,11 +14,13 @@ ImageFormat = vtfpp.ImageFormat
 
 from . import vtf
 from .types import *
-from .exporters import Basic, fakepbr1, fakepbr2, ExoPBR1
+from .exporters import *
 from ..model_export.model import Model
 from ...utils import mats
 from ...props.material_props import SOURCEOPS_AllMaterialsProps
 from ...utils.logger import log
+
+
 
 class ExporterMain:
 
@@ -33,6 +35,11 @@ class ExporterMain:
         self.errors = []
 
         self._lock = threading.Lock()
+
+        if model.prefs.threading_mat_export:
+            self._max_workers = multiprocessing.cpu_count()-1
+        else:
+            self._max_workers = 1
 
         assert self.model.material_folder_items is not None
 
@@ -61,12 +68,14 @@ class ExporterMain:
 
     def _exporter(self, mat:SOURCEOPS_AllMaterialsProps):
         if (mat.type == 'VertexLitGeneric') or (mat.type == 'UnlitGeneric'):
+            #return test1(model=self.model, AllMaterialsProps=mat,images_arrs=self.images_arrs)
             if mat.convert_method == 'simple':
                 return Basic(model=self.model, AllMaterialsProps=mat,images_arrs=self.images_arrs)
             elif mat.convert_method == 'fakepbr1':
                 return fakepbr1(model=self.model, AllMaterialsProps=mat,images_arrs=self.images_arrs)
             elif mat.convert_method == 'fakepbr2':
                 return fakepbr2(model=self.model, AllMaterialsProps=mat,images_arrs=self.images_arrs)
+                #return test1(model=self.model, AllMaterialsProps=mat,images_arrs=self.images_arrs)
         elif mat.type == 'ExoPBR':
             return ExoPBR1(model=self.model, AllMaterialsProps=mat,images_arrs=self.images_arrs)
     
@@ -198,7 +207,7 @@ class ExporterMain:
 
         # Step 2: Convert textures
         log.info(f"Converting textures for {len(self.model.materials_items)} materials")
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
             futures = [executor.submit(self._convert_textures, mat) for mat in self.model.materials_items]
             for future in as_completed(futures):
                 try:
@@ -219,7 +228,7 @@ class ExporterMain:
 
         # Step 3: Save VTF
         log.debug(f"Exporting {len(self.textures.values())} VTF textures to {self.tex_folder}")
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
             futures = {executor.submit(self._mk_vtf, tex): tex for tex in self.textures.values()}
             for future in as_completed(futures):
                 tex_obj = futures[future]

@@ -30,3 +30,7 @@ except ImportError:
 log = logging.getLogger(NAME)
 log.setLevel(logging.DEBUG)
 log.debug('TEST')
+
+
+def getLogger(name):
+    return logging.getLogger(name)

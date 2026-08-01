@@ -8,7 +8,6 @@ from enum import Enum
 
 class BlenderInputNodes(Enum):
     BaseColor = 'Base Color'
-    Diffuse = BaseColor #Alias
     Roughness = 'Roughness'
     Metallic = 'Metallic'
     Normal = 'Normal'
@@ -26,12 +25,13 @@ def blender_to_numpy(bpy_img: bpy.types.Image) -> np.ndarray:
 
     float_pixels = float_pixels.reshape((height, width, channels))
     flipped = float_pixels[::-1, :, :]
-    return flipped.astype(dtype=np.float32)
-    
-def blender_to_byte(bpy_img: bpy.types.Image) -> bytes:
-    '''Converts a Blender image to a byte array with shape (height, width, channels) as a uint8 array with values in the range [0, 255].'''
-    flipped = (np.clip(blender_to_numpy(bpy_img) * 255, 0, 255).astype(np.uint8))
-    return flipped.tobytes()
+    return flipped
+
+
+#def blender_to_byte(bpy_img: bpy.types.Image) -> bytes:
+#    '''Converts a Blender image to a byte array with shape (height, width, channels) as a uint8 array with values in the range [0, 255].'''
+#    flipped = (np.clip(blender_to_numpy(bpy_img) * 255, 0, 255).astype(np.uint8))
+#    return flipped.tobytes()
 
 #def blender_to_pil(bpy_img: bpy.types.Image) -> Image.Image:
 #    '''Converts a Blender image to a PIL Image object.'''
@@ -40,8 +40,9 @@ def blender_to_byte(bpy_img: bpy.types.Image) -> bytes:
 
 def np_grayscale(image: np.ndarray) -> np.ndarray:
     if image is not None:
-        gray = np.mean(image[:, :, :3], axis=2).astype(np.float32)
-        return gray
+        #gray = np.mean(image[:, :, :3], axis=2).astype(np.float32)
+        #return gray
+        return image[:, :, 0]
     else:
         return None
 
