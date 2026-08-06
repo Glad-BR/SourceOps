@@ -160,7 +160,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         name='$phongboost',
         description='$phongboost',
         min=0,
-        default=50,
+        default=150,
     )
     fakepbr1_darken_albedo: bpy.props.BoolProperty(
         name='darken albedo',
@@ -170,7 +170,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
     fakepbr1_darken_albedo_factor: bpy.props.FloatProperty(
         name='factor',
         description='How much should the $basetexture be darkend by metallic map',
-        default=0.5,
+        default=0.75,
         min=0.0,
         max=1.0,
     )
@@ -178,14 +178,13 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
     fakepbr2_use_phong: bpy.props.BoolProperty(
         name='test',
         description='test',
-        default=False
+        default=True
     )
     fakepbr2_envmap_roughness_exp: bpy.props.FloatProperty(
         name='test',
         description='test',
         min=0,
-        max=5,
-        default=5
+        default=4
     )
 
     # VertexLitGeneric and UnlitGeneric stuff
