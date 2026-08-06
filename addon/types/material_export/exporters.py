@@ -1,6 +1,6 @@
-import numpy as np
 import cv2
 import time
+import numpy as np
 
 from pathlib import Path
 from typing import List
@@ -29,7 +29,6 @@ class ExporterCommon:
 
         self.np_diffuse = self._img(self.mat.tex_diffuse)
 
-
         # Super Secret ARM map
         if (self.mat.tex_ao == self.mat.tex_roughness == self.mat.tex_metallic) and (self.mat.tex_roughness is not None):
             arm_map = self._img(self.mat.tex_roughness)
@@ -37,24 +36,19 @@ class ExporterCommon:
             self.np_roughness = arm_map[:, :, 1]
             self.np_metallic = arm_map[:, :, 2]
         else:
-
             self.np_ao = mats.np_grayscale(self._resize_to_largest(self._img(self.mat.tex_ao), self.np_diffuse)) \
                 if self.mat.tex_ao else None
             
-            self.np_roughness = mats.np_grayscale(self._img(self.mat.tex_roughness)) \
-                if self.mat.tex_roughness else None
-            
-            if self.mat.tex_metallic and self.mat.tex_roughness:
-                self.np_metallic = mats.np_grayscale(
-                    self._resize_to_largest(
-                        self._img(self.mat.tex_metallic),
-                        self.np_roughness
-                    )
-                )
-            elif self.mat.tex_roughness:
+            if self.mat.tex_roughness and self.mat.tex_metallic:
+                self.np_roughness, self.np_metallic = self._resize_list_to_largest([
+                    mats.np_grayscale(self._img(self.mat.tex_roughness)),
+                    mats.np_grayscale(self._img(self.mat.tex_metallic))
+                ])
+            elif self.mat.tex_roughness and (not self.mat.tex_metallic):
+                self.np_roughness = mats.np_grayscale(self._img(self.mat.tex_roughness))
                 self.np_metallic = np.zeros_like(self.np_roughness)
             else:
-                self.np_metallic = None
+                raise ValueError
 
 
         self.np_emissive = self._img(self.mat.tex_emissive) \
@@ -163,22 +157,37 @@ class ExporterCommon:
         return path.relative_to(self.model.materials).with_suffix("").as_posix()
 
     def _basetexture(self) -> np.ndarray:
-        img = self.np_diffuse.copy()
+        diffuse = self.np_diffuse.copy()
 
         if (self.mat.fakepbr1_darken_albedo) and (self.np_metallic is not None):
-            img = self._resize_to_largest(img, self.np_metallic)
+            (base_color, metallic) = self._resize_list_to_largest((diffuse, self.np_metallic))
 
             if (self.mat.basecolor_alpha_mode == 'none'):
-                img[:, :, 3] = (self.np_metallic)
+                base_color[:, :, 3] = metallic
             else:
-                img[..., :3] *= (self.np_metallic*np.float32(self.mat.fakepbr1_darken_albedo_factor))[..., np.newaxis]
+                # BaseColor alpha is already used
+                base_color[..., :3] *= cv2.multiply(
+                    src1=cv2.subtract(1.0, metallic),
+                    src2=self.mat.fakepbr1_darken_albedo_factor
+                )   
+        else:
+            base_color = diffuse
 
         if self.np_ao is not None:
-            img = self._resize_to_largest(img, self.np_ao)
-            img[..., :3] *= self.np_ao[..., np.newaxis]
+            base_color = self._resize_to_largest(base_color, self.np_ao)
+            base_color[..., :3] *= self.np_ao[..., np.newaxis]
         
-        return img
+        return base_color
 
+    def _phong(self) -> np.ndarray:
+        if self.mat.fakepbr1_use_albedotint:
+            r = self._phongexponent()
+            #g = self.np_metallic
+            g = np.ones_like(r)
+            b = np.ones_like(r)
+            return np.dstack( (r,g,b) )
+        else:
+            return self._phongexponent()
 
     def _emissive(self) -> np.ndarray:
         if self.np_emissive is not None:
@@ -251,7 +260,7 @@ class ExporterCommon:
                 vmt.write('\n')
                 vmt.write(f'\t$phong                "1"\n')
                 vmt.write(f'\t$phongexponenttexture "{rel}"\n')
-                vmt.write(f'\t$phongexponentfactor  "{self.MAX_EXPONENT}"\n')
+                #vmt.write(f'\t$phongexponentfactor  "{self.MAX_EXPONENT}"\n') # Does nothing??
                 vmt.write(f'\t$phongfresnelranges   "[0.1 0.8 1.0]"\n')
 
                 if blender_mat.fakepbr1_use_albedotint:
@@ -301,6 +310,58 @@ class Basic(ExporterCommon):
 
 #---------------------------------------------------------------------------------------------------------
 
+class test1(ExporterCommon):
+    def __init__(self, model:Model, AllMaterialsProps:SOURCEOPS_AllMaterialsProps, images_arrs):
+        super().__init__(model, AllMaterialsProps, images_arrs)
+        assert self.mat.tex_normal    != None
+        assert self.mat.tex_roughness != None
+
+        roughness, metallic, base = self._resize_list_to_largest([
+            self.np_roughness,
+            self.np_metallic,
+            self.np_diffuse
+        ])
+        luma = (
+            0.2126 * base[..., 0] +
+            0.7152 * base[..., 1] +
+            0.0722 * base[..., 2]
+        )
+        reflectance = (
+            0.04 * (1.0 - self.np_metallic) +
+            luma * self.np_metallic
+        )
+        exp = self.mat.fakepbr2_envmap_roughness_exp
+        power = exp * metallic
+        log.critical(exp)
+        avg_color_bgr = cv2.mean(base)[:3]
+        log.critical(avg_color_bgr)
+        reflectance *= np.power((1.0 - roughness), exp)
+        reflectance = np.clip(reflectance, 0.0, 1.0)
+        self.env_mask = reflectance
+        self.phong_exp = reflectance
+
+    def basetexture(self) -> np.ndarray:
+        return self._basetexture()
+
+    def normal(self) -> np.ndarray:
+        img = self.np_bumbpmap.copy()
+        img[..., 3] = self.env_mask
+        return img
+    
+    def emissive(self) -> np.ndarray:
+        return self._emissive()
+
+    def phong(self) -> np.ndarray:
+        return self._phong()
+
+    def envmapmask(self) -> np.ndarray: # can't use both envmapmask and phongmask 
+        return None
+
+    def vmt(self, export_mat, outpath:Path):
+        self._write_vmt(export_mat, outpath, normal_key="$bumpmap", phong=self.mat.fakepbr2_use_phong, envmap=True)
+
+#---------------------------------------------------------------------------------------------------------
+
 class fakepbr1(ExporterCommon):
     def __init__(self, model:Model, AllMaterialsProps:SOURCEOPS_AllMaterialsProps, images_arrs):
         super().__init__(model, AllMaterialsProps, images_arrs)
@@ -309,27 +370,19 @@ class fakepbr1(ExporterCommon):
 
 
     def basetexture(self) -> np.ndarray:
-        #basetexture = self._basetexture()
-        #if (self.mat.fakepbr1_darken_albedo) and (self.mat.basecolor_alpha_mode == 'none'):
-        #    basetexture[:, :, 3] = (self.np_metallic)
         return self._basetexture()
 
     def normal(self) -> np.ndarray:
         img = self.np_bumbpmap.copy()
-        img[..., 3] = self._phongmask()
+        mask = self._phongmask()
+        img[..., 3] = self._resize_to_target(mask, img)
         return img
     
     def emissive(self) -> np.ndarray:
         return self._emissive()
 
     def phong(self) -> np.ndarray:
-        if self.mat.fakepbr1_use_albedotint:
-            r = self._phongexponent()
-            g = np.ones_like(r)
-            b = g
-            return np.dstack( (r,g,b) )
-        else:
-            return self._phongexponent()
+        return self._phong()
     
     def envmapmask(self) -> np.ndarray: # can't use both envmapmask and phongmask 
         return None
@@ -345,35 +398,23 @@ class fakepbr2(ExporterCommon):
         assert self.mat.tex_normal    != None
         assert self.mat.tex_roughness != None
 
-        self.basetexture_result = self._basetexture()
-
-
     def basetexture(self) -> np.ndarray:
-        return self.basetexture_result
+        return self._basetexture()
 
     def normal(self) -> np.ndarray:
-        envmapmask = self._envmapmask()
         img = self.np_bumbpmap.copy()
-        img[..., 3] = envmapmask
+        mask = self._envmapmask()
+        img[..., 3] = self._resize_to_target(mask, img)
         return img
     
     def emissive(self) -> np.ndarray:
         return self._emissive()
 
     def phong(self) -> np.ndarray:
-        if self.mat.fakepbr2_use_phong:
-            if self.mat.fakepbr1_use_albedotint:
-                r = self._phongexponent()
-                g = np.ones_like(r)
-                b = g
-                return np.dstack( (r,g,b) )
-            else:
-                return self._phongexponent()
-        return None
+        return self._phong()
     
     def envmapmask(self) -> np.ndarray:
         return None
-
 
     def vmt(self, export_mat:ExportMaterial, outpath:Path):
         self._write_vmt(export_mat, outpath, normal_key="$bumpmap", envmap=True, phong=self.mat.fakepbr2_use_phong)
@@ -386,7 +427,6 @@ class ExoPBR1(ExporterCommon):
         assert self.mat.tex_normal    != None
         assert self.mat.tex_roughness != None
 
-
     def basetexture(self) -> np.ndarray:
         return self.np_diffuse
     
@@ -398,9 +438,15 @@ class ExoPBR1(ExporterCommon):
     
     def phong(self) -> np.ndarray:
         # $texture2 ARM map
-        r = mats.norm_size(self.np_ao, self.np_roughness) if self.np_ao is not None else np.ones_like(self.np_roughness)
-        g = self.np_roughness
-        b = self.np_metallic
+
+        (r,g,b) = self._resize_list_to_largest([
+            self.np_ao if self.np_ao is not None else np.ones_like(self.np_roughness),
+            self.np_roughness,
+            self.np_metallic
+        ])
+        #r = mats.norm_size(self.np_ao, self.np_roughness) if self.np_ao is not None else np.ones_like(self.np_roughness)
+        #g = self.np_roughness
+        #b = self.np_metallic
 
         ARM = np.dstack((r,g,b))
         return ARM
@@ -430,7 +476,6 @@ class ExoPBR1(ExporterCommon):
                 rel = self._relative(export_mat.emissive.output_path)
                 vmt.write('\n')
                 vmt.write(f'\t$texture3 "{rel}"\n') # Emissive
-
             if blender_mat.basecolor_alpha_mode != 'none':
                 vmt.write('\n')
                 vmt.write(f'\t$alphablend "1"\n')
@@ -438,11 +483,9 @@ class ExoPBR1(ExporterCommon):
             vmt.write('\n')
             vmt.write('\t$model "1"\n')
             vmt.write('\t$cull  "1"\n')
-
             vmt.write('\n')
             vmt.write('\tProxies {\n')
             vmt.write('\t\tExoPBR {}\n')
             vmt.write('\t}')
-
             vmt.write('\n')
             vmt.write("}")
