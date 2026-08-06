@@ -4,6 +4,13 @@ from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import multiprocessing
 
+from rich import print
+
+from ..utils.logger import log
+
+#from ..utils import _thread
+#from ..utils._thread import *
+
 from .. import utils
 from ..types.model_export.model import Model
 from ..types.model_export import qc
@@ -73,34 +80,49 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         self._results = []
 
         if prefs.threading_export_all:
-            self._max_workers = multiprocessing.cpu_count()-1
+            self._max_workers = None
         else:
             self._max_workers = 1
 
+        self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
 
         if (not self.ctrl and self.shift) or (self.ctrl and self.all_models):
-            source_models = [Model(game, model) for model in sourceops.model_items]
+            source_models = [Model(game, model, self._executor) for model in sourceops.model_items]
 
-            for source_model in source_models:
-                error = self.export(source_model)
-                if error:
-                    self.report({'ERROR'}, error)
-                    return {'CANCELLED'}
+            def _export_model(source_model):
+                for error in (self.export(source_model), self.export_mat(source_model), self.compile(source_model)):
+                    if error:
+                        with self._lock:
+                            self._results.append(error)
+                        return error
 
+            export_mdl_future = self._executor.submit(_export_model, source_models)
 
             try:
-                with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
+                with ThreadPoolExecutor(max_workers=self._max_workers) as CHILD_POOL:
+
                     futures = (
-                        [executor.submit(self.export_mat, mat) for mat in source_models] +
-                        [executor.submit(self.compile, mat) for mat in source_models]
+                        [CHILD_POOL.submit(self.export_mat, mat) for mat in source_models] +
+                        [CHILD_POOL.submit(self.compile, mat) for mat in source_models]
                     )
-                        
+
+
+
+                    #for source_model in source_models:
+                    #    error = self.export(source_model)
+                    #    if error:
+                    #        self.report({'ERROR'}, error)
+                    #        return {'CANCELLED'}
+                   
                     for future in as_completed(futures):
-                        print(future.result())
+                        log.info(future.result())
             except KeyboardInterrupt as error:
                 self.report({'ERROR'}, error)
-                executor.shutdown()
+                #self._executor.shutdown()
+                CHILD_POOL.shutdown()
                 return {'CANCELLED'}
+
+            export_mdl_future.result()
 
             for error in self._results:
                 self.report({'ERROR'}, error)
@@ -113,23 +135,24 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
 
         else:
             model = utils.common.get_model(sourceops)
-            source_model = Model(game, model)
+            source_model = Model(game, model, self._executor)
 
             error = self.export(source_model)
             if error:
                 self.report({'ERROR'}, error)
                 return {'CANCELLED'}
             
-            with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
-                futures = (
-                    executor.submit(self.export_mat, source_model),
-                    executor.submit(self.compile, source_model)
-                )
-                for future in as_completed(futures):
-                    error = future.result()
-                    if error:
-                        self.report({'ERROR'}, error)
-                        return {'CANCELLED'}
+            #with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
+            futures = (
+                self._executor.submit(self.export_mat, source_model),
+                self._executor.submit(self.compile, source_model)
+            )
+
+            for future in as_completed(futures):
+                error = future.result()
+                if error:
+                    self.report({'ERROR'}, error)
+                    return {'CANCELLED'}
 
             forced_static = not model.armature and not model.static
             static_message = ' (forced static due to lack of armature)' if forced_static else ''

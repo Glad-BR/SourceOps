@@ -27,6 +27,7 @@ class ExporterMain:
     def __init__(self, model:Model):
 
         self.model = model
+        self.executor = model.executor
 
         self.images_arrs = {}
         self.textures = {}
@@ -207,41 +208,40 @@ class ExporterMain:
 
         # Step 2: Convert textures
         log.info(f"Converting textures for {len(self.model.materials_items)} materials")
-        with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
-            futures = [executor.submit(self._convert_textures, mat) for mat in self.model.materials_items]
-            for future in as_completed(futures):
-                try:
-                    res = future.result()
-                    if isinstance(res, str):
-                        self.errors.append(res)
-                        log.error(f"Texture conversion returned error: {res}")
-                except Exception as exc:
-                    self.errors.append(exc)
-                    #print(f"Thread failed with error: {exc}")
-                    #raceback.print_exception(type(exc), exc, exc.__traceback__)
-                    log.exception(f"Thread failed with error: {exc}")
+        futures = [self.executor.submit(self._convert_textures, mat) for mat in self.model.materials_items]
+        for future in as_completed(futures):
+            try:
+                res = future.result()
+                if isinstance(res, str):
+                    self.errors.append(res)
+                    log.error(f"Texture conversion returned error: {res}")
+            except Exception as exc:
+                self.errors.append(exc)
+                #print(f"Thread failed with error: {exc}")
+                #raceback.print_exception(type(exc), exc, exc.__traceback__)
+                log.exception(f"Thread failed with error: {exc}")
 
         # Assign filenames
         for tex in self.textures.values():
             tex: ExportTexture
             tex.output_path = self.mat_folder / bpy.path.clean_name(tex.parent_name) / f"{bpy.path.clean_name(tex.image_name)}.vtf"
 
+
         # Step 3: Save VTF
-        log.debug(f"Exporting {len(self.textures.values())} VTF textures to {self.tex_folder}")
-        with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
-            futures = {executor.submit(self._mk_vtf, tex): tex for tex in self.textures.values()}
-            for future in as_completed(futures):
-                tex_obj = futures[future]
-                try:
-                    res = future.result()
-                    if isinstance(res, str):
-                        self.errors.append(res)
-                        log.error(f"Texture bake error encountered on '{tex_obj.image_name}': {res}")
-                except Exception as exc:
-                    self.errors.append(exc)
-                    #print(f"Parallel dispatch worker thread collapsed on '{tex_obj.image_name}' with error: {exc}")
-                    #traceback.print_exception(type(exc), exc, exc.__traceback__)
-                    log.exception(f"Parallel dispatch worker thread collapsed on '{tex_obj.image_name}' with error: {exc}")
+        log.info(f"Exporting {len(self.textures.values())} VTF textures to {self.tex_folder}")
+        futures = {self.executor.submit(self._mk_vtf, tex): tex for tex in self.textures.values()}
+        for future in as_completed(futures):
+            tex_obj = futures[future]
+            try:
+                res = future.result()
+                if isinstance(res, str):
+                    self.errors.append(res)
+                    log.error(f"Texture bake error encountered on '{tex_obj.image_name}': {res}")
+            except Exception as exc:
+                self.errors.append(exc)
+                #print(f"Parallel dispatch worker thread collapsed on '{tex_obj.image_name}' with error: {exc}")
+                #traceback.print_exception(type(exc), exc, exc.__traceback__)
+                log.exception(f"Parallel dispatch worker thread collapsed on '{tex_obj.image_name}' with error: {exc}")
 
         log.info(f"Converted all {len(self.textures.values())} textures in {time.perf_counter() - start:.3f}s")
 

@@ -16,7 +16,8 @@ from concurrent.futures import ThreadPoolExecutor
 import subprocess
 
 class Model:
-    def __init__(self, game:props.SOURCEOPS_GameProps, model:props.SOURCEOPS_ModelProps):
+    def __init__(self, game:props.SOURCEOPS_GameProps, model:props.SOURCEOPS_ModelProps, executor=None):
+        self.executor:ThreadPoolExecutor = executor if executor else ThreadPoolExecutor(max_workers=None)
         self.prefs = common.get_prefs(bpy.context)
         self.wine = Path(common.get_wine(self.prefs))
 
@@ -41,18 +42,12 @@ class Model:
             directory = self.modelsrc.joinpath(self.name)
         self.directory = common.verify_folder(directory)
 
-
         self.material_folder_items = model.material_folder_items
         self.skin_items = model.skin_items
 
         self.materials_items = model.materials_items
         self.materials_index = model.materials_index
-
-
-
-        self.vtf_version = game.vtf_version #
-
-
+        self.vtf_version = game.vtf_version
 
         self.sequence_items = model.sequence_items
         self.attachment_items = model.attachment_items
