@@ -8,6 +8,12 @@ from concurrent.futures import ThreadPoolExecutor
 import subprocess
 import sys
 
+import click
+
+
+from rich import print
+from rich.prompt import Confirm
+
 wheels = Path('./wheels')
 
 VERSIONS = [
@@ -32,7 +38,15 @@ def main():
     for i in sorted(wls):
         print(f'  "./{str(i)}",')
 
-    
+
+    if click.confirm('Build extension?', default=True):
+        print('Do something')
+        args = ['blender', '--command', 'extension', 'build']
+
+        if click.confirm('--split-platforms', default=False):
+            args.append('--split-platforms')
+
+        subprocess.check_call(args)
 
     #subprocess.check_call(args=['blender', '--command', 'extension', 'install-file', '-r', 'user_default', '-e'])
 
