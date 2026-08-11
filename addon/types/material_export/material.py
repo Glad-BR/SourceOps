@@ -84,12 +84,13 @@ class ExporterMain:
     def _build_unique_tex(self):
         log.debug(f"Building unique texture list for {len(self.model.materials_items)} materials")
         for mat in self.model.materials_items:
-            for name in self.tex_search_list:
-                image = getattr(mat, name, None)
-                
-                if image and image not in self.images_arrs:
-                    log.debug(f'Loading Blender Image: [{image}]')
-                    self.images_arrs[image] = mats.blender_to_numpy(image)
+            if mat.export:
+                for name in self.tex_search_list:
+                    image = getattr(mat, name, None)
+                    
+                    if image and image not in self.images_arrs:
+                        log.debug(f'Loading Blender Image: [{image}]')
+                        self.images_arrs[image] = mats.blender_to_numpy(image)
     
 
     def _register_texture(self, image, image_name, format, flags=None, invert_green=False, parent_name=None):
@@ -208,7 +209,7 @@ class ExporterMain:
 
         # Step 2: Convert textures
         log.info(f"Converting textures for {len(self.model.materials_items)} materials")
-        futures = [self.executor.submit(self._convert_textures, mat) for mat in self.model.materials_items]
+        futures = [self.executor.submit(self._convert_textures, mat) for mat in self.model.materials_items if mat.export]
         for future in as_completed(futures):
             try:
                 res = future.result()

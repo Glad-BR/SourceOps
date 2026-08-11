@@ -103,4 +103,6 @@ class SOURCEOPS_UL_AllMaterialsList(bpy.types.UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         row = layout.row()
+        row.prop(item, 'export', text='', translate=False)
         row.prop(item, 'name', text='', emboss=False, translate=False)
+        #row.prop(item, 'name', text='', emboss=False, translate=False)

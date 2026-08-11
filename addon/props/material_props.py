@@ -50,9 +50,9 @@ SOURCEOPS_VMTtypes = ([
     ('ExoPBR',           'ExoPBR (GMOD)',    ''),
 ])
 SOURCEOPS_MatsConverMethod = ([
-    ('simple',   'Simple',          ''),
-    ('fakepbr1', 'FakePBR $phong',  ''),
-    ('fakepbr2', 'FakePBR &envmap', ''),
+    ('simple',   'Simple',       ''),
+    ('fakepbr2', 'FakePBR',      ''),
+    ('fakepbr1', 'PBR-2-Source', ''),
 ])
 
 vtf_format_description = 'VTF export format. Commonly Used Values are\n' \
@@ -78,6 +78,11 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         name='name',
         description='Name',
         default='MyMaterialName',
+    )
+    export: bpy.props.BoolProperty(
+        name='Export',
+        description='Export this material',
+        default=True,
     )
     type: bpy.props.EnumProperty(
         name='Shader',
@@ -155,6 +160,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         name='$phongalbedotint',
         description='$phongalbedotint',
         default=True,
+        update=utils.mats.update_mat_albedotint
     )
     fakepbr1_albedotint_phongboost: bpy.props.IntProperty(
         name='$phongboost',
@@ -165,7 +171,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
     fakepbr1_darken_albedo: bpy.props.BoolProperty(
         name='darken albedo',
         description='Uses Metallic Map to darken BaseColor',
-        default=False
+        default=False,
     )
     fakepbr1_darken_albedo_factor: bpy.props.FloatProperty(
         name='factor',
@@ -180,12 +186,26 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         description='test',
         default=True
     )
+    fakepbr2_use_envmap: bpy.props.BoolProperty(
+        name='test',
+        description='test',
+        default=True
+    )
     fakepbr2_envmap_roughness_exp: bpy.props.FloatProperty(
         name='test',
         description='test',
         min=0,
         default=4
     )
+    fakepbr2_envmap_tint: bpy.props.FloatVectorProperty(
+        name='test',
+        description='test',
+        subtype='COLOR',
+        default=(1.0, 1.0, 1.0),
+        min=0.0,
+        max=1.0,
+    )
+
 
     # VertexLitGeneric and UnlitGeneric stuff
     basetexture_format: bpy.props.EnumProperty(
