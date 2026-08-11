@@ -246,11 +246,12 @@ class ExporterCommon:
 
             if envmap:
                 #rel = self._relative(export_mat.envmapmask.output_path)
+                tint = blender_mat.fakepbr2_envmap_tint
                 vmt.write('\n')
                 vmt.write(f'\t$envmap                   "env_cubemap"\n')
                 vmt.write(f'\t$normalmapalphaenvmapmask "1"\n')
                 #vmt.write(f'\t$envmapmask               "{rel}"\n')
-                #vmt.write(f'\t$envmaptint               "[0.1 0.1 0.1]"\n')
+                vmt.write(f'\t$envmaptint               "[{tint[0]:.2f} {tint[1]:.2f} {tint[2]:.2f}]"\n')
                 #vmt.write(f'\t$envmapcontrast           "1.0"\n')
                 #vmt.write(f'\t$envmapfresnel            "1"\n')
                 #vmt.write(f'\t$envmaplightscale         "1.0"\n')
@@ -263,11 +264,11 @@ class ExporterCommon:
                 #vmt.write(f'\t$phongexponentfactor  "{self.MAX_EXPONENT}"\n') # Does nothing??
                 vmt.write(f'\t$phongfresnelranges   "[0.1 0.8 1.0]"\n')
 
+                vmt.write(f'\t$phongboost           "{str(blender_mat.fakepbr1_albedotint_phongboost)}"\n')
                 if blender_mat.fakepbr1_use_albedotint:
-                    vmt.write(f'\t$phongboost           "{str(blender_mat.fakepbr1_albedotint_phongboost)}"\n')
                     vmt.write(f'\t$phongalbedotint      "1"\n')
-                else:
-                    vmt.write(f'\t$phongboost           "5.0"\n')
+                #else:
+                #    vmt.write(f'\t$phongboost           "5.0"\n')
 
             if export_mat.emissive:
                 rel = self._relative(export_mat.emissive.output_path)
@@ -417,7 +418,13 @@ class fakepbr2(ExporterCommon):
         return None
 
     def vmt(self, export_mat:ExportMaterial, outpath:Path):
-        self._write_vmt(export_mat, outpath, normal_key="$bumpmap", envmap=True, phong=self.mat.fakepbr2_use_phong)
+        self._write_vmt(
+            export_mat=export_mat,
+            outpath=outpath,
+            normal_key="$bumpmap",
+            envmap=self.mat.fakepbr2_use_envmap,
+            phong=self.mat.fakepbr2_use_phong
+        )
 
 #---------------------------------------------------------------------------------------------------------
 

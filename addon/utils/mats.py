@@ -14,6 +14,15 @@ class BlenderInputNodes(Enum):
     Emissive = 'Emission Color'
 
 
+def update_mat_albedotint(self, context):
+    multi = 5
+    boost = self['fakepbr1_albedotint_phongboost']
+    if self['fakepbr1_use_albedotint']:
+        self['fakepbr1_albedotint_phongboost'] = int(round(boost * multi))
+    else:
+        self['fakepbr1_albedotint_phongboost'] = int(round(boost / multi))
+
+
 def blender_to_numpy(bpy_img: bpy.types.Image) -> np.ndarray:
     '''Converts a Blender image to a numpy array with shape (height, width, channels) as a float32 array with values in the range [0, 1].'''
     width = bpy_img.size[0]

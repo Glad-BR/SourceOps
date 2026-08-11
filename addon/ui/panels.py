@@ -276,7 +276,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                     split = col2.split(factor=factor, align=True)
                     split.prop(material, 'fakepbr1_use_albedotint', text='Albedo Tint')
                     c2 = split.row()
-                    c2.enabled = material.fakepbr1_use_albedotint
+                    #c2.enabled = material.fakepbr1_use_albedotint
                     c2.prop(material, 'fakepbr1_albedotint_phongboost')
 
                     split = col2.split(factor=factor, align=True)
@@ -286,6 +286,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                     c = split.row()
                     c.enabled = (material.tex_metallic is not None) and (material.fakepbr1_darken_albedo)
                     c.prop(material, 'fakepbr1_darken_albedo_factor', text='Factor')
+
 
                 if (material.type == 'ExoPBR'):
                     box.separator(factor=9.7)
@@ -306,6 +307,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
                         if material.fakepbr2_use_phong:
                             _phong(col2)
+
+                        col2.prop(material, 'fakepbr2_envmap_tint', text='Envmap Tint')
 
                     if not material.tex_diffuse:
                         col2.alert = True
