@@ -2,9 +2,6 @@ import bpy
 import time
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import multiprocessing
-
-from rich import print
 
 from ..utils.logger import log
 
@@ -92,37 +89,19 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             def _export_model(source_model):
                 for error in (self.export(source_model), self.export_mat(source_model), self.compile(source_model)):
                     if error:
-                        with self._lock:
-                            self._results.append(error)
                         return error
 
-            export_mdl_future = self._executor.submit(_export_model, source_models)
-
             try:
-                with ThreadPoolExecutor(max_workers=self._max_workers) as CHILD_POOL:
+                futures = [self._executor.submit(_export_model, source_model) for source_model in source_models]
 
-                    futures = (
-                        [CHILD_POOL.submit(self.export_mat, mat) for mat in source_models] +
-                        [CHILD_POOL.submit(self.compile, mat) for mat in source_models]
-                    )
-
-
-
-                    #for source_model in source_models:
-                    #    error = self.export(source_model)
-                    #    if error:
-                    #        self.report({'ERROR'}, error)
-                    #        return {'CANCELLED'}
-                   
-                    for future in as_completed(futures):
-                        log.info(future.result())
+                for future in as_completed(futures):
+                    error = future.result()
+                    if error:
+                        with self._lock:
+                            self._results.append(error)
             except KeyboardInterrupt as error:
                 self.report({'ERROR'}, error)
-                #self._executor.shutdown()
-                CHILD_POOL.shutdown()
                 return {'CANCELLED'}
-
-            export_mdl_future.result()
 
             for error in self._results:
                 self.report({'ERROR'}, error)
@@ -175,21 +154,15 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         if not self.ctrl or self.export_materials:
             error = source_model.export_materials()
             if error:
-                with self._lock:
-                    self._results.append(error)
                 return error
 
     def compile(self, source_model: Model):
         if not self.ctrl or self.compile_qc:
             error = source_model.compile_qc()
             if error:
-                with self._lock:
-                    self._results.append(error)
                 return error
 
         if self.ctrl and (not self.all_models and self.view_model):
             error = source_model.view_model()
             if error:
-                with self._lock:
-                    self._results.append(error)
                 return error
