@@ -258,15 +258,14 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col2.prop(material, 'basetexture_format')
                 col2.prop(material, 'emissive_format')
                 col2.prop(material, 'normal_format')
+                col2.prop(game, 'vtf_version')
 
                 col2.separator()
                 common.center_label(col2, text='Export Settings')
 
                 col2.separator()
 
-                col2.prop(game, 'vtf_version')
                 col2.prop(material, 'type')
-
 
                 def _phong(col2: bpy.types.UILayout):
                     #split = col2.split(factor=factor, align=True)
@@ -300,15 +299,27 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                     if material.convert_method == 'fakepbr1':
                         _phong(col2)
 
-                    
                     elif material.convert_method == 'fakepbr2':
-                        col2.prop(material, 'fakepbr2_use_phong', text='Also Use Phong')
-                        col2.prop(material, 'fakepbr2_envmap_roughness_exp', text='Env exp')
+                        col2.prop(material, 'fakepbr2_envmap_roughness_exp', text='Exponent')
 
-                        if material.fakepbr2_use_phong:
-                            _phong(col2)
+                        col2.separator()
 
-                        col2.prop(material, 'fakepbr2_envmap_tint', text='Envmap Tint')
+                        split = col2.split(factor=factor, align=True)
+                        split.prop(material, 'fakepbr2_use_envmap', text='Envmap')
+                        c2 = split.row()
+                        c2.enabled = material.fakepbr2_use_envmap
+                        c2.prop(material, 'fakepbr2_envmap_tint', text='')
+
+                        col2.separator()
+
+                        col2.prop(material, 'fakepbr2_use_phong', text='Phong')
+                        #if material.fakepbr2_use_phong:
+                        #    _phong(col2)
+
+                        c2 = col2.column()
+                        c2.enabled = material.fakepbr2_use_phong
+                        _phong(c2)
+                        
 
                     if not material.tex_diffuse:
                         col2.alert = True
