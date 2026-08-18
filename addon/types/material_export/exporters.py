@@ -30,15 +30,22 @@ class ExporterCommon:
         self.np_diffuse = self._img(self.mat.tex_diffuse)
 
         # Super Secret ARM map
-        if (self.mat.tex_ao == self.mat.tex_roughness == self.mat.tex_metallic) and (self.mat.tex_roughness is not None):
+        if (
+            self.mat.tex_ao is not None
+            and self.mat.tex_ao is self.mat.tex_roughness
+            and self.mat.tex_ao is self.mat.tex_metallic
+        ):
             arm_map = self._img(self.mat.tex_roughness)
             self.np_ao = arm_map[:, :, 0]
             self.np_roughness = arm_map[:, :, 1]
             self.np_metallic = arm_map[:, :, 2]
         else:
-            self.np_ao = mats.np_grayscale(self._resize_to_largest(self._img(self.mat.tex_ao), self.np_diffuse)) \
-                if self.mat.tex_ao else None
-            
+
+            if self.mat.tex_ao and self.mat.tex_diffuse:
+                self.np_ao = mats.np_grayscale(self._resize_to_largest(self._img(self.mat.tex_ao), self.np_diffuse))
+            else:
+                self.np_ao = None
+
             if self.mat.tex_roughness and self.mat.tex_metallic:
                 self.np_roughness, self.np_metallic = self._resize_list_to_largest([
                     mats.np_grayscale(self._img(self.mat.tex_roughness)),
@@ -48,7 +55,8 @@ class ExporterCommon:
                 self.np_roughness = mats.np_grayscale(self._img(self.mat.tex_roughness))
                 self.np_metallic = np.zeros_like(self.np_roughness)
             else:
-                raise ValueError
+                self.np_roughness = None
+                self.np_metallic = None
 
 
         self.np_emissive = self._img(self.mat.tex_emissive) \
