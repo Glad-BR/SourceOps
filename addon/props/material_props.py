@@ -150,7 +150,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
     )
 
 
-    fakepbr1_max_exponent: bpy.props.IntProperty(
+    fakepbr1_max_exponent: bpy.props.FloatProperty(
         name='Max Exponent',
         description='Max Exponent',
         default=32,
@@ -162,7 +162,7 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         default=True,
         update=utils.mats.update_mat_albedotint
     )
-    fakepbr1_albedotint_phongboost: bpy.props.IntProperty(
+    fakepbr1_albedotint_phongboost: bpy.props.FloatProperty(
         name='$phongboost',
         description='$phongboost',
         min=0,
