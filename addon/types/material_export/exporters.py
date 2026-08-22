@@ -199,11 +199,9 @@ class ExporterCommon:
 
     def _emissive(self) -> np.ndarray:
         if self.np_emissive is not None:
-            if self.mat.emissivetype == 'COLOR':
+            if self.mat.emissivetype in ColorMasks:
                 emissive = self.np_emissive
-            elif self.mat.emissivetype == 'MASK':
-                emissive = self.np_emissive
-            elif self.mat.emissivetype == 'MASK2':
+            elif self.mat.emissivetype in GrayMasks:
                 diff, emiss = self._resize_list_to_largest( [self.np_diffuse,self.np_emissive] )
                 emissive = cv2.multiply(diff,emiss)
                 #emissive = self.np_diffuse * self.np_emissive
@@ -275,19 +273,28 @@ class ExporterCommon:
                 vmt.write(f'\t$phongboost           "{str(blender_mat.fakepbr1_albedotint_phongboost)}"\n')
                 if blender_mat.fakepbr1_use_albedotint:
                     vmt.write(f'\t$phongalbedotint      "1"\n')
-                #else:
-                #    vmt.write(f'\t$phongboost           "5.0"\n')
 
             if export_mat.emissive:
                 rel = self._relative(export_mat.emissive.output_path)
                 vmt.write('\n')
+
                 if blender_mat.emissivetype in ('COLOR', 'MASK2'):
                     vmt.write(f'\t$detail                "{rel}"\n')
                     vmt.write(f'\t$detailscale           "1"\n')
                     vmt.write(f'\t$detailblendmode       "5"\n')
+                
                 elif blender_mat.emissivetype == 'MASK':
                     vmt.write(f'\t$selfillum             "1"\n')
                     vmt.write(f'\t$selfillummask         "{rel}"\n')
+                
+                elif blender_mat.emissivetype in ('COLOR2', 'MASK3'):
+                    vmt.write(f'\t$EmissiveBlendEnabled      "1"\n')
+                    vmt.write(f'\t$EmissiveBlendStrength     "1"\n')
+                    vmt.write(f'\t$EmissiveBlendTexture      "vgui/white"\n')
+                    vmt.write(f'\t$EmissiveBlendBaseTexture  "{rel}"\n')
+                    vmt.write(f'\t$EmissiveBlendFlowTexture  "vgui/white"\n')
+                    vmt.write(f'\t$EmissiveBlendTint         "[1 1 1]"\n')
+                    vmt.write(f'\t$EmissiveBlendScrollVector "[0 0]"\n')
 
             vmt.write("}")
 

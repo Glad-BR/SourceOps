@@ -27,3 +27,6 @@ class ExportMaterial:
     emissive: ExportTexture = None
     phong: ExportTexture = None
     envmapmask: ExportTexture = None
+
+ColorMasks = ('COLOR', 'COLOR2', 'MASK', 'MASK3')
+GrayMasks = ('MASK2',)

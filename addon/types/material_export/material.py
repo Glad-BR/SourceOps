@@ -105,21 +105,25 @@ class ExporterMain:
             flags,
             invert_green,
         )
-        tex = self.textures.get(key)
+        with self._lock:
+            tex = self.textures.get(key)
 
-        if tex is None:
-            tex = ExportTexture(
-                image=image,
-                image_hash=image_hash,
-                image_name=image_name,
-                parent_name=parent_name,
-                output_path=None,
-                format=format,
-                flags=flags,
-                invert_green=invert_green,
-            )
-            self.textures[key] = tex
-        return tex
+            if tex is None:
+                tex = ExportTexture(
+                    image=image,
+                    image_hash=image_hash,
+                    image_name=image_name,
+                    parent_name=parent_name,
+                    output_path=None,
+                    format=format,
+                    flags=flags,
+                    invert_green=invert_green,
+                )
+                self.textures[key] = tex
+            elif (parent_name, image_name) < (tex.parent_name, tex.image_name):
+                tex.parent_name = parent_name
+                tex.image_name = image_name
+            return tex
 
 
     def _mk_vtf(self, tex: ExportTexture):
@@ -155,9 +159,9 @@ class ExporterMain:
             phong_format = ImageFormat.I8
         
 
-        if mat.emissivetype in ('COLOR', 'MASK2'):
+        if mat.emissivetype in ColorMasks:
             emissive_format = ImageFormat[mat.emissive_format]
-        elif mat.emissivetype == 'MASK':
+        elif mat.emissivetype in GrayMasks:
             emissive_format = ImageFormat.I8
 
         export.normal = self._register_texture(
@@ -196,7 +200,7 @@ class ExporterMain:
             parent_name=mat.name
         )
 
-        self.materials.append(export)
+        return export
 
     #-------------------------------------------------------------------------------------------
 
@@ -210,17 +214,22 @@ class ExporterMain:
         # Step 2: Convert textures
         log.info(f"Converting textures for {len(self.model.materials_items)} materials")
         futures = [self.executor.submit(self._convert_textures, mat) for mat in self.model.materials_items if mat.export]
-        for future in as_completed(futures):
+        results = {}
+        for index, future in enumerate(futures):
             try:
                 res = future.result()
                 if isinstance(res, str):
                     self.errors.append(res)
                     log.error(f"Texture conversion returned error: {res}")
+                elif res is not None:
+                    results[index] = res
             except Exception as exc:
                 self.errors.append(exc)
                 #print(f"Thread failed with error: {exc}")
                 #raceback.print_exception(type(exc), exc, exc.__traceback__)
                 log.exception(f"Thread failed with error: {exc}")
+
+        self.materials = [results[index] for index in sorted(results)]
 
         # Assign filenames
         for tex in self.textures.values():
