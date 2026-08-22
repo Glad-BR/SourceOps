@@ -73,6 +73,8 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         self._lock = Lock()
         self._results = []
 
+        _WAIT = True
+
         if prefs.threading_export_all:
             self._max_workers = None
         else:
@@ -82,7 +84,7 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
 
 
-        def _export_model_list(source_models):
+        def _export_model_list(source_models: list[Model]):
             futures = [self._executor.submit(self.export_mat, source_model) for source_model in source_models]
 
             log.info(f'Exporting {len(source_models)} models in the scene')
@@ -95,16 +97,18 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             log.info(f'Completed {len(source_models)} models')
             log.debug(f'Started Threaded Compilation of {len(source_models)} models')
 
-            futures + [self._executor.submit(self.compile, source_model) for source_model in source_models]
+            futures += [self._executor.submit(self.compile, source_model) for source_model in source_models]
 
-            for future in as_completed(futures):
-                log.debug(f'Future completed: {future}')
-                error = future.result()
-                if error:
-                    with self._lock:
-                        self._results.append(error)
-                    log.error(f'Error during export: {error}')
-                    #self._executor.shutdown(wait=False, cancel_futures=True)
+
+            if _WAIT:
+                for future in as_completed(futures):
+                    log.debug(f'Future completed: {future}')
+                    error = future.result()
+                    if error:
+                        with self._lock:
+                            self._results.append(error)
+                        log.error(f'Error during export: {error}')
+                        #self._executor.shutdown(wait=False, cancel_futures=True)
 
 
         if (not self.ctrl and self.shift) or (self.ctrl and self.all_models):
