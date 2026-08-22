@@ -40,11 +40,11 @@ SOURCEOPS_NormalMaptypes = ([
     ('DIRECTX', 'DirectX', ''),
 ])
 SOURCEOPS_Emissivetypes = ([
-    ('COLOR', 'Color | $detail',        ''),
-    ('COLOR2','Color | $emissiveblend', ''),
-    ('MASK',   'Mask | $selfillum ',    ''),
-    ('MASK2',  'Mask | $detail',        ''),
-    ('MASK3',  'Mask | $emissiveblend', ''),
+    ('COLOR',  'Color | $detail',        ''),
+    ('COLOR2', 'Color | $emissiveblend', ''),
+    ('MASK',   ' Mask | $selfillum ',    ''),
+    ('MASK2',  ' Mask | $detail',        ''),
+    ('MASK3',  ' Mask | $emissiveblend', ''),
 ])
 SOURCEOPS_VMTtypes = ([
     ('VertexLitGeneric', 'VertexLitGeneric', ''),
