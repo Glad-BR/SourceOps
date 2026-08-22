@@ -5,9 +5,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from ..utils.logger import log
 
-#from ..utils import _thread
-#from ..utils._thread import *
-
 from .. import utils
 from ..types.model_export.model import Model
 from ..types.model_export import qc
@@ -81,26 +78,42 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         else:
             self._max_workers = 1
 
+        log.info(f'Using {self._max_workers} threads for export')
         self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
+
+
+        def _export_model_list(source_models):
+            futures = [self._executor.submit(self.export_mat, source_model) for source_model in source_models]
+
+            log.info(f'Exporting {len(source_models)} models in the scene')
+            for source_model in source_models:
+                error = self.export(source_model)
+                if error:
+                    self.report({'ERROR'}, error)
+                    return {'CANCELLED'}
+
+            log.info(f'Completed {len(source_models)} models')
+            log.debug(f'Started Threaded Compilation of {len(source_models)} models')
+
+            futures + [self._executor.submit(self.compile, source_model) for source_model in source_models]
+
+            for future in as_completed(futures):
+                log.debug(f'Future completed: {future}')
+                error = future.result()
+                if error:
+                    with self._lock:
+                        self._results.append(error)
+                    log.error(f'Error during export: {error}')
+                    #self._executor.shutdown(wait=False, cancel_futures=True)
+
 
         if (not self.ctrl and self.shift) or (self.ctrl and self.all_models):
             source_models = [Model(game, model, self._executor) for model in sourceops.model_items]
-
-            def _export_model(source_model):
-                for error in (self.export(source_model), self.export_mat(source_model), self.compile(source_model)):
-                    if error:
-                        return error
-
             try:
-                futures = [self._executor.submit(_export_model, source_model) for source_model in source_models]
-
-                for future in as_completed(futures):
-                    error = future.result()
-                    if error:
-                        with self._lock:
-                            self._results.append(error)
+                _export_model_list(source_models)
             except KeyboardInterrupt as error:
                 self.report({'ERROR'}, error)
+                self._executor.shutdown(wait=False, cancel_futures=True)
                 return {'CANCELLED'}
 
             for error in self._results:
@@ -116,22 +129,18 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             model = utils.common.get_model(sourceops)
             source_model = Model(game, model, self._executor)
 
-            error = self.export(source_model)
-            if error:
+            try:
+                _export_model_list([source_model])
+            except KeyboardInterrupt as error:
                 self.report({'ERROR'}, error)
+                self._executor.shutdown(wait=False, cancel_futures=True)
                 return {'CANCELLED'}
-            
-            #with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
-            futures = (
-                self._executor.submit(self.export_mat, source_model),
-                self._executor.submit(self.compile, source_model)
-            )
 
-            for future in as_completed(futures):
-                error = future.result()
-                if error:
-                    self.report({'ERROR'}, error)
-                    return {'CANCELLED'}
+            for error in self._results:
+                self.report({'ERROR'}, error)
+
+            if self._results:
+                return {'CANCELLED'}
 
             forced_static = not model.armature and not model.static
             static_message = ' (forced static due to lack of armature)' if forced_static else ''
