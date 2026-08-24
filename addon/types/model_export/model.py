@@ -17,9 +17,9 @@ import subprocess
 
 class Model:
     def __init__(self, game:props.SOURCEOPS_GameProps, model:props.SOURCEOPS_ModelProps, executor=None):
-        self.executor:ThreadPoolExecutor = executor if executor else ThreadPoolExecutor(max_workers=None)
+        self.executor:ThreadPoolExecutor = executor if executor else ThreadPoolExecutor(max_workers=2)
         self.prefs = common.get_prefs(bpy.context)
-        self.wine = Path(common.get_wine(self.prefs))
+        self.wine = Path(common.get_wine(self.prefs)) if os.name == 'posix' else None
 
         self.game = Path(game.game)
         self.bin = Path(game.bin)
@@ -226,7 +226,7 @@ class Model:
     def open_folder(self):
         try:
             log.info(f'Opening: {self.directory}')
-            self.directory.mkdir(exist_ok=True)
+            self.directory.mkdir(exist_ok=True, parents=True)
             bpy.ops.wm.path_open(filepath=str(self.directory))
         except:
             return self.report(f'Failed to open: {self.directory}', exception=True)
@@ -236,7 +236,7 @@ class Model:
         mat_folder = Path(self.materials / relative_path)
         try:
             log.info(f'Opening: {mat_folder}')
-            mat_folder.mkdir(exist_ok=True)
+            mat_folder.mkdir(exist_ok=True, parents=True)
             bpy.ops.wm.path_open(filepath=str(mat_folder))
         except:
             return self.report(f'Failed to open: {mat_folder}', exception=True)
