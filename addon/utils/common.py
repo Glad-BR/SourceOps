@@ -5,7 +5,6 @@ import bmesh
 import string
 import shutil
 import platform
-import traceback
 import subprocess
 import unicodedata
 

@@ -5,7 +5,7 @@ import multiprocessing
 import threading
 import numpy as np
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import as_completed
 from pathlib import Path
 from sourcepp import vtfpp
 from . import vtf

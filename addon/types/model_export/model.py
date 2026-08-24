@@ -5,8 +5,7 @@ import os
 
 from shutil import move
 from pathlib import Path
-from traceback import print_exc
-from ... utils import common, mats
+from ... utils import common
 from ... import props
 from . smd import SMD
 from . fbx import export_fbx
