@@ -1,4 +1,5 @@
 import bpy
+import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
 from .. import utils
 from ..types.model_export.model import Model
@@ -28,7 +29,7 @@ class SOURCEOPS_OT_ExportMeshes(bpy.types.Operator):
             self.report({'ERROR'}, 'Game is invalid')
             return {'CANCELLED'}
 
-        executor = ThreadPoolExecutor(max_workers=None if prefs.threading_export_all else 1)
+        executor = ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()-1 if prefs.threading_export_all else 1)
         source_model = Model(game, model, executor)
         error = source_model.export_meshes()
 

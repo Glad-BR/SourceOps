@@ -1,5 +1,6 @@
 import bpy
 import time
+import multiprocessing
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -75,15 +76,8 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
 
         _WAIT = True
 
-        if prefs.threading_export_all:
-            self._max_workers = None # Max workers
-        else:
-            self._max_workers = 1
-
-        log.info(f'Using {self._max_workers} threads for export')
-        self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
+        self._executor = ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()-1 if prefs.threading_export_all else 1)
         
-
         def _export_model_list(source_models: list[Model]):
             futures = [self._executor.submit(self.export_mat, source_model) for source_model in source_models]
 
