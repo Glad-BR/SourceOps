@@ -3,15 +3,12 @@ import sys
 from pathlib import Path
 from sourcepp import vtfpp
 
-from multiprocessing import resource_tracker, shared_memory
+from multiprocessing import shared_memory
 
 if __name__ == "__main__":
     cfg = json.load(sys.stdin)
 
     image_shm = shared_memory.SharedMemory(name=cfg["shared_memory_name"])
-    # This process only borrows the segment; the parent owns its lifetime.
-    # Prevent this interpreter's resource tracker from unlinking it on exit.
-    resource_tracker.unregister(image_shm._name, "shared_memory")
     try:
         # vtfpp consumes the buffer synchronously.  Copy it before closing the
         # shared-memory handle so the native binding receives ordinary bytes.
@@ -36,6 +33,10 @@ if __name__ == "__main__":
             creation_options=native_options,
             vtf_path=Path(cfg["vtf_path"])
         )
+        del image_data
         print(f"WORKER_RESULT:{err}")
+    except Exception as e:
+        print(e)
     finally:
         image_shm.close()
+

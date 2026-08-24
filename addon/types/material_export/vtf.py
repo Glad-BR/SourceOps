@@ -88,6 +88,7 @@ def create_vtf(
 
     image_shm = shared_memory.SharedMemory(create=True, size=image.nbytes)
     image_shm.buf[:image.nbytes] = image.tobytes()
+    
 
     config_payload = {
         "shared_memory_name": image_shm.name,
@@ -98,6 +99,8 @@ def create_vtf(
         "options": options_dict,
         "vtf_path": str(output_path)
     }
+
+    del image
 
     # Replicate environment paths.
     env = os.environ.copy()

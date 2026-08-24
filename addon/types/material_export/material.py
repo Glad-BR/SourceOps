@@ -229,6 +229,7 @@ class ExporterMain:
                 #raceback.print_exception(type(exc), exc, exc.__traceback__)
                 log.exception(f"Thread failed with error: {exc}")
 
+
         self.materials = [results[index] for index in sorted(results)]
 
         # Assign filenames
@@ -237,8 +238,20 @@ class ExporterMain:
             tex.output_path = self.mat_folder / bpy.path.clean_name(tex.parent_name) / f"{bpy.path.clean_name(tex.image_name)}.vtf"
 
 
+        # Write VMTs
+        for mat in self.materials:
+            mat:ExportMaterial # Me like type
+            blender_mat = mat.source
+            exporter = self._exporter(blender_mat)
+            exporter.vmt(export_mat=mat, outpath=(self.mat_folder / blender_mat.name))
+
+
+        self.images_arrs.clear()
+        
+
         # Step 3: Save VTF
         log.info(f"Exporting {len(self.textures.values())} VTF textures to {self.tex_folder}")
+
         futures = {self.executor.submit(self._mk_vtf, tex): tex for tex in self.textures.values()}
         for future in as_completed(futures):
             tex_obj = futures[future]
@@ -256,12 +269,6 @@ class ExporterMain:
         log.info(f"Converted all {len(self.textures.values())} textures in {time.perf_counter() - start:.3f}s")
 
 
-        # Write VMTs
-        for mat in self.materials:
-            mat:ExportMaterial # Me like type
-            blender_mat = mat.source
-            exporter = self._exporter(blender_mat)
-            exporter.vmt(export_mat=mat, outpath=(self.mat_folder / blender_mat.name))
 
         return self.errors if self.errors else None
 
