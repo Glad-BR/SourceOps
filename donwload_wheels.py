@@ -1,6 +1,3 @@
-#!/.venv/bin/python
-
-
 from pathlib import Path
 
 from concurrent.futures import ThreadPoolExecutor

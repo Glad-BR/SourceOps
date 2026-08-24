@@ -26,15 +26,14 @@ platforms = ["windows-x64", "linux-x64"]
 wheels = [
   "./wheels/markdown_it_py-4.2.0-py3-none-any.whl",
   "./wheels/mdurl-0.1.2-py3-none-any.whl",
-  "./wheels/numpy-2.5.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
-  "./wheels/numpy-2.5.1-cp313-cp313-win_amd64.whl",
+  "./wheels/numpy-2.5.2-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+  "./wheels/numpy-2.5.2-cp313-cp313-win_amd64.whl",
   "./wheels/opencv_python_headless-5.0.0.93-cp37-abi3-manylinux_2_28_x86_64.whl",
   "./wheels/opencv_python_headless-5.0.0.93-cp37-abi3-win_amd64.whl",
-  "./wheels/pygments-2.20.0-py3-none-any.whl",
+  "./wheels/pygments-2.21.0-py3-none-any.whl",
   "./wheels/rich-15.0.0-py3-none-any.whl",
   "./wheels/sourcepp-2026.4.2-cp312-abi3-manylinux_2_34_x86_64.whl",
   "./wheels/sourcepp-2026.4.2-cp312-abi3-win_amd64.whl",
-
 ]
 
 [build]
