@@ -178,13 +178,13 @@ class ExporterMain:
             flags=flags,
             parent_name=mat.name
         )
-        export.envmapmask = self._register_texture(
-            image=exporter.envmapmask(),
-            image_name='envmapmask',
-            format=ImageFormat.IA88,
-            flags=flags,
-            parent_name=mat.name
-        )
+        #export.envmapmask = self._register_texture(
+        #    image=exporter.envmapmask(),
+        #    image_name='envmapmask',
+        #    format=ImageFormat.IA88,
+        #    flags=flags,
+        #    parent_name=mat.name
+        #)
         export.basetexture = self._register_texture(
             image=exporter.basetexture(),
             image_name='basetexture',
