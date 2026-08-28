@@ -161,14 +161,13 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
     fakepbr1_use_albedotint: bpy.props.BoolProperty(
         name='$phongalbedotint',
         description='$phongalbedotint',
-        default=True,
-        update=utils.mats.update_mat_albedotint
+        default=False,
     )
     fakepbr1_albedotint_phongboost: bpy.props.FloatProperty(
         name='$phongboost',
         description='$phongboost',
         min=0,
-        default=150,
+        default=30,
     )
     fakepbr1_darken_albedo: bpy.props.BoolProperty(
         name='darken albedo',

@@ -12,27 +12,22 @@ class BlenderInputNodes(Enum):
     Emissive = 'Emission Color'
 
 
-def update_mat_albedotint(self, context):
-    multi = 5
-    boost = self['fakepbr1_albedotint_phongboost']
-    if self['fakepbr1_use_albedotint']:
-        self['fakepbr1_albedotint_phongboost'] = int(round(boost * multi))
-    else:
-        self['fakepbr1_albedotint_phongboost'] = int(round(boost / multi))
 
-
-def blender_to_numpy(bpy_img: bpy.types.Image) -> np.ndarray:
+def blender_to_numpy(img: bpy.types.Image) -> np.ndarray:
     '''Converts a Blender image to a numpy array with shape (height, width, channels) as a float32 array with values in the range [0, 1].'''
-    width = bpy_img.size[0]
-    height = bpy_img.size[1]
-    channels = 4
-    
-    float_pixels = np.empty(width * height * channels, dtype=np.float32)
-    bpy_img.pixels.foreach_get(float_pixels)
 
-    float_pixels = float_pixels.reshape((height, width, channels))
-    flipped = float_pixels[::-1, :, :]
-    return flipped
+    width, height = img.size
+    channels = img.channels
+
+    pixel_count = width * height * channels
+    flat_array = np.empty(pixel_count, dtype=np.float32)
+
+    img.pixels.foreach_get(flat_array)
+
+    image_array = flat_array.reshape((height, width, channels))
+    image_array = np.flipud(image_array)
+
+    return image_array
 
 
 #def blender_to_byte(bpy_img: bpy.types.Image) -> bytes:
@@ -47,9 +42,9 @@ def blender_to_numpy(bpy_img: bpy.types.Image) -> np.ndarray:
 
 def np_grayscale(image: np.ndarray) -> np.ndarray:
     if image is not None:
-        #gray = np.mean(image[:, :, :3], axis=2).astype(np.float32)
-        #return gray
-        return image[:, :, 0]
+        gray = np.mean(image[:, :, :3], axis=2).astype(np.float32)
+        return gray
+        #return image[:, :, 0]
     else:
         return None
 
@@ -102,6 +97,9 @@ def probe_bsdf(material: bpy.types.Material, probe_node: BlenderInputNodes) -> b
                     if image:
                         return image
     return None
+
+
+
 
 
 def get_all_mats(collection: bpy.types.Collection) -> set[bpy.types.Material]:
