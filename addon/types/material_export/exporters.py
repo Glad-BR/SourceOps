@@ -121,6 +121,9 @@ class ExporterCommon:
 
         return resized_images
 
+    def _relative(self, path:Path) -> str:
+        return path.relative_to(self.model.materials).with_suffix("").as_posix()
+
     #-------------------------------------------------------------------------------------------
 
 #    def _envmapmask(self) -> np.ndarray:
@@ -161,29 +164,36 @@ class ExporterCommon:
 
     #-------------------------------------------------------------------------------------------
 
-    def _relative(self, path:Path) -> str:
-        return path.relative_to(self.model.materials).with_suffix("").as_posix()
-
     def _basetexture(self) -> np.ndarray:
         diffuse = self.np_diffuse.copy()
 
         if (self.mat.fakepbr1_darken_albedo) and (self.np_metallic is not None):
             (base_color, metallic) = self._resize_list_to_largest((diffuse, self.np_metallic))
 
+            if (self.np_emissive is not None) and (self.mat.emissivetype == 'MASK'):
+                darken = cv2.subtract(metallic, mats.np_grayscale(self.np_emissive))
+            else:
+                darken = metallic
+
             if (self.mat.basecolor_alpha_mode == 'none'):
-                base_color[:, :, 3] = metallic
+                base_color[:, :, 3] = darken
             else:
                 # BaseColor alpha is already used
                 base_color[..., :3] *= cv2.multiply(
-                    src1=cv2.subtract(1.0, metallic),
+                    src1=cv2.subtract(1.0, darken),
                     src2=self.mat.fakepbr1_darken_albedo_factor
                 )   
         else:
             base_color = diffuse
 
         if self.np_ao is not None:
-            base_color = self._resize_to_largest(base_color, self.np_ao)
-            base_color[..., :3] *= self.np_ao[..., np.newaxis]
+
+            if (self.np_emissive is not None) and (self.mat.emissivetype == 'MASK'):
+                (base_color, ao, emissive) = self._resize_list_to_largest((base_color, self.np_ao, self.np_emissive))
+                ao = cv2.subtract(ao, -mats.np_grayscale(self.np_emissive))
+            else:
+                (base_color, ao) = self._resize_list_to_largest((base_color, self.np_ao))
+            base_color[..., :3] *= ao[..., np.newaxis]
         
         return base_color
 
@@ -199,9 +209,9 @@ class ExporterCommon:
 
     def _emissive(self) -> np.ndarray:
         if self.np_emissive is not None:
-            if self.mat.emissivetype in ColorMasks:
+            if self.mat.emissivetype in ('COLOR','COLOR2'):
                 emissive = self.np_emissive
-            elif self.mat.emissivetype in GrayMasks:
+            elif self.mat.emissivetype in ('MASK','MASK2','MASK3'):
                 diff, emiss = self._resize_list_to_largest( [self.np_diffuse,self.np_emissive] )
                 emissive = cv2.multiply(diff,emiss)
                 #emissive = self.np_diffuse * self.np_emissive

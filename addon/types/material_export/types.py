@@ -28,5 +28,5 @@ class ExportMaterial:
     phong: ExportTexture = None
     envmapmask: ExportTexture = None
 
-ColorMasks = ('COLOR', 'COLOR2', 'MASK', 'MASK3')
-GrayMasks = ('MASK2',)
+ColorMasks = ('COLOR', 'COLOR2', 'MASK2', 'MASK3')
+GrayMasks = ('MASK')
