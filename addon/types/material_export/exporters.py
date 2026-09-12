@@ -19,12 +19,11 @@ from ...utils.logger import log
 
 class ExporterCommon:
     def __init__(self, model:Model, AllMaterialsProps:SOURCEOPS_AllMaterialsProps, images_arrs):
+        assert self.mat.tex_diffuse != None
         start = time.perf_counter()
         self.model = model
         self.images = images_arrs
         self.mat = AllMaterialsProps
-
-        assert self.mat.tex_diffuse != None
 
 
         self.np_diffuse = self._img(self.mat.tex_diffuse)
@@ -67,23 +66,29 @@ class ExporterCommon:
 
         self.MAX_EXPONENT = self.mat.fakepbr1_max_exponent
 
-        log.debug(f'Exporter __init__ done took: {time.perf_counter()-start:.3f}s')
+        log.debug(f'ExporterCommon __init__ done took: {time.perf_counter()-start:.16f}s')
 
     #-------------------------------------------------------------------------------------------
+
     def _img(self, name) -> np.ndarray:
         if name:
             return self.images[name] if self.images[name] is not None else None
         else:
             return None
 
-    def _resize_to_target(self, image: np.ndarray, target: np.ndarray) -> np.ndarray:
+    def _relative(self, path:Path) -> str:
+        return path.relative_to(self.model.materials).with_suffix("").as_posix()
+
+    @staticmethod
+    def _resize_to_target(image: np.ndarray, target: np.ndarray) -> np.ndarray:
         if image is None or target is None:
             return image
         if image.shape[:2] != target.shape[:2]:
             return cv2.resize(image, target.shape[:2][::-1])
         return image
-    
-    def _resize_to_largest(self, image: np.ndarray, target: np.ndarray) -> np.ndarray:
+
+    @staticmethod
+    def _resize_to_largest(image: np.ndarray, target: np.ndarray) -> np.ndarray:
         h1, w1 = image.shape[:2]
         h2, w2 = target.shape[:2]
 
@@ -94,7 +99,8 @@ class ExporterCommon:
 
         return cv2.resize(image, target_size, interpolation=cv2.INTER_CUBIC)
 
-    def _resize_list_to_largest(self, images: List[np.ndarray]) -> List[np.ndarray]:
+    @staticmethod
+    def _resize_list_to_largest(images: List[np.ndarray]) -> List[np.ndarray]:
         if not images:
             return []
 
@@ -121,8 +127,6 @@ class ExporterCommon:
 
         return resized_images
 
-    def _relative(self, path:Path) -> str:
-        return path.relative_to(self.model.materials).with_suffix("").as_posix()
 
     #-------------------------------------------------------------------------------------------
 
@@ -262,7 +266,14 @@ class ExporterCommon:
 
             if envmap:
                 #rel = self._relative(export_mat.envmapmask.output_path)
-                tint = blender_mat.fakepbr2_envmap_tint
+
+                if blender_mat.fakepbr2_envmap_tint_auto:
+                    tint = cv2.mean(self.np_diffuse)[:3]
+                else:
+                    tint = blender_mat.fakepbr2_envmap_tint
+
+                log.debug(f'Auto Mean Color {mats.hex_color(cv2.mean(self.np_diffuse)[:3])}')
+
                 vmt.write('\n')
                 vmt.write(f'\t$envmap                   "env_cubemap"\n')
                 vmt.write(f'\t$normalmapalphaenvmapmask "1"\n')
@@ -358,9 +369,10 @@ class test1(ExporterCommon):
         )
         exp = self.mat.fakepbr2_envmap_roughness_exp
         power = exp * metallic
-        log.critical(exp)
+        log.debug(exp)
         avg_color_bgr = cv2.mean(base)[:3]
-        log.critical(avg_color_bgr)
+        tint = avg_color_bgr
+        log.debug(f'\t$envmaptint               "[{tint[0]:.2f} {tint[1]:.2f} {tint[2]:.2f}]"\n')
         reflectance *= np.power((1.0 - roughness), exp)
         reflectance = np.clip(reflectance, 0.0, 1.0)
         self.env_mask = reflectance

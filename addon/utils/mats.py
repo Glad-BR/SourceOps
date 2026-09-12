@@ -39,6 +39,10 @@ def blender_to_numpy(img: bpy.types.Image) -> np.ndarray:
 #    '''Converts a Blender image to a PIL Image object.'''
 #    return Image.frombytes("RGBA", (bpy_img.size[0], bpy_img.size[1]), blender_to_byte(bpy_img))
 
+def hex_color(color_tuple):
+    hex_color = "#" + "".join(f"{round(c * 255):02x}" for c in color_tuple)
+    return hex_color
+
 
 def np_grayscale(image: np.ndarray) -> np.ndarray:
     if image is not None:

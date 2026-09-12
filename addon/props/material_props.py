@@ -192,11 +192,10 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         description='test',
         default=True
     )
-    fakepbr2_envmap_roughness_exp: bpy.props.FloatProperty(
+    fakepbr2_envmap_tint_auto: bpy.props.BoolProperty(
         name='test',
         description='test',
-        min=0,
-        default=4
+        default=False,
     )
     fakepbr2_envmap_tint: bpy.props.FloatVectorProperty(
         name='test',
@@ -205,6 +204,12 @@ class SOURCEOPS_AllMaterialsProps(bpy.types.PropertyGroup):
         default=(1.0, 1.0, 1.0),
         min=0.0,
         max=1.0,
+    )
+    fakepbr2_envmap_roughness_exp: bpy.props.FloatProperty(
+        name='test',
+        description='test',
+        min=0,
+        default=4
     )
 
 

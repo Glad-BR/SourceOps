@@ -304,11 +304,13 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
                         col2.separator()
 
+                        col2.prop(material, 'fakepbr2_use_envmap', text='Envmap')
+
                         split = col2.split(factor=factor, align=True)
-                        split.prop(material, 'fakepbr2_use_envmap', text='Envmap')
+                        split.prop(material, 'fakepbr2_envmap_tint_auto', text='Mean Color')
                         c2 = split.row()
-                        c2.enabled = material.fakepbr2_use_envmap
-                        c2.prop(material, 'fakepbr2_envmap_tint', text='')
+                        if not material.fakepbr2_envmap_tint_auto:
+                            c2.prop(material, 'fakepbr2_envmap_tint', text='')
 
                         col2.separator()
 
