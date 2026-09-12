@@ -202,7 +202,7 @@ class Model:
 
             with logfile.open('wb') as f:
                 with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd, env=env) as pipe:
-                    l = getLogger('studiomdl')
+                    l = getLogger(f'studiomdl {self.name}')
                     for line in pipe.stdout:
                         f.write(line)
                         l.debug(line.decode('utf-8').rstrip())
