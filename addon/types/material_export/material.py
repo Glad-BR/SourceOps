@@ -76,21 +76,24 @@ class ExporterMain:
                 return fakepbr1(model=self.model, AllMaterialsProps=mat,images_arrs=self.images_arrs)
             elif mat.convert_method == 'fakepbr2':
                 return fakepbr2(model=self.model, AllMaterialsProps=mat,images_arrs=self.images_arrs)
-                #return test1(model=self.model, AllMaterialsProps=mat,images_arrs=self.images_arrs)
         elif mat.type == 'ExoPBR':
             return ExoPBR1(model=self.model, AllMaterialsProps=mat,images_arrs=self.images_arrs)
     
 
     def _build_unique_tex(self):
         log.debug(f"Building unique texture list for {len(self.model.materials_items)} materials")
+        start_t = time.perf_counter()
         for mat in self.model.materials_items:
             if mat.export:
                 for name in self.tex_search_list:
                     image = getattr(mat, name, None)
                     
                     if image and image not in self.images_arrs:
-                        log.debug(f'Loading Blender Image: [{image}]')
+                        start = time.perf_counter()
                         self.images_arrs[image] = mats.blender_to_numpy(image)
+                        log.debug(f'Loaded Blender Image: [{image}] Took: {time.perf_counter()-start:.16f}')
+        
+        log.debug(f'Finish Build unique texture list Took: {time.perf_counter()-start_t:.16f}')
     
 
     def _register_texture(self, image, image_name, format, flags=None, invert_green=False, parent_name=None):
@@ -225,12 +228,10 @@ class ExporterMain:
                     results[index] = res
             except Exception as exc:
                 self.errors.append(exc)
-                #print(f"Thread failed with error: {exc}")
-                #raceback.print_exception(type(exc), exc, exc.__traceback__)
                 log.exception(f"Thread failed with error: {exc}")
 
-
         self.materials = [results[index] for index in sorted(results)]
+        
 
         # Assign filenames
         for tex in self.textures.values():
@@ -243,7 +244,9 @@ class ExporterMain:
             mat:ExportMaterial # Me like type
             blender_mat = mat.source
             exporter = self._exporter(blender_mat)
-            exporter.vmt(export_mat=mat, outpath=(self.mat_folder / blender_mat.name))
+            outpath = self.mat_folder / blender_mat.name
+            log.info(f'Writing VMT [{blender_mat.name}]')
+            exporter.vmt(mat, outpath)
 
 
         self.images_arrs.clear()
@@ -262,8 +265,6 @@ class ExporterMain:
                     log.error(f"Texture bake error encountered on '{tex_obj.image_name}': {res}")
             except Exception as exc:
                 self.errors.append(exc)
-                #print(f"Parallel dispatch worker thread collapsed on '{tex_obj.image_name}' with error: {exc}")
-                #traceback.print_exception(type(exc), exc, exc.__traceback__)
                 log.exception(f"Parallel dispatch worker thread collapsed on '{tex_obj.image_name}' with error: {exc}")
 
         log.info(f"Converted all {len(self.textures.values())} textures in {time.perf_counter() - start:.3f}s")
