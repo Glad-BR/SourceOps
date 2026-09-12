@@ -13,7 +13,7 @@ from mathutils import Vector
 from .logger import log
 
 def get_version(context=None):
-    return '0.8.2'
+    return '0.8.3'
 
 def get_name():
     package_root = __package__.rpartition('.')[0] if '.' in __package__ else __package__
