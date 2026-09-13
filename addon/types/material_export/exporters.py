@@ -19,11 +19,11 @@ from ...utils.logger import log
 
 class ExporterCommon:
     def __init__(self, model:Model, AllMaterialsProps:SOURCEOPS_AllMaterialsProps, images_arrs):
-        assert self.mat.tex_diffuse != None
         start = time.perf_counter()
         self.model = model
         self.images = images_arrs
         self.mat = AllMaterialsProps
+        assert self.mat.tex_diffuse != None
 
 
         self.np_diffuse = self._img(self.mat.tex_diffuse)
