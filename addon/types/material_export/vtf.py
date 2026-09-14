@@ -1,19 +1,18 @@
 import os
+import cv2
 import sys
 import json
 import time
 import subprocess
 import numpy as np
 from pathlib import Path
-
 from ...utils.logger import log
-
 from multiprocessing import shared_memory
+
 
 # Cache the sourcepp package root globally.
 import sourcepp
 _SOURCEPP_ROOT = str(Path(sourcepp.__file__).resolve().parent.parent)
-
 
 
 # Run Once on startup
@@ -31,7 +30,7 @@ def create_vtf(
         output_path: str | Path,
         options = None,
         flags = None,
-        exists_ok: bool = True
+        exists_ok: bool = False
     ):
 
     start = time.perf_counter()
@@ -67,7 +66,7 @@ def create_vtf(
     if options:
         options_dict["output_format"] = options.output_format.value
 
-    image = np.clip(image * 255.0, 0, 255).astype(np.uint8)
+    image = np.clip(cv2.multiply(image, 255.0), 0, 255).astype(np.uint8)
 
     if image.ndim == 2:
         HEIGHT, WIDTH = image.shape
@@ -88,7 +87,7 @@ def create_vtf(
 
     image_shm = shared_memory.SharedMemory(create=True, size=image.nbytes)
     image_shm.buf[:image.nbytes] = image.tobytes()
-    
+    log.debug(f"Created shared memory: {image_shm.name}")
 
     config_payload = {
         "shared_memory_name": image_shm.name,
@@ -116,6 +115,7 @@ def create_vtf(
             env=env
         )
     finally:
+        log.debug(f"Closing shared memory: {image_shm.name}")
         image_shm.close()
         try:
             image_shm.unlink()

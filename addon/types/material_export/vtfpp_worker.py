@@ -1,11 +1,10 @@
-import json
 import sys
-from pathlib import Path
+import json
 from sourcepp import vtfpp
-
 from multiprocessing import shared_memory
 
-if __name__ == "__main__":
+
+def main():
     cfg = json.load(sys.stdin)
 
     image_shm = shared_memory.SharedMemory(name=cfg["shared_memory_name"])
@@ -15,23 +14,21 @@ if __name__ == "__main__":
         image_data = bytes(image_shm.buf[:cfg["image_size"]])
 
         opts = cfg["options"]
-        native_options = vtfpp.VTF.CreationOptions()
-        native_options.output_format = vtfpp.ImageFormat(opts["output_format"])
-        native_options.version = opts["version"]
-        native_options.flags = opts["flags"]
-        native_options.compute_mips = opts["compute_mips"]
-        native_options.compute_thumbnail = opts["compute_thumbnail"]
+        native_options                      = vtfpp.VTF.CreationOptions()
+        native_options.output_format        = vtfpp.ImageFormat(opts["output_format"])
+        native_options.version              = opts["version"]
+        native_options.flags                = opts["flags"]
+        native_options.compute_mips         = opts["compute_mips"]
+        native_options.compute_thumbnail    = opts["compute_thumbnail"]
         native_options.compute_reflectivity = opts["compute_reflectivity"]
-
-        native_format = vtfpp.ImageFormat(cfg["np_format"])
 
         err = vtfpp.VTF.create_and_bake(
             image_data=image_data,
-            format=native_format,
+            format=vtfpp.ImageFormat(cfg["np_format"]),
             width=cfg["width"],
             height=cfg["height"],
             creation_options=native_options,
-            vtf_path=Path(cfg["vtf_path"])
+            vtf_path=cfg["vtf_path"],
         )
         del image_data
         print(f"WORKER_RESULT:{err}")
@@ -40,3 +37,6 @@ if __name__ == "__main__":
     finally:
         image_shm.close()
 
+
+if __name__ == "__main__":
+    main()
