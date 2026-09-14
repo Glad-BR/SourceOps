@@ -59,8 +59,8 @@ class ExporterMain:
             'tex_emissive',
         )
 
-
-    def _hashimg(self, image:np.ndarray):
+    @staticmethod
+    def _hashimg(image:np.ndarray):
         if image is not None:
             return hashlib.sha1(image.tobytes()).hexdigest()
         else:
