@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "sourceops"
-version = "0.8.3"
+version = "0.8.4"
 name = "SourceOps++"
 tagline = "A more convenient alternative to Blender Source Tools"
 maintainer = "Glad_BR"
@@ -28,6 +28,8 @@ wheels = [
   "./wheels/mdurl-0.1.2-py3-none-any.whl",
   "./wheels/numpy-2.5.3-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
   "./wheels/numpy-2.5.3-cp313-cp313-win_amd64.whl",
+  "./wheels/numpy-2.5.3-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+  "./wheels/numpy-2.5.3-cp314-cp314-win_amd64.whl",
   "./wheels/opencv_python_headless-5.0.0.93-cp37-abi3-manylinux_2_28_x86_64.whl",
   "./wheels/opencv_python_headless-5.0.0.93-cp37-abi3-win_amd64.whl",
   "./wheels/pygments-2.21.0-py3-none-any.whl",
