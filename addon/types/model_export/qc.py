@@ -1,6 +1,6 @@
 import bpy
 
-from ... utils import common
+from ... utils import common, vectors
 from .model import Model
 
 from ...utils.logger import log
@@ -54,8 +54,8 @@ def generate_qc(self:Model):
     else:
         rotation = -180
 
-    origin = common.blender_to_source( common.rotate_z(common.get_origin(self), rotation) * self.scale )
-    illumposition = (common.get_origin(self) - self.illumposition)
+    origin = vectors.blender_to_source( vectors.rotate_z(vectors.get_origin(self), rotation) * self.scale )
+    illumposition = (vectors.get_origin(self) - self.illumposition)
 
     # The origin command does not work with static prop combine.
     if not (self.static and self.static_prop_combine):

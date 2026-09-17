@@ -5,14 +5,13 @@ import os
 
 from shutil import move
 from pathlib import Path
-from ... utils import common
+from ... utils import common, vectors
 from ... import props
 from . smd import SMD
 from . fbx import export_fbx
 from ...utils.logger import log, getLogger
-
 from concurrent.futures import ThreadPoolExecutor
-import subprocess
+
 
 class Model:
     def __init__(self, game:props.SOURCEOPS_GameProps, model:props.SOURCEOPS_ModelProps, executor=None):
@@ -46,7 +45,7 @@ class Model:
 
         self.materials_items = model.materials_items
         self.materials_index = model.materials_index
-        self.vtf_version = game.vtf_version
+        self.vtf_version = int(game.vtf_version)
 
         self.sequence_items = model.sequence_items
         self.attachment_items = model.attachment_items
@@ -67,7 +66,7 @@ class Model:
         self.fastbuild = model.fastbuild
         self.static_prop_combine = model.static_prop_combine
         self.joints = model.joints
-        self.illumposition = common.get_illumposition(model)
+        self.illumposition = vectors.get_illumposition(model)
         self.mass = model.mass
 
         self.prepend_armature = model.prepend_armature

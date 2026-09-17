@@ -6,7 +6,7 @@ from . game_props import SOURCEOPS_GameProps
 
 
 class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
-    bl_idname = utils.common.get_name()
+    bl_idname = utils.common.get_package_root()
 
     wine: bpy.props.StringProperty(
         name='Wine',
