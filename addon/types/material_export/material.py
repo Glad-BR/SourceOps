@@ -132,7 +132,7 @@ class ExporterMain:
     def _mk_vtf(self, tex: ExportTexture):
         log.info(f'Submitting VTF create job {tex.image.shape} {tex.image_name} {tex.image_hash[:8]} -> {tex.output_path.relative_to(self.model.materials)}')
         opts = vtfpp.VTF.CreationOptions()
-        opts.version = self.model.vtf_version
+        opts.version = int(self.model.vtf_version)
         opts.output_format = tex.format
         opts.invert_green_channel = tex.invert_green
         vtf.create_vtf( #Pain
