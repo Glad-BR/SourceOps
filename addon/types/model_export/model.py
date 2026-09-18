@@ -196,6 +196,9 @@ class Model:
             else:
                 cwd = None
                 args = [str(self.studiomdl), '-nop4', '-fullcollide', fastbuild, '-game', str(self.game), str(qc)]
+
+            args = list(filter(None, args))
+            log.debug('Running command: ' + ' '.join(args))
             
             logfile = self.directory.joinpath(f'{self.stem}.log')
 
@@ -258,6 +261,9 @@ class Model:
             cwd = None
             args = [str(self.hlmv), '-game', str(self.game), str(mdl)]
 
+        args = list(filter(None, args))
+        log.debug('Running command: ' + ' '.join(args))
+    
         if dx90.is_file():
             log.info(f'Viewing: {mdl}')
             subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
