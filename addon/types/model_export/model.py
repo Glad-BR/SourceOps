@@ -5,13 +5,12 @@ import os
 
 from shutil import move
 from pathlib import Path
-from ... utils import common, vectors
-from ... import props
-from . smd import SMD
-from . fbx import export_fbx
-from ...utils.logger import log, getLogger
 from concurrent.futures import ThreadPoolExecutor
-
+from ...utils import common, vectors
+from ... import props
+from .smd import SMD
+from .fbx import export_fbx
+from ...utils.logger import log, getLogger
 
 class Model:
     def __init__(self, game:props.SOURCEOPS_GameProps, model:props.SOURCEOPS_ModelProps, executor=None):
@@ -218,11 +217,10 @@ class Model:
         else:
             return self.report(f'Unable to find: {qc}')
 
-
     def export_materials(self):
         from ..material_export import material
-        return material.export_materials(self)
-
+        exporter = material.ExporterMain(model=self)
+        return exporter.export()
 
     def open_folder(self):
         try:

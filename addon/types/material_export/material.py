@@ -272,10 +272,3 @@ class ExporterMain:
 
 
         return self.errors if self.errors else None
-
-
-
-
-def export_materials(model:Model):
-    e = ExporterMain(model=model)
-    return e.export()
