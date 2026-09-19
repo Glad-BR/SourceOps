@@ -91,7 +91,7 @@ class ExporterMain:
                     if image and image not in self.images_arrs:
                         start = time.perf_counter()
                         self.images_arrs[image] = mats.blender_to_numpy(image)
-                        log.debug(f'Loaded Blender Image: [{image}] Took: {time.perf_counter()-start:.16f}')
+                        log.debug(f'Loaded Blender Image: [{image.name}] Took: {time.perf_counter()-start:.16f}')
         
         log.debug(f'Finish Build unique texture list Took: {time.perf_counter()-start_t:.16f}')
     

@@ -11,7 +11,6 @@ ImageFormat = vtfpp.ImageFormat
 
 from .types import *
 from ..model_export.model import Model
-
 from ...utils import mats
 from ...props.material_props import SOURCEOPS_AllMaterialsProps
 from ...utils.logger import log
@@ -38,6 +37,7 @@ class ExporterCommon:
             self.np_ao = arm_map[:, :, 0]
             self.np_roughness = arm_map[:, :, 1]
             self.np_metallic = arm_map[:, :, 2]
+
         else:
 
             if self.mat.tex_ao and self.mat.tex_diffuse:
