@@ -169,7 +169,7 @@ class ExporterMain:
 
         export.normal = self._register_texture(
             image=exporter.normal(),
-            image_name='normal',
+            image_name='normalmap',
             format=ImageFormat[mat.normal_format],
             flags=tuple(Flags.V0_NORMAL),
             parent_name=mat.name
@@ -236,7 +236,7 @@ class ExporterMain:
         # Assign filenames
         for tex in self.textures.values():
             tex: ExportTexture
-            tex.output_path = self.mat_folder / bpy.path.clean_name(tex.parent_name) / f"{bpy.path.clean_name(tex.image_name)}.vtf"
+            tex.output_path = Path(self.mat_folder / f"{bpy.path.clean_name(tex.parent_name)}_{bpy.path.clean_name(tex.image_name)}").with_suffix('.vtf')
 
 
         # Write VMTs
