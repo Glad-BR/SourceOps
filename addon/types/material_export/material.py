@@ -91,9 +91,9 @@ class ExporterMain:
                     if image and image not in self.images_arrs:
                         start = time.perf_counter()
                         self.images_arrs[image] = mats.blender_to_numpy(image)
-                        log.debug(f'Loaded Blender Image: [{image.name}] Took: {time.perf_counter()-start:.16f}')
+                        log.debug(f'Loaded Blender Image: [{image.name}] Took: {time.perf_counter()-start:.4f}s')
         
-        log.debug(f'Finish Build unique texture list Took: {time.perf_counter()-start_t:.16f}')
+        log.debug(f'Finish Build unique texture list Took: {time.perf_counter()-start_t:.4f}s')
     
 
     def _register_texture(self, image, image_name, format, flags=None, invert_green=False, parent_name=None):
@@ -267,7 +267,7 @@ class ExporterMain:
                 self.errors.append(exc)
                 log.exception(f"Parallel dispatch worker thread collapsed on '{tex_obj.image_name}' with error: {exc}")
 
-        log.info(f"Converted all {len(self.textures.values())} textures in {time.perf_counter() - start:.3f}s")
+        log.info(f"Converted all {len(self.textures.values())} textures in {time.perf_counter() - start:.4f}s")
 
 
 

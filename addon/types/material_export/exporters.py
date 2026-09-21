@@ -66,7 +66,7 @@ class ExporterCommon:
 
         self.MAX_EXPONENT = self.mat.fakepbr1_max_exponent
 
-        log.debug(f'ExporterCommon __init__ done took: {time.perf_counter()-start:.16f}s')
+        log.debug(f'ExporterCommon __init__ done took: {time.perf_counter()-start:.4f}s')
 
     #-------------------------------------------------------------------------------------------
 
