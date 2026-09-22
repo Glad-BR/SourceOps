@@ -1,4 +1,5 @@
 import bpy
+import time
 from .. utils import common
 from .. import icons
 
@@ -12,6 +13,9 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+
+        if common.debug(context):
+            draw_start_t = time.perf_counter()
 
         prefs = common.get_prefs(context)
         game = common.get_game(prefs)
@@ -507,6 +511,27 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col.operator('sourceops.triangulate')
             col.operator('sourceops.pose_bone_transforms', text='Copy Pose Bone Translation').type = 'TRANSLATION'
             col.operator('sourceops.pose_bone_transforms', text='Copy Pose Bone Rotation').type = 'ROTATION'
+
+        if common.debug(context):
+            def _l(s): return f'{s}: {getattr(prefs, s)}'
+            col = layout.column(align=True)
+            col.label(text=f'Draw Took: {time.perf_counter()-draw_start_t}s')
+            col.label(text=f'{_l('debug')} | {_l('wine')} | {_l('threading_export_all')} | {_l('threading_mat_export')}')
+
+            def _c(func:function, layout:bpy.types.UILayout=col):
+                row = layout.row(align=True)
+                row.label(translate=False, text=func.__name__)
+                row.label(translate=False, text=str(func.cache_info()))
+            
+            _c(common.debug)
+            _c(common.get_package_root)
+            _c(common.clean_filename)
+            _c(common.documents)
+            _c(common.appdata)
+            _c(common.temp)
+            _c(common.resolve)
+            _c(common.get_wine)
+            _c(common.winepath)
 
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.list_operator', text='', icon='ADD')

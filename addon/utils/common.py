@@ -9,21 +9,22 @@ import unicodedata
 
 from pathlib import Path
 from functools import cache, lru_cache
-from .logger import log
 
 with open(Path(__file__).parent.parent.parent / 'blender_manifest.toml', 'rb') as f:
     manifest = tomllib.load(f)
     version = manifest['version']
     name = manifest['name']
-    log.debug(f"Loaded manifest: {name} v{version}")
 
-@cache
 def get_version():
     return version
 
-@cache
 def get_name():
     return name
+
+@cache
+def debug(context=bpy.context):
+    prefs = get_prefs(context)
+    return prefs.debug
 
 @cache
 def get_package_root():
@@ -41,6 +42,7 @@ def get_prefs(context):
     try:
         return context.preferences.addons[package_root].preferences
     except KeyError:
+        from .logger import log
         log.exception(f"Extension preferences key '{package_root}' not found.")
         return None
 
@@ -165,7 +167,7 @@ filename_chars_valid = '-_.() %s%s' % (string.ascii_letters, string.digits)
 filename_chars_replace = ' '
 filename_char_limit = 255
 
-@lru_cache(maxsize=64)
+@cache
 def clean_filename(filename, whitelist=filename_chars_valid, replace=filename_chars_replace, char_limit=filename_char_limit):
     for r in replace:
         filename = filename.replace(r, '_')
@@ -211,7 +213,7 @@ def temp() -> Path:
     tmp = Path(t if t else bpy.app.tempdir)
     return tmp.resolve()
 
-@lru_cache(maxsize=64)
+@cache
 def resolve(path) -> Path:
     if path:
         return str(Path(bpy.path.abspath(path)).resolve())
@@ -235,9 +237,8 @@ def get_wine(self) -> Path:
     else:
         raise Exception('Wine executable not found. Make sure Wine is installed and accessible by Blender')
 
-@lru_cache(maxsize=64)
+@cache
 def winepath(path: Path | str) -> str:
-    #cmd = f'winepath -w "{str(path)}"'
     start_t = time.perf_counter()
 
     from .logger import log
@@ -254,12 +255,24 @@ def winepath(path: Path | str) -> str:
         windows_path = process.stdout.readline().strip()
         log.debug(windows_path)
 
-        # Clean up the background process gently
         process.terminate()
-
         log.debug(f"winepath took {time.perf_counter() - start_t:.4f} seconds {windows_path}")
 
         return windows_path
     except Exception as e:
         log.exception(f"Error running winepath: {e}")
         return str(path)
+
+
+def serialize_obj(obj):
+    data = {}
+    for item in dir(obj):
+        if item.startswith('_') or callable(getattr(obj, item)):
+            continue
+            
+        val = getattr(obj, item)
+        if type(val).__module__ != 'builtins' and hasattr(val, 'value'):
+            val = val.value
+            
+        data[item] = val
+    return data

@@ -6,6 +6,7 @@ import time
 import subprocess
 import numpy as np
 from pathlib import Path
+from ...utils.common import serialize_obj
 from ...utils.logger import log
 from multiprocessing.managers import SharedMemoryManager
 
@@ -23,20 +24,6 @@ log.debug(worker_file.resolve())
 
 with open(worker_file.resolve(), 'r', encoding="utf-8") as file:
     worker_code = file.read()
-
-
-def _serialize(obj):
-    data = {}
-    for item in dir(obj):
-        if item.startswith('_') or callable(getattr(obj, item)):
-            continue
-            
-        val = getattr(obj, item)
-        if type(val).__module__ != 'builtins' and hasattr(val, 'value'):
-            val = val.value
-            
-        data[item] = val
-    return data
 
 
 def create_vtf(
@@ -94,8 +81,8 @@ def create_vtf(
             log.debug(f"Created shared memory: {image_shm}")
 
             # Deconstruct
-            options_payload = _serialize(options)
-            options_payload["resize_bounds"] = _serialize(options.resize_bounds)
+            options_payload = serialize_obj(options)
+            options_payload["resize_bounds"] = serialize_obj(options.resize_bounds)
 
             # Options mapping setup
             #options_dict = {

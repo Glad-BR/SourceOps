@@ -1,5 +1,6 @@
 import bpy
 import os
+import logging
 from .. import utils
 from . game_props import SOURCEOPS_GameProps
 
@@ -16,9 +17,8 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
     )
 
     debug: bpy.props.BoolProperty(
-        name='test',
-        description='test',
-        default=True,
+        name='Debug',
+        default=False
     )
 
     threading_export_all: bpy.props.BoolProperty(
@@ -43,9 +43,12 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         if os.name == 'posix':
             layout.prop(self, 'wine')
 
-        layout.label(text='Multithreading')
-        layout.prop(self, 'threading_export_all')
-        layout.prop(self, 'threading_mat_export')
+        col = layout.column()
+        col.label(text='Multithreading')
+        col.prop(self, 'threading_export_all')
+        col.prop(self, 'threading_mat_export')
+
+        layout.prop(self, 'debug')
 
         row = layout.row()
         row.operator('sourceops.backup_preferences')

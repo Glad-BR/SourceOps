@@ -1,7 +1,7 @@
 import logging
+from . import common
 
-NAME = 'SourceOps++'
-
+NAME = common.get_name()
 #FORMAT = "[%(name)s] | %(message)s"
 FORMAT = "[%(name)s]: %(message)s"
 
@@ -30,7 +30,13 @@ except ImportError:
 log = logging.getLogger(NAME)
 log.setLevel(logging.DEBUG)
 log.debug('TEST')
+log.debug(common.get_package_root())
+log.setLevel(logging.INFO)
 
+def setLevel(Level, logger=log):
+    logger.setLevel(Level)
 
 def getLogger(name):
-    return logging.getLogger(name)
+    logger = logging.getLogger(name)
+    logger.setLevel(log.getEffectiveLevel())
+    return logger
