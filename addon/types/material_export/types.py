@@ -9,12 +9,10 @@ from ...props.material_props import SOURCEOPS_AllMaterialsProps
 @dataclass
 class ExportTexture:
     image: np.ndarray
-    image_hash: str
+    image_hash: bytes
     image_name: str
     parent_name : str
-
     output_path: Path = None
-
     format: vtfpp.ImageFormat = None
     flags: tuple[vtfpp.VTF.Flags, ...] = ()
     invert_green: bool = False

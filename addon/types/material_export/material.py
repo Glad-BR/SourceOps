@@ -21,9 +21,7 @@ from ...props.material_props import SOURCEOPS_AllMaterialsProps
 from ...utils.logger import log
 
 
-
 class ExporterMain:
-
     def __init__(self, model:Model):
 
         self.model = model
@@ -62,7 +60,7 @@ class ExporterMain:
     @staticmethod
     def _hashimg(image:np.ndarray):
         if image is not None:
-            return hashlib.sha1(image.tobytes()).hexdigest()
+            return hashlib.sha1(image.tobytes()).digest()
         else:
             return None
 
@@ -102,6 +100,8 @@ class ExporterMain:
 
         image_hash = self._hashimg(image)
 
+        log.debug(F'Register {parent_name}_{image_name}\tHEX[{image_hash.hex()}]')
+
         key = (
             image_hash,
             format,
@@ -124,13 +124,14 @@ class ExporterMain:
                 )
                 self.textures[key] = tex
             elif (parent_name, image_name) < (tex.parent_name, tex.image_name):
+                tex:ExportTexture
                 tex.parent_name = parent_name
                 tex.image_name = image_name
             return tex
 
 
     def _mk_vtf(self, tex: ExportTexture):
-        log.info(f'Submitting VTF create job {tex.image.shape} {tex.image_name} {tex.image_hash[:8]} -> {tex.output_path.relative_to(self.model.materials)}')
+        log.info(f'Submitting VTF create job {tex.image.shape} {tex.image_name} {tex.image_hash.hex()} -> {tex.output_path.relative_to(self.model.materials)}')
         opts = vtfpp.VTF.CreationOptions()
         opts.version = int(self.model.vtf_version)
         opts.output_format = tex.format
@@ -232,12 +233,10 @@ class ExporterMain:
 
         self.materials = [results[index] for index in sorted(results)]
         
-
         # Assign filenames
         for tex in self.textures.values():
             tex: ExportTexture
             tex.output_path = Path(self.mat_folder / f"{bpy.path.clean_name(tex.parent_name)}_{bpy.path.clean_name(tex.image_name)}").with_suffix('.vtf')
-
 
         # Write VMTs
         for mat in self.materials:
@@ -250,8 +249,8 @@ class ExporterMain:
 
 
         self.images_arrs.clear()
-        
 
+        
         # Step 3: Save VTF
         log.info(f"Exporting {len(self.textures.values())} VTF textures to {self.tex_folder}")
 
@@ -268,7 +267,6 @@ class ExporterMain:
                 log.exception(f"Parallel dispatch worker thread collapsed on '{tex_obj.image_name}' with error: {exc}")
 
         log.info(f"Converted all {len(self.textures.values())} textures in {time.perf_counter() - start:.4f}s")
-
 
 
         return self.errors if self.errors else None
