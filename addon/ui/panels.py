@@ -60,8 +60,10 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(game, 'hlmv')
                 col = common.align_column(box)
                 col.prop(game, 'usecustom')
-                if game.usecustom:
-                    col.prop(game, 'customname')
+
+                c = col.column(align=True)
+                c.enabled = game.usecustom
+                c.prop(game, 'customname')
                 #col = common.align_column(box)
                 col.prop(game, 'materials')
                 col.prop(game, 'models')

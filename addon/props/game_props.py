@@ -39,7 +39,7 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
     )
 
     usecustom: bpy.props.BoolProperty(
-        name='UseCustom',
+        name='Custom Folder',
         description='Should Exports be placed inside the custom/addons folder',
         default=False,
         update=utils.game.update_game,
