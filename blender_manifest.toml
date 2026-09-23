@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "sourceops"
-version = "0.8.4"
+version = "0.8.5"
 name = "SourceOps++"
 tagline = "A more convenient alternative to Blender Source Tools"
 maintainer = "Glad_BR"
