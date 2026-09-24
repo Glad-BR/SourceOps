@@ -18,7 +18,7 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
         props = utils.common.get_map(sourceops)
         return prefs and game and sourceops and props
 
-    def invoke(self, context, event):
+    def execute(self, context):
         prefs = utils.common.get_prefs(context)
         game = utils.common.get_game(prefs)
         sourceops = utils.common.get_globals(context)
