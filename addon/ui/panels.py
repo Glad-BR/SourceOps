@@ -520,7 +520,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col.label(text=f'Draw Took: {time.perf_counter()-draw_start_t}s')
             col.label(text=f'{_l('debug')} | {_l('wine')} | {_l('threading_export_all')} | {_l('threading_mat_export')}')
 
-            def _c(func:function, layout:bpy.types.UILayout=col):
+            def _c(func, layout:bpy.types.UILayout=col):
                 row = layout.row(align=True)
                 row.label(translate=False, text=func.__name__)
                 row.label(translate=False, text=str(func.cache_info()))
