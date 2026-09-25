@@ -20,6 +20,10 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         name='Debug',
         default=False
     )
+    vtf_use_workers: bpy.props.BoolProperty(
+        name='VTF Workers',
+        default=True
+    )
 
     threading_export_all: bpy.props.BoolProperty(
         name='Export All',
@@ -49,6 +53,7 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         col.prop(self, 'threading_mat_export')
 
         layout.prop(self, 'debug')
+        layout.prop(self, 'vtf_use_workers')
 
         row = layout.row()
         row.operator('sourceops.backup_preferences')
