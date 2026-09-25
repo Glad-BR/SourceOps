@@ -5,9 +5,6 @@ import numpy as np
 from pathlib import Path
 from typing import List
 
-from sourcepp import vtfpp
-Flags = vtfpp.VTF.Flags
-ImageFormat = vtfpp.ImageFormat
 
 from .types import *
 from ..model_export.model import Model

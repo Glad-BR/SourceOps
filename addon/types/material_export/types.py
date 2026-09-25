@@ -3,7 +3,7 @@ import numpy as np
 from dataclasses import dataclass
 from pathlib import Path
 from sourcepp import vtfpp
-
+from collections.abc import Iterable
 from ...props.material_props import SOURCEOPS_AllMaterialsProps
 
 @dataclass
@@ -12,9 +12,9 @@ class ExportTexture:
     image_hash: bytes
     image_name: str
     parent_name : str
+    flags: Iterable[vtfpp.VTF.Flags]
     output_path: Path = None
     format: vtfpp.ImageFormat = None
-    flags: tuple[vtfpp.VTF.Flags, ...] = ()
     invert_green: bool = False
 
 @dataclass

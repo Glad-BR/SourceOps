@@ -6,6 +6,7 @@ import threading
 import numpy as np
 
 from concurrent.futures import as_completed
+from collections.abc import Iterable
 from pathlib import Path
 from sourcepp import vtfpp
 from . import vtf
@@ -13,8 +14,8 @@ Flags = vtfpp.VTF.Flags
 ImageFormat = vtfpp.ImageFormat
 
 from . import vtf
-from .types import *
-from .exporters import *
+from .types import ExportTexture, ExportMaterial, ColorMasks, GrayMasks
+from .exporters import Basic, fakepbr1, fakepbr2, ExoPBR1
 from ..model_export.model import Model
 from ...utils import mats
 from ...props.material_props import SOURCEOPS_AllMaterialsProps
@@ -94,9 +95,8 @@ class ExporterMain:
         log.debug(f'Finish Build unique texture list Took: {time.perf_counter()-start_t:.4f}s')
     
 
-    def _register_texture(self, image, image_name, format, flags=None, invert_green=False, parent_name=None):
+    def _register_texture(self, image, image_name, format, flags:Iterable[Flags] | None, invert_green=False, parent_name:str=None):
         if image is None: return None
-        if flags is None: flags = ()
 
         image_hash = self._hashimg(image)
 
@@ -152,7 +152,7 @@ class ExporterMain:
         log.debug(f'Using Exporter: {exporter}')
         export = ExportMaterial(source=mat)
 
-        flags = tuple()
+        flags = set()
 
         # Use Phong thingy for ExoPBR ARM texture
         if mat.type == 'ExoPBR':
@@ -172,23 +172,23 @@ class ExporterMain:
             image=exporter.normal(),
             image_name='normalmap',
             format=ImageFormat[mat.normal_format],
-            flags=tuple(Flags.V0_NORMAL),
+            flags=frozenset((Flags.V0_NORMAL)),
             parent_name=mat.name
         )
         export.phong = self._register_texture(
             image=exporter.phong(),
             image_name='phong',
             format=phong_format,
-            flags=flags,
+            flags=None,
             parent_name=mat.name
         )
-        #export.envmapmask = self._register_texture(
-        #    image=exporter.envmapmask(),
-        #    image_name='envmapmask',
-        #    format=ImageFormat.IA88,
-        #    flags=flags,
-        #    parent_name=mat.name
-        #)
+
+        if self.model.vtf_version >= 4:
+            flags.add(Flags.V4_SRGB)
+        if self.model.vtf_version >= 5:
+            flags.add(Flags.V5_SRGB)
+        flags = frozenset(flags)
+
         export.basetexture = self._register_texture(
             image=exporter.basetexture(),
             image_name='basetexture',
@@ -207,7 +207,6 @@ class ExporterMain:
         return export
 
     #-------------------------------------------------------------------------------------------
-
 
     def export(self):
         start = time.perf_counter()
@@ -247,9 +246,7 @@ class ExporterMain:
             log.info(f'Writing VMT [{blender_mat.name}]')
             exporter.vmt(mat, outpath)
 
-
         self.images_arrs.clear()
-
         
         # Step 3: Save VTF
         log.info(f"Exporting {len(self.textures.values())} VTF textures to {self.tex_folder}")
