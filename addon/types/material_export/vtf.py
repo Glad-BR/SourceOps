@@ -6,7 +6,7 @@ import time
 import subprocess
 import numpy as np
 from pathlib import Path
-from ...utils.common import serialize_obj
+from ...utils import common 
 from ...utils.logger import log
 from multiprocessing.managers import SharedMemoryManager
 
@@ -28,7 +28,7 @@ with open(worker_file.resolve(), 'r', encoding="utf-8") as file:
 
 def create_vtf(
         image: np.ndarray,
-        output_path: str | os.PathLike[str],
+        output_path: str | os.PathLike,
         options: vtfpp.VTF.CreationOptions = None,
         flags: Iterable[vtfpp.VTF.Flags] = None,
         exists_ok: bool = False,
@@ -55,14 +55,14 @@ def create_vtf(
 
     if image.ndim == 2:
         HEIGHT, WIDTH = image.shape
-        FORMAT = vtfpp.ImageFormat.I8.value
+        FORMAT = vtfpp.ImageFormat.R32F.value
     elif image.ndim == 3:
         HEIGHT, WIDTH, CHANNELS = image.shape
         format_map = {
-            1: vtfpp.ImageFormat.I8.value,
-            2: vtfpp.ImageFormat.IA88.value,
-            3: vtfpp.ImageFormat.RGB888.value,
-            4: vtfpp.ImageFormat.RGBA8888.value
+            1: vtfpp.ImageFormat.R32F.value,
+            2: vtfpp.ImageFormat.RG3232F.value,
+            3: vtfpp.ImageFormat.RGB323232F.value,
+            4: vtfpp.ImageFormat.RGBA32323232F.value
         }
         if CHANNELS not in format_map:
             raise ValueError(f"Unsupported number of channels: {CHANNELS}")
@@ -70,8 +70,14 @@ def create_vtf(
     else:
         raise ValueError(f"Unsupported number of dimensions: {image.ndim}")
 
-    # Convert from float32 0 > 1 to uint8 0 > 255
-    image = np.clip(cv2.multiply(image, 255.0), 0, 255).astype(np.uint8)
+    image = np.ascontiguousarray(np.clip(image, 0.0, 1.0), dtype=np.float32)
+
+    try:
+        import bpy
+        use_workers = common.get_prefs(bpy.context).vtf_use_workers
+    except Exception as e:
+        log.exception(e)
+
 
     #All this just because sourcepp doesn’t release the GIL
     if use_workers:
@@ -81,18 +87,9 @@ def create_vtf(
             log.debug(f"Created shared memory: {image_shm}")
 
             # Deconstruct
-            options_payload = serialize_obj(options)
-            options_payload["resize_bounds"] = serialize_obj(options.resize_bounds)
+            options_payload = common.serialize_obj(options)
+            options_payload["resize_bounds"] = common.serialize_obj(options.resize_bounds)
 
-            # Options mapping setup
-            #options_dict = {
-            #    "output_format":        options.output_format.value,
-            #    "version":              getattr(options, "version", 2),
-            #    "flags":                getattr(options, "flags", 0),
-            #    "compute_mips":         getattr(options, "compute_mips", True),
-            #    "compute_thumbnail":    getattr(options, "compute_thumbnail", True),
-            #    "compute_reflectivity": getattr(options, "compute_reflectivity", True)
-            #}
             config_payload = {
                 "shared_memory_name": image_shm.name,
                 "image_size": image.nbytes,

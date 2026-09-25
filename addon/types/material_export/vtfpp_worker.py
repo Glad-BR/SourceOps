@@ -10,17 +10,7 @@ def main():
     image_shm = shared_memory.SharedMemory(name=cfg["shared_memory_name"], track=False)
     try:
         image_data = bytes(image_shm.buf[:cfg["image_size"]])
-
-        #opts = cfg["options"]
-        #native_options                      = vtfpp.VTF.CreationOptions()
-        #native_options.output_format        = vtfpp.ImageFormat(opts["output_format"])
-        #native_options.version              = opts["version"]
-        #native_options.flags                = opts["flags"]
-        #native_options.compute_mips         = opts["compute_mips"]
-        #native_options.compute_thumbnail    = opts["compute_thumbnail"]
-        #native_options.compute_reflectivity = opts["compute_reflectivity"]
         options_payload = cfg["options"]
-
         # Reconstruct
         creation_options = vtfpp.VTF.CreationOptions()
 
