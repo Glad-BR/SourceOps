@@ -66,7 +66,7 @@ class ExporterMain:
     @staticmethod
     def _hashimg(image:np.ndarray):
         if image is not None:
-            return hashlib.sha1(image.tobytes()).digest()
+            return hashlib.blake2b(data=np.ascontiguousarray(image).data, usedforsecurity=False, digest_size=16).digest()
         else:
             return None
 
