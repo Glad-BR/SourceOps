@@ -1,10 +1,14 @@
-import numpy as np
+from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
-from sourcepp import vtfpp
-from collections.abc import Iterable
-from ...props.material_props import SOURCEOPS_AllMaterialsProps
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import numpy as np
+    from pathlib import Path
+    from sourcepp import vtfpp
+    from ...props.material_props import SOURCEOPS_AllMaterialsProps
+    from collections.abc import Iterable
 
 @dataclass
 class ExportTexture:

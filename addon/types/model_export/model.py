@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import bpy
 import time
 import subprocess
@@ -6,11 +8,15 @@ import os
 from shutil import move
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
+from typing import TYPE_CHECKING
+
 from ...utils import common, vectors
-from ... import props
 from .smd import SMD
 from .fbx import export_fbx
 from ...utils.logger import log, getLogger
+
+if TYPE_CHECKING:
+    from ... import props
 
 class Model:
     def __init__(self, game:props.SOURCEOPS_GameProps, model:props.SOURCEOPS_ModelProps, executor=None):
@@ -82,11 +88,9 @@ class Model:
         else:
             self.scale = model.scale
 
-
     def export_meshes(self):
         self.ensure_modelsrc_folder()
         # self.remove_modelsrc_old()  # Commented out because it might be annoying.
-
 
         def export_objects(ref):
             if ref:
@@ -94,7 +98,6 @@ class Model:
                 path = self.get_body_path(ref)
                 self.export_mesh(self.armature, objects, path)
     
-
         if not self.sequence_items:
             idle_path = self.directory.joinpath('anims', 'idle.SMD')
             self.export_anim(self.armature, None, idle_path)
@@ -103,7 +106,6 @@ class Model:
                 path = self.directory.joinpath('anims', f'{common.clean_filename(sequence.name)}.SMD')
                 self.export_anim(self.armature, sequence.action, path)
     
-
         export_objects(self.reference)
         export_objects(self.collision)
     
@@ -130,8 +132,6 @@ class Model:
         if self.stacking:
             for collection in getattr(self.stacking, 'children', []):
                 export_objects(collection)
-
-
 
     def export_anim(self, armature, action, path):
         self.export_smd(armature, [], action, path)
@@ -160,7 +160,6 @@ class Model:
 
     def export_fbx(self, armature, objects, path):
         start = time.time()
-
         try:
             export_fbx(path, armature, objects, self.prepend_armature, self.ignore_transforms)
         except:
@@ -185,9 +184,10 @@ class Model:
             # Use wine to run StudioMDL on Linux.
             # Run winepath to get a sure path
 
-            fastbuild = '-fastbuild' if self.fastbuild else ''
+            fastbuild = '-fastbuild' if self.fastbuild else None
 
             env = os.environ.copy()
+
             if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
                 cwd = self.game.parent
                 args = [str(self.wine), common.winepath(self.studiomdl), '-nop4', '-fullcollide', fastbuild, '-game', common.winepath(self.game), common.winepath(qc)]

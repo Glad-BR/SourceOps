@@ -1,9 +1,7 @@
 import bpy
-import bpy_extras
+
 from .. import utils
-
 from ..utils.mats import BlenderInputNodes as Node
-
 
 class SOURCEOPS_OT_AutofillMaterials(bpy.types.Operator):
     bl_idname = 'sourceops.autofill_materials'

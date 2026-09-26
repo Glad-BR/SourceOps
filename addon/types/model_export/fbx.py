@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 import bpy
-from bpy.types import Bone, Object, PoseBone, TriangulateModifier
 from mathutils import Matrix
 from pathlib import Path
-from typing import List
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import List
+    from bpy.types import Bone, Object, PoseBone, TriangulateModifier
 
 
 MESH_TYPES = {'CURVE', 'FONT', 'MESH', 'SURFACE'}

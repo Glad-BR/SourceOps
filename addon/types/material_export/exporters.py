@@ -1,16 +1,20 @@
+from __future__ import annotations
+
 import cv2
 import time
 import numpy as np
 
 from pathlib import Path
-from typing import List
+from typing import TYPE_CHECKING
 
-
-from .types import *
-from ..model_export.model import Model
 from ...utils import mats
-from ...props.material_props import SOURCEOPS_AllMaterialsProps
 from ...utils.logger import log
+
+if TYPE_CHECKING:
+    from typing import List
+    from .types import ExportMaterial
+    from ..model_export.model import Model
+    from ...props.material_props import SOURCEOPS_AllMaterialsProps
 
 
 class ExporterCommon:

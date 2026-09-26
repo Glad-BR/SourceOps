@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import bpy
 import time
 import hashlib
@@ -8,6 +10,7 @@ import numpy as np
 from concurrent.futures import as_completed
 from collections.abc import Iterable
 from pathlib import Path
+from typing import TYPE_CHECKING
 from sourcepp import vtfpp
 from . import vtf
 Flags = vtfpp.VTF.Flags
@@ -16,10 +19,12 @@ ImageFormat = vtfpp.ImageFormat
 from . import vtf
 from .types import ExportTexture, ExportMaterial, ColorMasks, GrayMasks
 from .exporters import Basic, fakepbr1, fakepbr2, ExoPBR1
-from ..model_export.model import Model
 from ...utils import mats
-from ...props.material_props import SOURCEOPS_AllMaterialsProps
 from ...utils.logger import log
+
+if TYPE_CHECKING:
+    from ..model_export.model import Model
+    from ...props.material_props import SOURCEOPS_AllMaterialsProps
 
 
 class ExporterMain:
@@ -239,21 +244,22 @@ class ExporterMain:
 
         # Write VMTs
         for mat in self.materials:
-            mat:ExportMaterial # Me like type
+            mat:ExportMaterial
             blender_mat = mat.source
             exporter = self._exporter(blender_mat)
             outpath = self.mat_folder / blender_mat.name
             log.info(f'Writing VMT [{blender_mat.name}]')
             exporter.vmt(mat, outpath)
 
-        self.images_arrs.clear()
-        
+
+        del self.images_arrs 
+
         # Step 3: Save VTF
         log.info(f"Exporting {len(self.textures.values())} VTF textures to {self.tex_folder}")
 
         futures = {self.executor.submit(self._mk_vtf, tex): tex for tex in self.textures.values()}
         for future in as_completed(futures):
-            tex_obj = futures[future]
+            tex_obj:ExportTexture = futures[future]
             try:
                 res = future.result()
                 if isinstance(res, str):
@@ -264,6 +270,5 @@ class ExporterMain:
                 log.exception(f"Parallel dispatch worker thread collapsed on '{tex_obj.image_name}' with error: {exc}")
 
         log.info(f"Converted all {len(self.textures.values())} textures in {time.perf_counter() - start:.4f}s")
-
 
         return self.errors if self.errors else None
