@@ -515,16 +515,22 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col.operator('sourceops.pose_bone_transforms', text='Copy Pose Bone Rotation').type = 'ROTATION'
 
         if common.debug(context):
-            def _l(s): return f'{s}: {getattr(prefs, s)}'
             col = layout.column(align=True)
             col.label(text=f'Draw Took: {time.perf_counter()-draw_start_t}s')
-            col.label(text=f'{_l('debug')} | {_l('wine')} | {_l('threading_export_all')} | {_l('threading_mat_export')}')
+            
+            _d = ('-'*16)
+            col.label(text=_d+' Addon Prefs '+_d)
+
+            prefs_dict = common.serialize_obj(prefs)
+            for key in prefs_dict:
+                col.label(text=f'{key}: {prefs_dict[key]}')
+
+            col.label(text=_d+' Cache Info '+_d)
 
             def _c(func, layout:bpy.types.UILayout=col):
                 row = layout.row(align=True)
                 row.label(translate=False, text=func.__name__)
                 row.label(translate=False, text=str(func.cache_info()))
-            
             _c(common.debug)
             _c(common.get_package_root)
             _c(common.clean_filename)

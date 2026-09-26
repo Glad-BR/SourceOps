@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import bpy
 import time
 import string
@@ -9,6 +11,11 @@ import unicodedata
 
 from pathlib import Path
 from functools import cache, lru_cache
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .. import props
+
 
 with open(Path(__file__).parent.parent.parent / 'blender_manifest.toml', 'rb') as f:
     manifest = tomllib.load(f)
@@ -37,7 +44,7 @@ def get_package_root():
     return package_root
 
 
-def get_prefs(context):
+def get_prefs(context) -> props.SOURCEOPS_AddonPrefs:
     package_root = get_package_root()
     try:
         return context.preferences.addons[package_root].preferences
@@ -61,7 +68,7 @@ def get_globals(context):
         return None
 
 
-def get_model(sourceops):
+def get_model(sourceops) -> props.SOURCEOPS_ModelProps|None:
     try:
         return sourceops.model_items[sourceops.model_index]
     except:
@@ -267,7 +274,7 @@ def winepath(path: Path | str) -> str:
 def serialize_obj(obj):
     data = {}
     for item in dir(obj):
-        if item.startswith('_') or callable(getattr(obj, item)):
+        if item.startswith(('_', 'bl_', 'rna_')) or callable(getattr(obj, item)):
             continue
             
         val = getattr(obj, item)
