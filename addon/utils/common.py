@@ -242,7 +242,7 @@ def get_wine(self) -> Path:
     elif which is not None and which.is_file():
         return Path(which)
     else:
-        raise Exception('Wine executable not found. Make sure Wine is installed and accessible by Blender')
+        raise FileNotFoundError('Wine executable not found. Make sure Wine is installed and accessible by Blender')
 
 @cache
 def winepath(path: Path | str) -> str:
