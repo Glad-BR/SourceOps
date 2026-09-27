@@ -22,6 +22,7 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
     )
     vtf_use_workers: bpy.props.BoolProperty(
         name='VTF Workers',
+        description='Instead of running vtf export on the main python process\nSpawn a new process per texture to work on vtf creation.',
         default=True
     )
 
@@ -30,10 +31,16 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         description='Use Multithreading to Export all Models\n!!! May cause your pc to explode on lots of models',
         default=True,
     )
-    threading_mat_export: bpy.props.BoolProperty(
-        name='Materials',
+
+    mat_autodetect_mk_emissive_offskin: bpy.props.BoolProperty(
+        name='Mat AutoDetect off skin',
         description='test',
         default=True,
+    )
+    mat_autodetect_mk_emissive_postfix: bpy.props.StringProperty(
+        name='Emissive Off Postfix',
+        description='test',
+        default='_off',
     )
 
     game_items: bpy.props.CollectionProperty(type=SOURCEOPS_GameProps)
@@ -50,10 +57,12 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         col = layout.column()
         col.label(text='Multithreading')
         col.prop(self, 'threading_export_all')
-        col.prop(self, 'threading_mat_export')
 
         layout.prop(self, 'debug')
         layout.prop(self, 'vtf_use_workers')
+
+        layout.prop(self, 'mat_autodetect_mk_emissive_offskin')
+        layout.prop(self, 'mat_autodetect_mk_emissive_postfix')
 
         row = layout.row()
         row.operator('sourceops.backup_preferences')
