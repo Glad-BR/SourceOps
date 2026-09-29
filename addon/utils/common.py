@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import bpy
+import os
 import time
 import string
 import shutil
@@ -222,6 +223,8 @@ def temp() -> Path:
 
 @cache
 def resolve(path) -> Path:
+    from .logger import log
+    log.debug(f'resolve {path}')
     if path:
         return str(Path(bpy.path.abspath(path)).resolve())
     else:
@@ -229,11 +232,24 @@ def resolve(path) -> Path:
 
 
 def update_wine(self, context):
-    self['wine'] = resolve(self.wine)
+    current = self.wine
+    resolved = resolve(current)
+    if resolved != current:
+        self.wine = resolved
 
-@cache
-def get_wine(self) -> Path:
-    wine = Path(self.wine)
+def update_wineprefix(self, context):
+    current = self.wineprefix
+    resolved = resolve(current)
+    if resolved != current:
+        self.wineprefix = resolved
+
+
+
+def get_wine(prefs=None) -> Path:
+    if not prefs:
+        prefs = get_prefs(bpy.context)
+
+    wine = Path(prefs.wine)
     which_path = shutil.which('wine')
     which = Path(which_path) if which_path is not None else None
 
@@ -244,13 +260,36 @@ def get_wine(self) -> Path:
     else:
         raise FileNotFoundError('Wine executable not found. Make sure Wine is installed and accessible by Blender')
 
-@cache
-def winepath(path: Path | str) -> str:
-    start_t = time.perf_counter()
 
+def get_winepath(prefs=None) -> Path:
+    if not prefs:
+        prefs = get_prefs(bpy.context)
+
+    winepath = Path(get_wine(prefs).parent / 'winepath')
+    which_path = shutil.which('winepath')
+    which = Path(which_path) if which_path is not None else None
+
+    if winepath.is_file():
+        return Path(winepath)
+    elif which is not None and which.is_file():
+        return Path(which)
+    else:
+        raise FileNotFoundError('Wine executable not found. Make sure Wine is installed and accessible by Blender')
+
+
+@cache
+def winepath(path: Path | str, prefs=None) -> str:
+    start_t = time.perf_counter()
     from .logger import log
 
-    cmd = ['winepath', '-w', str(path)]
+    if not prefs:
+        prefs = get_prefs(bpy.context)
+
+    cmd = [get_winepath(), '-w', str(path)]
+    env = os.environ.copy()
+
+    if Path(prefs.wineprefix).is_file():
+        env['WINEPREFIX'] = Path(prefs.wineprefix).resolve()
 
     try:
         process = subprocess.Popen(

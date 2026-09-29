@@ -15,6 +15,12 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         subtype='FILE_PATH',
         update=utils.common.update_wine,
     )
+    wineprefix: bpy.props.StringProperty(
+        name='WINEPREFIX',
+        description='Path to your wine prefix',
+        subtype='FILE_PATH',
+        update=utils.common.update_wineprefix,
+    )
 
     debug: bpy.props.BoolProperty(
         name='Debug',
@@ -52,7 +58,9 @@ class SOURCEOPS_AddonPrefs(bpy.types.AddonPreferences):
         layout.use_property_decorate = False
 
         if os.name == 'posix':
-            layout.prop(self, 'wine')
+            col = layout.column()
+            col.prop(self, 'wine')
+            col.prop(self, 'wineprefix')
 
         col = layout.column()
         col.label(text='Multithreading')

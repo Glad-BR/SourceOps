@@ -538,7 +538,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             _c(common.appdata)
             _c(common.temp)
             _c(common.resolve)
-            _c(common.get_wine)
             _c(common.winepath)
 
     def draw_list_buttons(self, layout, item):

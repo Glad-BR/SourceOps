@@ -41,11 +41,6 @@ class ExporterMain:
 
         self._lock = threading.Lock()
 
-        if model.prefs.threading_mat_export:
-            self._max_workers = multiprocessing.cpu_count()-1
-        else:
-            self._max_workers = 1
-
         assert self.model.material_folder_items is not None
 
         self.relative_path = Path(self.model.material_folder_items[0].name)
